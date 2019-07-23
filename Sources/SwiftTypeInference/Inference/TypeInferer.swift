@@ -1,12 +1,12 @@
 import SwiftSyntax
 
 public final class TypeInferer {
+    private var tvGen: TypeVariableGenerator = TypeVariableGenerator()
+    private var syntaxTypeMap: [SyntaxIdentifier: (syntax: Syntax, type: AnyType)] = [:]
+    private var unificator: Unificator = Unificator()
+    
     public init() {
     }
-    
-    private var lastTypeVariableID: Int = 0
-    private var syntaxTypeMap: [SyntaxIdentifier: (syntax: Syntax, type: AnyType)] = [:]
-    private var constraints: [Constraint] = []
     
     public func infer(statement: Syntax) -> Syntax {
         var visitor = CollectVisitor(owner: self)
@@ -22,33 +22,28 @@ public final class TypeInferer {
         var visitor = CollectVisitor(owner: self)
         expression.walk(&visitor)
     }
-    
-    private func createTypeVariable() -> TypeVariable {
-        let id = lastTypeVariableID + 1
 
-        let tv = TypeVariable(id: id)
-        lastTypeVariableID = tv.id
-        return tv
-    }
-    
     private func bindType<T: Type>(for syntax: Syntax, type: T) {
         syntaxTypeMap[syntax.uniqueIdentifier] = (syntax, type.asAnyType())
     }
     
     private func type(for syntax: Syntax) -> AnyType? {
-        return syntaxTypeMap[syntax.uniqueIdentifier]?.type
+        syntaxTypeMap[syntax.uniqueIdentifier]?.type
     }
     
-    private func constrain<L: Type, R: Type>(_ left: L, _ right: R) {
-        constraints.append(Constraint(left: left, right: right))
+    private func substitutedType(for syntax: Syntax) -> AnyType? {
+        type(for: syntax).map { unificator.substitutions.apply(to: $0) }
     }
     
-    private func collect(binding: PatternBindingSyntax) {
+    private func constrain<L: Type, R: Type>(_ left: L, _ right: R) throws {
+        try unificator.unify(constraint: Constraint(left: left, right: right))
+    }
+    
+    private func collect(binding: PatternBindingSyntax) throws {
         func collectPattern() -> AnyType? {
             switch binding.pattern {
             case let pattern as IdentifierPatternSyntax:
-                let tv = createTypeVariable()
-                                
+                let tv = tvGen.generate()
                 bindType(for: pattern, type: tv)
                 return tv.asAnyType()
             default:
@@ -59,20 +54,20 @@ public final class TypeInferer {
         let t1 = collectPattern()
         
         if let initializer = binding.initializer {
-            if let t2 = collect(expr: initializer.value) {
+            if let t2 = try collect(expr: initializer.value) {
                 if let t1 = t1 {
-                    constrain(t1, t2)
+                    try constrain(t1, t2)
                 }
             }
         }
     }
     
-    private func collect(expr: ExprSyntax) -> AnyType? {
+    private func collect(expr: ExprSyntax) throws -> AnyType? {
         switch expr {
         case let expr as IntegerLiteralExprSyntax:
-            let tv = createTypeVariable()
+            let tv = tvGen.generate()
             bindType(for: expr, type: tv)
-            constrain(tv, IntType())
+            try constrain(tv, IntType())
             return tv.asAnyType()
         default:
             return nil
@@ -85,7 +80,7 @@ public final class TypeInferer {
         func proc() {
             guard var pattern = binding.pattern as? IdentifierPatternSyntax else { return }
             
-            guard let tv = type(for: pattern) else { return }
+            guard let tv = substitutedType(for: pattern) else { return }
 
             let trivia = pattern.identifier.trailingTrivia
                 .appending(.blockComment("/* : \(tv) */"))
@@ -107,11 +102,8 @@ public final class TypeInferer {
         let printer = Printer(owner: self)
         printer.print(syntax)
         
-        Swift.print("Constraints:")
-        
-        for c in constraints {
-            Swift.print("  \(c.left) = \(c.right)")
-        }
+        Swift.print("Substitutions:")
+        Swift.print(unificator.description)
     }
     
     private final class Printer {
@@ -197,7 +189,8 @@ public final class TypeInferer {
         
         public override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
             for binding in node.bindings {
-                owner.collect(binding: binding)
+                // TODO
+                try! owner.collect(binding: binding)
             }
             
             return .skipChildren

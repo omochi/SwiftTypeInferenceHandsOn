@@ -1,27 +1,21 @@
 import Foundation
 
 public struct Unificator : CustomStringConvertible {
-    public private(set) var substitutions: [TypeVariable: AnyType] = [:]
+    public private(set) var substitutions: Substitutions
     
-    public init() {}
+    public init() {
+        self.substitutions = Substitutions()
+    }
     
     public mutating func unify(constraint: Constraint) throws {
-        let constraint = constraint.map { (t) in
-            if let tv = t.asVariable(),
-                let s = substitutions[tv]
-            {
-                return s
-            }
-            
-            return t
-        }
+        let constraint = substitutions.apply(to: constraint)
         
         let left = constraint.left
         let right = constraint.right
         
         if let leftVar = left.asVariable() {
-            map(from: left, to: right)
-            substitutions[leftVar] = right
+            substitutions = substitutions.map(from: left, to: right)
+            substitutions.items[leftVar] = right
             return
         }
         
@@ -48,25 +42,10 @@ public struct Unificator : CustomStringConvertible {
         throw MessageError("\(left) != \(right)")
     }
     
-    public mutating func map(_ f: (AnyType) throws -> AnyType) rethrows {
-        substitutions = try substitutions.mapValues { (t) in
-            try t.map(f)
-        }
-    }
-    
-    public mutating func map(from: AnyType, to: AnyType) {
-        map { (t) in
-            if t == from {
-                return to
-            }
-            return t
-        }
-    }
-    
     public var description: String {
         var lines: [String] = []
         
-        for (left, right) in substitutions {
+        for (left, right) in substitutions.items {
             lines.append("\(left) => \(right)")
         }
         
