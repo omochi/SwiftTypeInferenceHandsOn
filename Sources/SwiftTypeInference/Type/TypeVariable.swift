@@ -1,6 +1,6 @@
 import Foundation
 
-public struct TypeVariable : Type {
+public struct TypeVariable : Type, Hashable {
     public var id: Int
     
     public init(id: Int) {

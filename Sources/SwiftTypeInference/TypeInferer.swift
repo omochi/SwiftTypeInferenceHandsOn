@@ -5,7 +5,7 @@ public final class TypeInferer {
     }
     
     private var lastTypeVariableID: Int = 0
-    private var syntaxTypeMap: [SyntaxIdentifier: (syntax: Syntax, type: Type)] = [:]
+    private var syntaxTypeMap: [SyntaxIdentifier: (syntax: Syntax, type: AnyType)] = [:]
     private var constraints: [Constraint] = []
     
     public func infer(statement: Syntax) -> Syntax {
@@ -31,26 +31,26 @@ public final class TypeInferer {
         return tv
     }
     
-    private func bindType(for syntax: Syntax, type: Type) {
-        syntaxTypeMap[syntax.uniqueIdentifier] = (syntax, type)
+    private func bindType<T: Type>(for syntax: Syntax, type: T) {
+        syntaxTypeMap[syntax.uniqueIdentifier] = (syntax, type.asAnyType())
     }
     
-    private func type(for syntax: Syntax) -> Type? {
+    private func type(for syntax: Syntax) -> AnyType? {
         return syntaxTypeMap[syntax.uniqueIdentifier]?.type
     }
     
-    private func constrain(_ left: Type, _ right: Type) {
+    private func constrain<L: Type, R: Type>(_ left: L, _ right: R) {
         constraints.append(Constraint(left: left, right: right))
     }
     
     private func collect(binding: PatternBindingSyntax) {
-        func collectPattern() -> Type? {
+        func collectPattern() -> AnyType? {
             switch binding.pattern {
             case let pattern as IdentifierPatternSyntax:
                 let tv = createTypeVariable()
                                 
                 bindType(for: pattern, type: tv)
-                return tv
+                return tv.asAnyType()
             default:
                 return nil
             }
@@ -67,13 +67,13 @@ public final class TypeInferer {
         }
     }
     
-    private func collect(expr: ExprSyntax) -> Type? {
+    private func collect(expr: ExprSyntax) -> AnyType? {
         switch expr {
         case let expr as IntegerLiteralExprSyntax:
             let tv = createTypeVariable()
             bindType(for: expr, type: tv)
             constrain(tv, IntType())
-            return tv
+            return tv.asAnyType()
         default:
             return nil
         }

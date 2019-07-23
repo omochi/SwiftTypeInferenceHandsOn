@@ -10,6 +10,6 @@ public enum Resources {
     }()
     
     public static func file(_ name: String) -> URL {
-        return directory.appendingPathComponent(name)
+        directory.appendingPathComponent(name)
     }
 }
