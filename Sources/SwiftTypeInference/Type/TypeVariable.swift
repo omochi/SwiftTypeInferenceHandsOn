@@ -10,4 +10,8 @@ public struct TypeVariable : Type, Hashable {
     public var description: String {
         return "$t\(id)"
     }
+    
+    public func map(_ f: (AnyType) throws -> AnyType) rethrows -> AnyType {
+        try f(asAnyType())
+    }
 }

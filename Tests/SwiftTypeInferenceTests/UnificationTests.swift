@@ -10,36 +10,34 @@ final class UnificationTests: XCTestCase {
         u = Unificator()
     }
     
+    func unify(_ c: Constraint) throws {
+        try u.unify(constraint: c)
+    }
+    
     func testIntInt() throws {
-        try u.unify(constraint: Constraint(left: IntType(), right: IntType()))
+        try unify(Constraint(left: IntType(), right: IntType()))
     }
     
     func testIntString() throws {
         XCTAssertThrowsError(
-            try self.u.unify(constraint: Constraint(left: IntType(), right: StringType()))
+            try self.unify(Constraint(left: IntType(), right: StringType()))
         )
     }
     
     func testVarInt() throws {
-        let v = TypeVariable(id: 1)
-        let int = IntType()
-        try u.unify(constraint: Constraint(left: v, right: int))
-        XCTAssertEqual(u.substitutions[v], int.asAnyType())
+        try unify(Constraint(left: TypeVariable(id: 1), right: IntType()))
+        assertEqualVariable(id: 1, type: IntType())
     }
     
     func testIntVar() throws {
-        let v = TypeVariable(id: 1)
-        let int = IntType()
-        try u.unify(constraint: Constraint(left: int, right: v))
-        XCTAssertEqual(u.substitutions[v], int.asAnyType())
+        try unify(Constraint(left: IntType(), right: TypeVariable(id: 1)))
+        assertEqualVariable(id: 1, type: IntType())
     }
     
     func testVarInt_VarString() throws {
-        let v = TypeVariable(id: 1)
-        
-        try u.unify(constraint: Constraint(left: v, right: IntType()))
+        try unify(Constraint(left: TypeVariable(id: 1), right: IntType()))
         XCTAssertThrowsError(
-            try u.unify(constraint: Constraint(left: v, right: StringType()))
+            try unify(Constraint(left: TypeVariable(id: 1), right: StringType()))
         )
     }
     
@@ -47,32 +45,56 @@ final class UnificationTests: XCTestCase {
         let v1 = TypeVariable(id: 1)
         let v2 = TypeVariable(id: 2)
         
-        try u.unify(constraint: Constraint(left: v1, right: IntType()))
-        try u.unify(constraint: Constraint(left: v1, right: v2))
+        try unify(Constraint(left: v1, right: IntType()))
+        try unify(Constraint(left: v1, right: v2))
         
-        XCTAssertEqual(u.substitutions[v1], IntType().asAnyType())
-        XCTAssertEqual(u.substitutions[v2], IntType().asAnyType())
+        assertEqualVariable(id: 1, type: IntType())
+        assertEqualVariable(id: 2, type: IntType())
     }
     
     func testVar1Int_Var2Var1() throws {
         let v1 = TypeVariable(id: 1)
         let v2 = TypeVariable(id: 2)
         
-        try u.unify(constraint: Constraint(left: v1, right: IntType()))
-        try u.unify(constraint: Constraint(left: v2, right: v1))
+        try unify(Constraint(left: v1, right: IntType()))
+        try unify(Constraint(left: v2, right: v1))
         
-        XCTAssertEqual(u.substitutions[v1], IntType().asAnyType())
-        XCTAssertEqual(u.substitutions[v2], IntType().asAnyType())
+        assertEqualVariable(id: 1, type: IntType())
+        assertEqualVariable(id: 2, type: IntType())
     }
     
     func testVar1Var2_Var1Int() throws {
         let v1 = TypeVariable(id: 1)
         let v2 = TypeVariable(id: 2)
         
-        try u.unify(constraint: Constraint(left: v1, right: v2))
-        try u.unify(constraint: Constraint(left: v1, right: IntType()))
+        try unify(Constraint(left: v1, right: v2))
+        try unify(Constraint(left: v1, right: IntType()))
         
-        XCTAssertEqual(u.substitutions[v1], IntType().asAnyType())
-        XCTAssertEqual(u.substitutions[v2], IntType().asAnyType())
+        assertEqualVariable(id: 1, type: IntType())
+        assertEqualVariable(id: 2, type: IntType())
+    }
+    
+    func testFuncs() throws {
+        let v1 = TypeVariable(id: 1)
+        let f1 = FunctionType(argument: TypeVariable(id: 2), result: TypeVariable(id: 3))
+        let f2 = FunctionType(argument: IntType(), result: TypeVariable(id: 4))
+        let f3 = FunctionType(argument: TypeVariable(id: 5), result: StringType())
+        
+        try unify(Constraint(left: v1, right: f1))
+        try unify(Constraint(left: f1, right: f2))
+        try unify(Constraint(left: f2, right: f3))
+        
+        assertEqualVariable(id: 1, type: FunctionType(argument: IntType(), result: StringType()))
+        assertEqualVariable(id: 2, type: IntType())
+        assertEqualVariable(id: 3, type: StringType())
+        assertEqualVariable(id: 4, type: StringType())
+        assertEqualVariable(id: 5, type: IntType())
+    }
+    
+    private func assertEqualVariable<T: Type>(id: Int, type: T,
+                                              file: StaticString = #file, line: UInt = #line)
+    {
+        XCTAssertEqual(u.substitutions[TypeVariable(id: id)], type.asAnyType(),
+            file: file, line: line)
     }
 }

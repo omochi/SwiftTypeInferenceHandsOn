@@ -30,15 +30,28 @@ public struct Unificator : CustomStringConvertible {
             return
         }
         
-        if left.type == right.type {
+        if left == right {
+            return
+        }
+        
+        if let leftFunc = left.as(type: FunctionType.self),
+            let rightFunc = right.as(type: FunctionType.self),
+            leftFunc.arguments.count == rightFunc.arguments.count
+        {
+            for (leftArg, rightArg) in zip(leftFunc.arguments, rightFunc.arguments) {
+                try unify(constraint: Constraint(left: leftArg, right: rightArg))
+            }
+            try unify(constraint: Constraint(left: leftFunc.result, right: rightFunc.result))
             return
         }
         
         throw MessageError("\(left) != \(right)")
     }
     
-    public mutating func map(_ f: (AnyType) -> AnyType) {
-        substitutions = substitutions.mapValues(f)
+    public mutating func map(_ f: (AnyType) throws -> AnyType) rethrows {
+        substitutions = try substitutions.mapValues { (t) in
+            try t.map(f)
+        }
     }
     
     public mutating func map(from: AnyType, to: AnyType) {

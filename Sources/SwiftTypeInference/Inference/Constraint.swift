@@ -17,9 +17,9 @@ public struct Constraint {
         return Constraint(left: right, right: left)
     }
     
-    public func map(_ f: (AnyType) -> AnyType) -> Constraint {
-        let left = f(self.left)
-        let right = f(self.right)
+    public func map(_ f: (AnyType) throws -> AnyType) rethrows -> Constraint {
+        let left = try self.left.map(f)
+        let right = try self.right.map(f)
         return Constraint(left: left, right: right)
     }
 }

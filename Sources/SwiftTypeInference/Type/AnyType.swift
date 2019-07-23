@@ -8,6 +8,8 @@ private class AnyTypeBoxBase : CustomStringConvertible {
     public func `is`(type: Any.Type) -> Bool { self.type == type }
     
     public func `as`<X: Type>(type: X.Type) -> X? { unimplemented() }
+    
+    public func map(_ f: (AnyType) throws -> AnyType) rethrows -> AnyType { unimplemented() }
 }
 
 private final class AnyTypeBox<X: Type> : AnyTypeBoxBase {
@@ -30,6 +32,10 @@ private final class AnyTypeBox<X: Type> : AnyTypeBoxBase {
     }
     
     public override func `as`<X : Type>(type: X.Type) -> X? { value as? X }
+    
+    public override func map(_ f: (AnyType) throws -> AnyType) rethrows -> AnyType {
+        try value.map(f)
+    }
 }
 
 public struct AnyType : Type {
@@ -50,6 +56,8 @@ public struct AnyType : Type {
     public func `as`<X: Type>(type: X.Type) -> X? { box.as(type: type) }
     
     public func asVariable() -> TypeVariable? { `as`(type: TypeVariable.self) }
+    
+    public func map(_ f: (AnyType) throws -> AnyType) rethrows -> AnyType { try box.map(f) }
 }
 
 extension Type {
