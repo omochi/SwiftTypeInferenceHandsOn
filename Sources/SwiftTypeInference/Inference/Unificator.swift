@@ -13,13 +13,13 @@ public struct Unificator : CustomStringConvertible {
         let left = constraint.left
         let right = constraint.right
         
-        if let leftVar = left.asVariable() {
+        if let leftVar = left as? TypeVariable {
             substitutions = substitutions.map(from: left, to: right)
             substitutions.items[leftVar] = right
             return
         }
         
-        if let _ = right.asVariable() {
+        if let _ = right as? TypeVariable {
             try unify(constraint: constraint.reversed())
             return
         }
@@ -28,8 +28,8 @@ public struct Unificator : CustomStringConvertible {
             return
         }
         
-        if let leftFunc = left.as(type: FunctionType.self),
-            let rightFunc = right.as(type: FunctionType.self),
+        if let leftFunc = left as? FunctionType,
+            let rightFunc = right as? FunctionType,
             leftFunc.arguments.count == rightFunc.arguments.count
         {
             for (leftArg, rightArg) in zip(leftFunc.arguments, rightFunc.arguments) {

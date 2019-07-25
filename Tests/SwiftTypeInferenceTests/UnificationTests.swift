@@ -91,11 +91,10 @@ final class UnificationTests: XCTestCase {
         assertEqualVariable(id: 5, type: IntType())
     }
     
-    private func assertEqualVariable<T: Type>(id: Int, type: T,
-                                              file: StaticString = #file, line: UInt = #line)
+    private func assertEqualVariable(id: Int, type: Type,
+                                     file: StaticString = #file, line: UInt = #line)
     {
-        XCTAssertEqual(u.substitutions.items[TypeVariable(id: id)],
-                       type.asAnyType(),
-                       file: file, line: line)
+        XCTAssertTrue(u.substitutions.items[TypeVariable(id: id)]?.equals(to: type) ?? false,
+                      file: file, line: line)
     }
 }

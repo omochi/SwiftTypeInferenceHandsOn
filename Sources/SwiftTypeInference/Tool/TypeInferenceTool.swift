@@ -23,7 +23,9 @@ public final class TypeInferenceTool {
     private func collectTypes() {
         for statement in source.statements {
             switch statement.item {
-                
+                // TODO
+            default:
+                break
             }
         }
     }

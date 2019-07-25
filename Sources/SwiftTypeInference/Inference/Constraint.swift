@@ -2,22 +2,22 @@ import Foundation
 
 // left == right
 public struct Constraint {
-    public var left: AnyType
-    public var right: AnyType
+    public var left: Type
+    public var right: Type
     
-    public init<L : Type, R : Type>(
-        left: L,
-        right: R)
+    public init(
+        left: Type,
+        right: Type)
     {
-        self.left = left.asAnyType()
-        self.right = right.asAnyType()
+        self.left = left
+        self.right = right
     }
     
     public func reversed() -> Constraint {
         return Constraint(left: right, right: left)
     }
     
-    public func map(_ f: (AnyType) throws -> AnyType) rethrows -> Constraint {
+    public func map(_ f: (Type) throws -> Type) rethrows -> Constraint {
         let left = try self.left.map(f)
         let right = try self.right.map(f)
         return Constraint(left: left, right: right)

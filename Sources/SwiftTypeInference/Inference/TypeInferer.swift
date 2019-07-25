@@ -2,7 +2,7 @@ import SwiftSyntax
 
 public final class TypeInferer {
     private var tvGen: TypeVariableGenerator = TypeVariableGenerator()
-    private var syntaxTypeMap: [SyntaxIdentifier: (syntax: Syntax, type: AnyType)] = [:]
+    private var syntaxTypeMap: [SyntaxIdentifier: (syntax: Syntax, type: Type)] = [:]
     private var unificator: Unificator = Unificator()
     
     public init() {
@@ -23,29 +23,29 @@ public final class TypeInferer {
         expression.walk(&visitor)
     }
 
-    private func bindType<T: Type>(for syntax: Syntax, type: T) {
-        syntaxTypeMap[syntax.uniqueIdentifier] = (syntax, type.asAnyType())
+    private func bindType(for syntax: Syntax, type: Type) {
+        syntaxTypeMap[syntax.uniqueIdentifier] = (syntax, type)
     }
     
-    private func type(for syntax: Syntax) -> AnyType? {
+    private func type(for syntax: Syntax) -> Type? {
         syntaxTypeMap[syntax.uniqueIdentifier]?.type
     }
     
-    private func substitutedType(for syntax: Syntax) -> AnyType? {
+    private func substitutedType(for syntax: Syntax) -> Type? {
         type(for: syntax).map { unificator.substitutions.apply(to: $0) }
     }
     
-    private func constrain<L: Type, R: Type>(_ left: L, _ right: R) throws {
+    private func constrain(_ left: Type, _ right: Type) throws {
         try unificator.unify(constraint: Constraint(left: left, right: right))
     }
     
     private func collect(binding: PatternBindingSyntax) throws {
-        func collectPattern() -> AnyType? {
+        func collectPattern() -> Type? {
             switch binding.pattern {
             case let pattern as IdentifierPatternSyntax:
                 let tv = tvGen.generate()
                 bindType(for: pattern, type: tv)
-                return tv.asAnyType()
+                return tv
             default:
                 return nil
             }
@@ -62,13 +62,13 @@ public final class TypeInferer {
         }
     }
     
-    private func collect(expr: ExprSyntax) throws -> AnyType? {
+    private func collect(expr: ExprSyntax) throws -> Type? {
         switch expr {
         case let expr as IntegerLiteralExprSyntax:
             let tv = tvGen.generate()
             bindType(for: expr, type: tv)
             try constrain(tv, IntType())
-            return tv.asAnyType()
+            return tv
         default:
             return nil
         }

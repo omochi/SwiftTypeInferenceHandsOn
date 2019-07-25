@@ -1,10 +1,10 @@
-public protocol PrimitiveType : Type {
+public protocol PrimitiveType : EquatableType {
     
 }
 
 extension PrimitiveType {
-    public func map(_ f: (AnyType) throws -> AnyType) rethrows -> AnyType {
-        try f(asAnyType())
+    public func map(_ f: (Type) throws -> Type) rethrows -> Type {
+        try f(self)
     }
 }
 
