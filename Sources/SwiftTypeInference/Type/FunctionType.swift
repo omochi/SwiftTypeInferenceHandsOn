@@ -1,4 +1,13 @@
-public struct FunctionType : Type {
+public struct FunctionType : _EquatableType, _LeafType {
+    private struct Eq : Equatable {
+        public var arguments: [TypeEquatableAdapter]
+        public var result: TypeEquatableAdapter
+        public init(_ x: FunctionType) {
+            arguments = x.arguments.map { TypeEquatableAdapter($0) }
+            result = TypeEquatableAdapter(x.result)
+        }
+    }
+    
     public var arguments: [Type]
     public var result: Type
 
@@ -9,24 +18,13 @@ public struct FunctionType : Type {
         self.result = result
     }
     
-    public init(argument: Type, result: Type) {
-        self.init(arguments: [argument], result: result)
-    }
-
     public var description: String {
         let args = arguments.map { $0.description }.joined(separator: ", ")
         return "(\(args)) -> \(result)"
     }
     
-    public func equals(to other: Type) -> Bool {
-        guard let other = other as? FunctionType,
-            self.arguments.elementsEqual(other.arguments, by: { (a, b) in a.equals(to: b) }),
-            self.result.equals(to: other.result) else
-        {
-            return false
-        }
-        
-        return true
+    public static func == (lhs: FunctionType, rhs: FunctionType) -> Bool {
+        return Eq(lhs) == Eq(rhs)
     }
     
     public func map(_ f: (Type) throws -> Type) rethrows -> Type {

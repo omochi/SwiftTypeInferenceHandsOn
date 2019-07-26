@@ -76,25 +76,29 @@ final class UnificationTests: XCTestCase {
     
     func testFuncs() throws {
         let v1 = TypeVariable(id: 1)
-        let f1 = FunctionType(argument: TypeVariable(id: 2), result: TypeVariable(id: 3))
-        let f2 = FunctionType(argument: IntType(), result: TypeVariable(id: 4))
-        let f3 = FunctionType(argument: TypeVariable(id: 5), result: StringType())
+        let f1 = FunctionType(arguments: [TypeVariable(id: 2)], result: TypeVariable(id: 3))
+        let f2 = FunctionType(arguments: [IntType()], result: TypeVariable(id: 4))
+        let f3 = FunctionType(arguments: [TypeVariable(id: 5)], result: StringType())
         
         try unify(Constraint(left: v1, right: f1))
         try unify(Constraint(left: f1, right: f2))
         try unify(Constraint(left: f2, right: f3))
         
-        assertEqualVariable(id: 1, type: FunctionType(argument: IntType(), result: StringType()))
+        assertEqualVariable(id: 1, type: FunctionType(arguments: [IntType()], result: StringType()))
         assertEqualVariable(id: 2, type: IntType())
         assertEqualVariable(id: 3, type: StringType())
         assertEqualVariable(id: 4, type: StringType())
         assertEqualVariable(id: 5, type: IntType())
     }
     
-    private func assertEqualVariable(id: Int, type: Type,
-                                     file: StaticString = #file, line: UInt = #line)
+    private func assertEqualVariable(
+        id: Int,
+        type: Type,
+        file: StaticString = #file,
+        line: UInt = #line)
     {
-        XCTAssertTrue(u.substitutions.items[TypeVariable(id: id)]?.equals(to: type) ?? false,
+        let subst = u.substitutions.items[TypeVariable(id: id)]
+        XCTAssertTrue(subst?.isEqual(type) ?? false,
                       file: file, line: line)
     }
 }

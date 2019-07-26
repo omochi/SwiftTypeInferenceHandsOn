@@ -1,14 +1,7 @@
-public protocol PrimitiveType : EquatableType {
-    
+public protocol _PrimitiveType : _EquatableType, _LeafType {
 }
 
-extension PrimitiveType {
-    public func map(_ f: (Type) throws -> Type) rethrows -> Type {
-        try f(self)
-    }
-}
-
-public struct IntType : PrimitiveType {
+public struct IntType : _PrimitiveType {
     public init() {}
     
     public var description: String {
@@ -16,7 +9,7 @@ public struct IntType : PrimitiveType {
     }
 }
 
-public struct StringType : PrimitiveType {
+public struct StringType : _PrimitiveType {
     public init() {}
     
     public var description: String {

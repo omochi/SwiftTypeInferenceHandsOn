@@ -1,6 +1,7 @@
-import Foundation
-
-public struct TypeVariable : EquatableType, Hashable {
+public struct TypeVariable :
+    _EquatableType, _LeafType,
+    Hashable
+{
     public var id: Int
     
     public init(id: Int) {
@@ -9,9 +10,5 @@ public struct TypeVariable : EquatableType, Hashable {
     
     public var description: String {
         return "$t\(id)"
-    }
-    
-    public func map(_ f: (Type) throws -> Type) rethrows -> Type {
-        try f(self)
     }
 }
