@@ -55,7 +55,7 @@ public final class TypeInferenceTool {
     private func inferTypes() throws {
         for statement in source.statements {
             //        dump(statement)
-            let inferer = TypeInferer()
+            let inferer = TypeInferer(entities: entities)
             try inferer.infer(statement: statement.item)
             print(type(of: statement))
         }
