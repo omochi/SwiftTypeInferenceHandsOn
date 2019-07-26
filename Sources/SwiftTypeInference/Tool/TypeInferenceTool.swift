@@ -28,8 +28,8 @@ public final class TypeInferenceTool {
                 case let decl as FunctionDeclSyntax:
                     let name = decl.identifier.description
                     let type = try functionDeclToType(decl)
-                    entities.functions[name] = Function(name: name,
-                                                        type: type)
+                    entities.functions.append(Function(name: name,
+                                                       type: type))
                 default:
                     break
                 }
