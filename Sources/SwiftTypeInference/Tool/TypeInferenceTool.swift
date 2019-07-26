@@ -16,26 +16,48 @@ public final class TypeInferenceTool {
     }
     
     public func run() throws {
-        collectTypes()
-        inferTypes()
+        collectEntities()
+        print(entities)
+        try inferTypes()
     }
     
-    private func collectTypes() {
+    private func collectEntities() {
         for statement in source.statements {
-            switch statement.item {
-                // TODO
-            default:
-                break
+            do {
+                switch statement.item {
+                case let decl as FunctionDeclSyntax:
+                    let name = decl.identifier.description
+                    let type = try functionDeclToType(decl)
+                    entities.functions[name] = Function(name: name,
+                                                        type: type)
+                default:
+                    break
+                }
+            } catch {
+                print(error)
             }
         }
     }
     
-    private func inferTypes() {
+    private func functionDeclToType(_ decl: FunctionDeclSyntax) throws -> FunctionType {
+        let signature = decl.signature
+        let arguments: [Type] = try signature.input.parameterList.map { (parameter) in
+            guard let type = parameter.type else {
+                throw MessageError("unsupported signature: \(signature)")
+            }
+            return try type.toType()
+        }
+        let result = try signature.output?.returnType.toType() ?? VoidType()
+        return FunctionType(arguments: arguments,
+                            result: result)
+    }
+    
+    private func inferTypes() throws {
         for statement in source.statements {
             //        dump(statement)
             let inferer = TypeInferer()
-            let statement = inferer.infer(statement: statement.item)
-            print(statement)
+            try inferer.infer(statement: statement.item)
+            print(type(of: statement))
         }
     }
 }

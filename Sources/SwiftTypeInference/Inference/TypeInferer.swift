@@ -2,29 +2,27 @@ import SwiftSyntax
 
 public final class TypeInferer {
     private var tvGen: TypeVariableGenerator = TypeVariableGenerator()
-    private var syntaxTypeMap: [SyntaxIdentifier: (syntax: Syntax, type: Type)] = [:]
+    private var syntaxTypeMap: SyntaxTypeMap = [:]
     private var unificator: Unificator = Unificator()
     
     public init() {
     }
     
-    public func infer(statement: Syntax) -> Syntax {
-        var visitor = CollectVisitor(owner: self)
-        statement.walk(&visitor)
+    public func infer(statement: Syntax) throws {
+        var collector = SyntaxTypeCollector(syntax: statement,
+                                            typeVariableGenerator: tvGen)
+        collector.collect()
         
-        print(syntax: statement)
+        try syntaxTypeMap.merge(collector.syntaxTypeMap,
+                                uniquingKeysWith: { (a, b) in
+                                    throw MessageError("syntax map conflict")
+        })
         
-        let writer = AnnotateRewriter(owner: self)
-        return writer.visit(statement)
-    }
-    
-    private func collectConstraints(expression: Syntax) {
-        var visitor = CollectVisitor(owner: self)
-        expression.walk(&visitor)
-    }
-
-    private func bindType(for syntax: Syntax, type: Type) {
-        syntaxTypeMap[syntax.uniqueIdentifier] = (syntax, type)
+        for constraint in collector.constraints {
+            try unificator.unify(constraint: constraint)
+        }
+        
+        print(syntax: statement)        
     }
     
     private func type(for syntax: Syntax) -> Type? {
@@ -33,45 +31,6 @@ public final class TypeInferer {
     
     private func substitutedType(for syntax: Syntax) -> Type? {
         type(for: syntax).map { unificator.substitutions.apply(to: $0) }
-    }
-    
-    private func constrain(_ left: Type, _ right: Type) throws {
-        try unificator.unify(constraint: Constraint(left: left, right: right))
-    }
-    
-    private func collect(binding: PatternBindingSyntax) throws {
-        func collectPattern() -> Type? {
-            switch binding.pattern {
-            case let pattern as IdentifierPatternSyntax:
-                let tv = tvGen.generate()
-                bindType(for: pattern, type: tv)
-                return tv
-            default:
-                return nil
-            }
-        }
-        
-        let t1 = collectPattern()
-        
-        if let initializer = binding.initializer {
-            if let t2 = try collect(expr: initializer.value) {
-                if let t1 = t1 {
-                    try constrain(t1, t2)
-                }
-            }
-        }
-    }
-    
-    private func collect(expr: ExprSyntax) throws -> Type? {
-        switch expr {
-        case let expr as IntegerLiteralExprSyntax:
-            let tv = tvGen.generate()
-            bindType(for: expr, type: tv)
-            try constrain(tv, IntType())
-            return tv
-        default:
-            return nil
-        }
     }
     
     private func annotate(binding: PatternBindingSyntax) -> PatternBindingSyntax {
@@ -177,35 +136,6 @@ public final class TypeInferer {
             depth += 1
             f()
             depth -= 1
-        }
-    }
-    
-    private final class CollectVisitor : SyntaxVisitorBase {
-        private let owner : TypeInferer
-        
-        public init(owner: TypeInferer) {
-            self.owner = owner
-        }
-        
-        public override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-            for binding in node.bindings {
-                // TODO
-                try! owner.collect(binding: binding)
-            }
-            
-            return .skipChildren
-        }
-    }
-    
-    private final class AnnotateRewriter : SyntaxRewriter {
-        private let owner: TypeInferer
-        
-        public init(owner: TypeInferer) {
-            self.owner = owner
-        }
-        
-        public override func visit(_ node: PatternBindingSyntax) -> Syntax {
-            return owner.annotate(binding: node)
         }
     }
 }
