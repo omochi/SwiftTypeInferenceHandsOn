@@ -12,19 +12,31 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "SwiftTypeInference",
-            dependencies: ["SwiftSyntax"]
+            name: "SwiftcBasic",
+            dependencies: []
+        ),
+        .target(
+            name: "SwiftcType",
+            dependencies: ["SwiftcBasic"]
+        ),
+        .target(
+            name: "SwiftcAST",
+            dependencies: ["SwiftcBasic", "SwiftcType"]
+        ),
+        .target(
+            name: "SwiftcSema",
+            dependencies: ["SwiftcBasic", "SwiftcType"]
         ),
         .target(
             name: "infer",
-            dependencies: ["SwiftTypeInference"],
+            dependencies: ["SwiftcSema"],
             linkerSettings: [
                 .unsafeFlags(["-rpath", rpath])
             ]
         ),
         .testTarget(
             name: "SwiftTypeInferenceTests",
-            dependencies: ["SwiftTypeInference"],
+            dependencies: ["SwiftcSema"],
             linkerSettings: [
                 .unsafeFlags(["-rpath", rpath])
             ]

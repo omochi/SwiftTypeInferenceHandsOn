@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftcType
 
 public struct Function : CustomStringConvertible {
     public var name: String

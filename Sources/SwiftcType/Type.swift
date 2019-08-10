@@ -1,4 +1,5 @@
 import Foundation
+import SwiftcBasic
 
 public protocol Type : CustomStringConvertible {
     func isEqual(_ other: Type) -> Bool
