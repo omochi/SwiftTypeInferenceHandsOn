@@ -18,7 +18,7 @@ extension _EquatableType {
         guard let other = other as? Self else {
             return false
         }
-        return Equatables.isEqual(self, other)
+        return ExplicitDispatch.isEqual(self, other)
     }
 }
 

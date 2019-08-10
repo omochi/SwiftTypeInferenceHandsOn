@@ -1,4 +1,4 @@
-public struct TypeEquatableAdapter : Equatable {
+public struct TypeEquatableAdapter : Equatable, CustomStringConvertible {
     private var value: Type
     
     public init(_ value: Type) {
@@ -8,6 +8,14 @@ public struct TypeEquatableAdapter : Equatable {
     public static func ==(a: TypeEquatableAdapter,
                           b: TypeEquatableAdapter) -> Bool
     {
-        return a.value == b.value
+        a.value == b.value
+    }
+
+    public var description: String { value.description }
+}
+
+extension Type {
+    public func wrapInEquatable() -> TypeEquatableAdapter {
+        TypeEquatableAdapter(self)
     }
 }

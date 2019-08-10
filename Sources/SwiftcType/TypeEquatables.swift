@@ -10,7 +10,8 @@ public func ==(a: Type?, b: Type?) -> Bool {
 }
 
 public func ==<S: Sequence>(a: S, b: S) -> Bool
-    where S.Element == (Type)
+    where S.Element == Type
 {
     a.elementsEqual(b) { (a, b) in a == b }
 }
+

@@ -1,10 +1,18 @@
 import Foundation
+import SwiftcBasic
 import SwiftcType
 
 public final class ConstraintSystem {
-    public enum MatchResult {
-        case success
+    public enum SolveResult {
+        case solved
         case failure
+        case ambiguous
+    }
+    
+    public struct MatchOptions {
+        public var generateConstraintsForUnsolvable: Bool = false
+        
+        public init() {}
     }
     
     public private(set) var typeVariables: [TypeVariable] = []
@@ -25,12 +33,27 @@ public final class ConstraintSystem {
     }
     
     public func addConstraint(_ constraint: Constraint) {
-        switch constraint {
-        case .bind(left: let left, right: let right):
-            matchTypes(left: left, right: right, kind: constraint.kind)
+        switch _addConstraint(constraint) {
+        case .solved:
+            break
+        case .failure:
+            break
+        case .ambiguous:
+            fatalError("addConstraint forbids ambiguous")
         }
     }
     
+    private func _addConstraint(_ constraint: Constraint) -> SolveResult {
+        var options = MatchOptions()
+        options.generateConstraintsForUnsolvable = true
+        switch constraint {
+        case .bind(left: let left, right: let right):
+            return matchTypes(left: left,
+                              right: right,
+                              kind: constraint.kind,
+                              options: options)
+        }
+    }
     
     public func fixed(for type: Type) -> Type? {
         if let type = type as? TypeVariable {
@@ -67,19 +90,21 @@ public final class ConstraintSystem {
         if type1 > type2 {
             swap(&type1, &type2)
         }
-       
-        type1.equivalentTypeVariables += type2.equivalentTypeVariables
-        type2.equivalentTypeVariables.removeAll()
+        
+        let news = [type2] + type2.equivalentTypeVariables
+        type1.equivalentTypeVariables += news
         type1.equivalentTypeVariables.sort()
         
-        
-    
+        for t in news {
+            t.representative = type1
+            t.equivalentTypeVariables.removeAll()
+        }
     }
-    
 
     public func matchTypes(left: Type,
                            right: Type,
-                           kind: Constraint.Kind) -> MatchResult
+                           kind: Constraint.Kind,
+                           options: MatchOptions) -> SolveResult
     {
         let left = fixedOrRepresentative(for: left)
         let right = fixedOrRepresentative(for: right)
@@ -113,23 +138,31 @@ public final class ConstraintSystem {
     
     private func _matchTypeVariables(left: TypeVariable,
                                      right: TypeVariable,
-                                     kind: Constraint.Kind) -> MatchResult
+                                     kind: Constraint.Kind) -> SolveResult
     {
+        precondition(left.isRepresentative)
+        precondition(right.isRepresentative)
+        
         if left == right {
-            return .success
+            return .solved
         }
         
         switch kind {
         case .bind:
             mergeEquivalence(type1: left, type2: right)
-            return .success
+            return .solved
         }
     }
     
     private func _matchTypeVariableAndFixedType(typeVariable: TypeVariable,
                                                 fixedType: Type,
-                                                kind: Constraint.Kind) -> MatchResult
+                                                kind: Constraint.Kind) -> SolveResult
     {
-        fatalError()
+        precondition(typeVariable.isRepresentative)
+        
+        switch kind {
+        case .bind:
+            if typeVariable.occurs(in: fixedType)
+        }
     }
 }

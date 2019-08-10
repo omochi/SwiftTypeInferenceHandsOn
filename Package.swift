@@ -28,6 +28,10 @@ let package = Package(
             dependencies: ["SwiftcBasic", "SwiftcType"]
         ),
         .target(
+            name: "SwiftcTest",
+            dependencies: ["SwiftcBasic", "SwiftcType"]
+        ),
+        .target(
             name: "infer",
             dependencies: ["SwiftcSema"],
             linkerSettings: [
@@ -36,7 +40,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SwiftTypeInferenceTests",
-            dependencies: ["SwiftcSema"],
+            dependencies: ["SwiftcTest", "SwiftcSema"],
             linkerSettings: [
                 .unsafeFlags(["-rpath", rpath])
             ]
