@@ -10,8 +10,7 @@ public func ==(a: Type, b: Type) -> Bool {
     return a.isEqual(b)
 }
 
-public protocol _EquatableType : Type, Equatable {
-}
+public protocol _EquatableType : Type, Equatable {}
 
 extension _EquatableType {
     public func isEqual(_ other: Type) -> Bool {
@@ -22,8 +21,7 @@ extension _EquatableType {
     }
 }
 
-public protocol _LeafType : Type {
-}
+public protocol _LeafType : Type {}
 
 extension _LeafType {
     public func map(_ f: (Type) throws -> Type) rethrows -> Type {
