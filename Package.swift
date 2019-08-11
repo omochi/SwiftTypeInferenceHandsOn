@@ -21,7 +21,7 @@ let package = Package(
         ),
         .target(
             name: "SwiftcAST",
-            dependencies: ["SwiftcBasic", "SwiftcType"]
+            dependencies: ["SwiftSyntax", "SwiftcBasic", "SwiftcType"]
         ),
         .target(
             name: "SwiftcSema",
@@ -32,8 +32,8 @@ let package = Package(
             dependencies: ["SwiftcBasic", "SwiftcType"]
         ),
         .target(
-            name: "infer",
-            dependencies: ["SwiftcSema"],
+            name: "swsc",
+            dependencies: ["SwiftcAST", "SwiftcSema"],
             linkerSettings: [
                 .unsafeFlags(["-rpath", rpath])
             ]

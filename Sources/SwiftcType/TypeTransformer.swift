@@ -20,9 +20,9 @@ public final class TypeTransformer : TypeVisitor {
     }
     
     public func visitFunctionType(_ type: FunctionType) -> Type {
-        let arg = process(type: type.argument)
+        let arg = process(type: type.parameter)
         let ret = process(type: type.result)
-        return FunctionType(argument: arg, result: ret)
+        return FunctionType(parameter: arg, result: ret)
     }
     
     public func visitTypeVariable(_ type: _TypeVariable) -> Type {

@@ -1,25 +1,25 @@
 public struct FunctionType : _EquatableType {
     private struct Eq : Equatable {
-        public var argument: TypeEquatableAdapter
+        public var parameter: TypeEquatableAdapter
         public var result: TypeEquatableAdapter
         public init(_ x: FunctionType) {
-            argument = x.argument.wrapInEquatable()
+            parameter = x.parameter.wrapInEquatable()
             result = x.result.wrapInEquatable()
         }
     }
     
-    public var argument: Type
+    public var parameter: Type
     public var result: Type
 
-    public init(argument: Type,
+    public init(parameter: Type,
                 result: Type)
     {
-        self.argument = argument
+        self.parameter = parameter
         self.result = result
     }
     
     public var description: String {
-        "(\(argument)) -> \(result)"
+        "(\(parameter)) -> \(result)"
     }
     
     public static func == (lhs: FunctionType, rhs: FunctionType) -> Bool {

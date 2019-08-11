@@ -1,4 +1,4 @@
-let a = 3
+let a: Int = 3
 
 func f(_ g: (Int) -> Void) { }
 

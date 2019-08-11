@@ -11,8 +11,8 @@ final class ConstraintSystemTests: XCTestCase {
         let t3 = cs.createTypeVariable()
         
         // (T1) -> (T2) -> (T3)
-        let tf = FunctionType(argument: t1,
-                              result: FunctionType(argument: t2,
+        let tf = FunctionType(parameter: t1,
+                              result: FunctionType(parameter: t2,
                                                    result: t3))
         
         XCTAssertEqual(tf.typeVariables, [t1, t2, t3])
@@ -113,8 +113,8 @@ final class ConstraintSystemTests: XCTestCase {
         let ts = PrimitiveType.string
         
         // (T1) -> T2  :bind:  (Int) -> String
-        cs.addConstraint(.bind(left: FunctionType(argument: t1, result: t2),
-                               right: FunctionType(argument: ti, result: ts)))
+        cs.addConstraint(.bind(left: FunctionType(parameter: t1, result: t2),
+                               right: FunctionType(parameter: ti, result: ts)))
         XCTAssertEqual(cs.simplify(type: t1), ti)
         XCTAssertEqual(cs.simplify(type: t2), ts)
     }
@@ -129,13 +129,13 @@ final class ConstraintSystemTests: XCTestCase {
         
         // T1              :bind:   (Int) -> T3
         cs.addConstraint(.bind(left: t1,
-                               right: FunctionType(argument: ti, result: t3)))
+                               right: FunctionType(parameter: ti, result: t3)))
         
         // (T2) -> String  :bind:   T1
-        cs.addConstraint(.bind(left: FunctionType(argument: t2, result: ts),
+        cs.addConstraint(.bind(left: FunctionType(parameter: t2, result: ts),
                                right: t1))
         
-        XCTAssertEqual(cs.simplify(type: t1), FunctionType(argument: ti, result: ts))
+        XCTAssertEqual(cs.simplify(type: t1), FunctionType(parameter: ti, result: ts))
         XCTAssertEqual(cs.simplify(type: t2), ti)
         XCTAssertEqual(cs.simplify(type: t3), ts)
     }
@@ -151,13 +151,13 @@ final class ConstraintSystemTests: XCTestCase {
         let ts = PrimitiveType.string
         
         // T1 :bind: (T2) -> T3
-        cs.addConstraint(.bind(left: t1, right: FunctionType(argument: t2, result: t3)))
+        cs.addConstraint(.bind(left: t1, right: FunctionType(parameter: t2, result: t3)))
         
         // T4 :bind: (Int) -> Int
-        cs.addConstraint(.bind(left: t4, right: FunctionType(argument: ti, result: ti)))
+        cs.addConstraint(.bind(left: t4, right: FunctionType(parameter: ti, result: ti)))
         
         // T5 :bind: (String) -> String
-        cs.addConstraint(.bind(left: t5, right: FunctionType(argument: ts, result: ts)))
+        cs.addConstraint(.bind(left: t5, right: FunctionType(parameter: ts, result: ts)))
                 
         // T2 :bind: T4
         cs.addConstraint(.bind(left: t2, right: t4))
@@ -168,14 +168,14 @@ final class ConstraintSystemTests: XCTestCase {
         
         XCTAssertEqual(cs.simplify(type: t1),
                        FunctionType(
-                        argument: FunctionType(argument: ti, result: ti),
-                        result: FunctionType(argument: ts, result: ts))
+                        parameter: FunctionType(parameter: ti, result: ti),
+                        result: FunctionType(parameter: ts, result: ts))
         )
         
-        XCTAssertEqual(cs.simplify(type: t2), FunctionType(argument: ti, result: ti))
-        XCTAssertEqual(cs.simplify(type: t3), FunctionType(argument: ts, result: ts))
-        XCTAssertEqual(cs.simplify(type: t4), FunctionType(argument: ti, result: ti))
-        XCTAssertEqual(cs.simplify(type: t5), FunctionType(argument: ts, result: ts))
+        XCTAssertEqual(cs.simplify(type: t2), FunctionType(parameter: ti, result: ti))
+        XCTAssertEqual(cs.simplify(type: t3), FunctionType(parameter: ts, result: ts))
+        XCTAssertEqual(cs.simplify(type: t4), FunctionType(parameter: ti, result: ti))
+        XCTAssertEqual(cs.simplify(type: t5), FunctionType(parameter: ts, result: ts))
     }
 
 }

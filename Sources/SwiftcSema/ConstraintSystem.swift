@@ -196,8 +196,8 @@ public final class ConstraintSystem {
                                     kind: Constraint.Kind,
                                     options: MatchOptions) -> SolveResult
     {
-        let arg1 = type1.argument
-        let arg2 = type2.argument
+        let arg1 = type1.parameter
+        let arg2 = type2.parameter
         
         let ret1 = type1.result
         let ret2 = type2.result

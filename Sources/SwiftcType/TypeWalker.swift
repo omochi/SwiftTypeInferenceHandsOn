@@ -55,7 +55,7 @@ public final class TypeWalker : TypeVisitor {
     }
     
     public func visitFunctionType(_ type: FunctionType) -> Action {
-        switch process(type: type.argument) {
+        switch process(type: type.parameter) {
         case .continue: break
         case .stop: return .stop
         }
