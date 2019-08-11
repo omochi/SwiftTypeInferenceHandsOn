@@ -32,6 +32,10 @@ let package = Package(
             dependencies: ["SwiftcBasic", "SwiftcType"]
         ),
         .target(
+            name: "SwiftCompiler",
+            dependencies: ["SwiftcAST", "SwiftcSema"]
+        ),
+        .target(
             name: "swsc",
             dependencies: ["SwiftcAST", "SwiftcSema"],
             linkerSettings: [

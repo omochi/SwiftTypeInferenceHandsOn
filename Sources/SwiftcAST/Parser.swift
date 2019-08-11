@@ -32,6 +32,9 @@ public final class Parser {
             case let syn as FunctionDeclSyntax:
                 let decl = try parse(syn)
                 statements.append(decl)
+            case let syn as ExprSyntax:
+                let expr = try parse(expr: syn)
+                statements.append(expr)
             default:
                 break
             }
@@ -94,9 +97,20 @@ public final class Parser {
     
     private func parse(expr: ExprSyntax) throws -> ASTNode {
         switch expr {
+        case let expr as IdentifierExprSyntax:
+            let name = expr.identifier.text
+            return UnresolvedDeclRefExpr(name: name)
         case let expr as IntegerLiteralExprSyntax:
             _ = expr
             return IntegerLiteralExpr()
+        case let expr as FunctionCallExprSyntax:
+            let callee = try parse(expr: expr.calledExpression)
+            let synArgList = expr.argumentList.map { $0 }
+            guard synArgList.count == 1 else {
+                throw MessageError("arg num must be 1")
+            }
+            let arg = try parse(expr: synArgList[0].expression)
+            return CallExpr(callee: callee, argument: arg)            
         default:
             throw unsupportedSyntaxError(expr)
         }
