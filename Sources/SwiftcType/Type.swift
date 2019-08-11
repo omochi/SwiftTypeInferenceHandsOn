@@ -3,8 +3,6 @@ import SwiftcBasic
 
 public protocol Type : CustomStringConvertible {
     func isEqual(_ other: Type) -> Bool
-    
-    func map(_ f: (Type) throws -> Type) rethrows -> Type
 }
 
 public func ==(a: Type, b: Type) -> Bool {
@@ -19,13 +17,5 @@ extension _EquatableType {
             return false
         }
         return ExplicitDispatch.isEqual(self, other)
-    }
-}
-
-public protocol _LeafType : Type {}
-
-extension _LeafType {
-    public func map(_ f: (Type) throws -> Type) rethrows -> Type {
-        try f(self)
     }
 }

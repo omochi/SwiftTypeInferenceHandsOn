@@ -1,4 +1,4 @@
-public struct FunctionType : _EquatableType, _LeafType {
+public struct FunctionType : _EquatableType {
     private struct Eq : Equatable {
         public var argument: TypeEquatableAdapter
         public var result: TypeEquatableAdapter
@@ -24,13 +24,5 @@ public struct FunctionType : _EquatableType, _LeafType {
     
     public static func == (lhs: FunctionType, rhs: FunctionType) -> Bool {
          Eq(lhs) == Eq(rhs)
-    }
-    
-    public func map(_ f: (Type) throws -> Type) rethrows -> Type {
-        let argument = try self.argument.map(f)
-        let result = try self.result.map(f)
-        let ft = FunctionType(argument: argument,
-                              result: result)
-        return try f(ft)
     }
 }

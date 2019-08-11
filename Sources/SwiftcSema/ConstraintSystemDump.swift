@@ -2,23 +2,44 @@ import SwiftcBasic
 
 extension ConstraintSystem {
     public func dump() {
-        var pr = Printer()
-        pr.println("TypeVariables")
-        
-        for tv in typeVariables {
-            pr.println(tv.description)
-            pr.nest { (pr) in
-                if tv.isRepresentative {
-                    pr.print("eqs: ")
-                    pr.println(tv.equivalentTypeVariables.map { $0.description })
+        let pr = Printer()
+        pr.println("typeVariables")
+        pr.nest {
+            for tv in typeVariables {
+                pr.println(tv.description)
+                pr.nest {
+                    if tv.isRepresentative(bindings: bindings) {
+                        var eqs = tv.equivalentTypeVariables(bindings: bindings)
+                        eqs.remove(tv)
+                        if !eqs.isEmpty {
+                            pr.print("eqs: ")
+                            pr.println(eqs.sorted().map { $0.description })
+                        }
+                    } else {
+                        pr.println("eq to \(tv.representative(bindings: bindings))")
+                    }
                     
-                    pr.println("fixed: " + (fixed(for: tv)?.description ?? "nil"))
-                } else {
-                    pr.println("eq to \(tv.representative)")
-                    pr.println("fixed: " + (fixed(for: tv)?.description ?? "nil"))
+                    pr.print("fixed: ")
+                    pr.println(tv.fixedType(bindings: bindings)?.description ?? "nil")
                 }
             }
-            pr.ln()
         }
+        
+        if let con = failedConstraint {
+            pr.println("failedConstraint")
+            pr.nest {
+                dump(constraint: con, printer: pr)
+            }
+        }
+    }
+    
+    public func dump(constraint: Constraint, printer pr: Printer) {
+        if constraint.isActive {
+            pr.print("* ")
+        } else {
+            pr.print("- ")
+        }
+        
+        pr.println(constraint.descriptor.description)
     }
 }

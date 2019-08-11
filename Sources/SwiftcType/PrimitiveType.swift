@@ -1,4 +1,4 @@
-public struct PrimitiveType : _EquatableType, _LeafType {
+public struct PrimitiveType : _EquatableType {
     public var name: String
     
     public init(name: String) {

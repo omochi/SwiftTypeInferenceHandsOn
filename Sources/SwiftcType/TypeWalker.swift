@@ -1,6 +1,6 @@
 import Foundation
 
-open class TypeWalker : TypeVisitor {
+public final class TypeWalker : TypeVisitor {
     public enum PreAction {
         case `continue`
         case skipChildren
@@ -14,16 +14,19 @@ open class TypeWalker : TypeVisitor {
 
     public typealias VisitResult = Action
     
-    open func preWalk(type: Type) -> PreAction {
-        .continue
-    }
+    public let preWalk: (Type) -> PreAction
+    public let postWalk: (Type) -> Action
     
-    open func postWalk(type: Type) -> Action {
-        .continue
+    public init(
+        preWalk: @escaping (Type) -> PreAction,
+        postWalk: @escaping (Type) -> Action
+    ) {
+        self.preWalk = preWalk
+        self.postWalk = postWalk
     }
-    
+  
     fileprivate func process(type: Type) -> Action {
-        switch preWalk(type: type) {
+        switch preWalk(type) {
         case .continue:
             break
         case .skipChildren:
@@ -39,7 +42,7 @@ open class TypeWalker : TypeVisitor {
             return .stop
         }
         
-        switch postWalk(type: type) {
+        switch postWalk(type) {
         case .continue:
             return .continue
         case .stop:
@@ -66,7 +69,34 @@ open class TypeWalker : TypeVisitor {
 }
 
 extension Type {
-    public func walk(_ walker: TypeWalker) -> TypeWalker.Action {
-        walker.process(type: self)
+    public func walk(preWalk: (Type) -> TypeWalker.PreAction = { (_) in .continue },
+                     postWalk: (Type) -> TypeWalker.Action = { (_) in .continue })
+        -> TypeWalker.Action
+    {
+        withoutActuallyEscaping(preWalk) { (preWalk) in
+            withoutActuallyEscaping(postWalk) { (postWalk) in
+                let walker = TypeWalker(preWalk: preWalk,
+                                        postWalk: postWalk)
+                return walker.process(type: self)
+            }
+        }
+    }
+    
+    /**
+     型を巡回してpredを満たすものがあればtrueを返す。
+     predは親が先に呼び出される。
+     */
+    public func find(_ pred: (Type) -> Bool) -> Bool {
+        func preWalk(type: Type) -> TypeWalker.PreAction {
+            if pred(type) {
+                return .stop
+            }
+            return .continue
+        }
+
+        switch walk(preWalk: preWalk) {
+        case .continue: return false
+        case .stop: return true
+        }
     }
 }

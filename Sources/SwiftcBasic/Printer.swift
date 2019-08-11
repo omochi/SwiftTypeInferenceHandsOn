@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Printer {
+public final class Printer {
     public var depth: Int
     public var needsIndent: Bool
     
@@ -9,21 +9,21 @@ public struct Printer {
         self.needsIndent = true
     }
     
-    public mutating func push() {
+    public func push() {
         depth += 1
     }
     
-    public mutating func pop() {
+    public func pop() {
         depth -= 1
     }
     
-    public mutating func nest(_ f: (inout Printer) throws -> Void) rethrows {
+    public func nest(_ f: () throws -> Void) rethrows {
         push()
         defer { pop() }
-        try f(&self)
+        try f()
     }
     
-    public mutating func print(_ message: String, newLine: Bool = false) {
+    public func print(_ message: String, newLine: Bool = false) {
         if (needsIndent) {
             needsIndent = false
             printRaw(String(repeating: "  ", count: depth))
@@ -35,19 +35,19 @@ public struct Printer {
         }
     }
 
-    public mutating func println(_ message: String) {
+    public func println(_ message: String) {
         print(message, newLine: true)
     }
     
-    public mutating func print(_ items: [String], separator: String = ", ", newLine: Bool = false) {
+    public func print(_ items: [String], separator: String = ", ", newLine: Bool = false) {
         print(items.joined(separator: separator), newLine: newLine)
     }
     
-    public mutating func println(_ items: [String], separator: String = ", ") {
+    public func println(_ items: [String], separator: String = ", ") {
         print(items, separator: separator, newLine: true)
     }
     
-    public mutating func ln() {
+    public func ln() {
         print("", newLine: true)
     }
     

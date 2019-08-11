@@ -2,7 +2,6 @@ import SwiftcBasic
 
 open class _TypeVariable :
     _EquatableType,
-    _LeafType,
     Hashable,
     Comparable
 {
