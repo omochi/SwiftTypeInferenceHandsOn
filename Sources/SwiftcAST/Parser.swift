@@ -21,26 +21,32 @@ public final class Parser {
     }
     
     private func parse(_ source: SourceFileSyntax) throws -> SourceFile {
-        var statements: [ASTNode] = []
+        let stmts = try parse(source.statements)
+
+        return SourceFile(statements: stmts)
+    }
+    
+    private func parse(_ synStmts: CodeBlockItemListSyntax) throws -> [ASTNode] {
+        var stmts: [ASTNode] = []
         
-        for syn in source.statements {
+        for syn in synStmts {
             switch syn.item {
             case let syn as VariableDeclSyntax:
                 for decl in try parse(syn) {
-                    statements.append(decl)
+                    stmts.append(decl)
                 }
             case let syn as FunctionDeclSyntax:
                 let decl = try parse(syn)
-                statements.append(decl)
+                stmts.append(decl)
             case let syn as ExprSyntax:
                 let expr = try parse(expr: syn)
-                statements.append(expr)
+                stmts.append(expr)
             default:
                 break
             }
         }
         
-        return SourceFile(statements: statements)
+        return stmts
     }
     
     private func parse(_ varDecl: VariableDeclSyntax) throws -> [VariableDecl] {
@@ -110,10 +116,35 @@ public final class Parser {
                 throw MessageError("arg num must be 1")
             }
             let arg = try parse(expr: synArgList[0].expression)
-            return CallExpr(callee: callee, argument: arg)            
+            return CallExpr(callee: callee, argument: arg)
+        case let expr as ClosureExprSyntax:
+            return try parse(expr)
         default:
             throw unsupportedSyntaxError(expr)
         }
+    }
+    
+    private func parse(_ expr: ClosureExprSyntax) throws -> ClosureExpr {
+        guard let sig = expr.signature,
+            let synParamClause = sig.input as? ParameterClauseSyntax,
+            let synParamList = .some(synParamClause.parameterList.map { $0 }),
+            synParamList.count == 1 else {
+                throw MessageError("param num must be 1")
+        }
+        let synParam = synParamList[0]
+        guard let paramName = synParam.firstName?.text else {
+            throw MessageError("param needs name")
+        }
+        let paramDecl = VariableDecl(name: paramName,
+                                     initializer: nil,
+                                     typeAnnotation: try synParam.type.map { try parse(type: $0) })
+        let stmts = try parse(expr.statements)
+        guard stmts.count == 1 else {
+            throw MessageError("closure statements num must be 1")
+        }
+        let body = stmts[0]
+        return ClosureExpr(parameter: paramDecl,
+                           expression: body)
     }
     
     private func parse(type: TypeSyntax) throws -> Type {
@@ -135,6 +166,6 @@ public final class Parser {
     }
     
     private func unsupportedSyntaxError(_ syntax: Syntax) -> MessageError {
-        return MessageError("unsupported syntax: [\(syntax)]")
+        return MessageError("unsupported syntax: \(type(of: syntax)), \(syntax)")
     }
 }
