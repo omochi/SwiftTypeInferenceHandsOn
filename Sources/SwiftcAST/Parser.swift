@@ -23,7 +23,8 @@ public final class Parser {
     private func parse(_ source: SourceFileSyntax) throws -> SourceFile {
         let stmts = try parse(source.statements)
 
-        return SourceFile(statements: stmts)
+        return SourceFile(statements: stmts,
+                          sourceRange: source.position..<source.endPosition)
     }
     
     private func parse(_ synStmts: CodeBlockItemListSyntax) throws -> [ASTNode] {
@@ -64,7 +65,8 @@ public final class Parser {
                 }
                 let decl = VariableDecl(name: name,
                                         initializer: initializer,
-                                        typeAnnotation: type)
+                                        typeAnnotation: type,
+                                        sourceRange: ident.position..<ident.endPosition)
                 decls.append(decl)
             default:
                 break
@@ -98,17 +100,19 @@ public final class Parser {
         }
         return FunctionDecl(name: name,
                             parameterType: param,
-                            resultType: result)
+                            resultType: result,
+                            sourceRange: funcDecl.position..<funcDecl.endPosition)
     }
     
     private func parse(expr: ExprSyntax) throws -> ASTNode {
         switch expr {
         case let expr as IdentifierExprSyntax:
             let name = expr.identifier.text
-            return UnresolvedDeclRefExpr(name: name)
+            return UnresolvedDeclRefExpr(name: name,
+                                         sourceRange: expr.position..<expr.endPosition)
         case let expr as IntegerLiteralExprSyntax:
             _ = expr
-            return IntegerLiteralExpr()
+            return IntegerLiteralExpr(sourceRange: expr.position..<expr.endPosition)
         case let expr as FunctionCallExprSyntax:
             let callee = try parse(expr: expr.calledExpression)
             let synArgList = expr.argumentList.map { $0 }
@@ -116,7 +120,9 @@ public final class Parser {
                 throw MessageError("arg num must be 1")
             }
             let arg = try parse(expr: synArgList[0].expression)
-            return CallExpr(callee: callee, argument: arg)
+            return CallExpr(callee: callee,
+                            argument: arg,
+                            sourceRange: expr.position..<expr.endPosition)
         case let expr as ClosureExprSyntax:
             return try parse(expr)
         default:
@@ -137,14 +143,16 @@ public final class Parser {
         }
         let paramDecl = VariableDecl(name: paramName,
                                      initializer: nil,
-                                     typeAnnotation: try synParam.type.map { try parse(type: $0) })
+                                     typeAnnotation: try synParam.type.map { try parse(type: $0) },
+                                     sourceRange: expr.position..<expr.endPosition)
         let stmts = try parse(expr.statements)
         guard stmts.count == 1 else {
             throw MessageError("closure statements num must be 1")
         }
         let body = stmts[0]
         return ClosureExpr(parameter: paramDecl,
-                           expression: body)
+                           expression: body,
+                           sourceRange: expr.position..<expr.endPosition)
     }
     
     private func parse(type: TypeSyntax) throws -> Type {

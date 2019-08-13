@@ -25,7 +25,7 @@ let package = Package(
         ),
         .target(
             name: "SwiftcSema",
-            dependencies: ["SwiftcBasic", "SwiftcType"]
+            dependencies: ["SwiftcBasic", "SwiftcType", "SwiftcAST"]
         ),
         .target(
             name: "SwiftcTest",

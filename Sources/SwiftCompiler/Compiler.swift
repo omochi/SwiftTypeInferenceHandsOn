@@ -14,6 +14,6 @@ public final class Compiler {
     }
     
     public func typeCheck() {
-        let checker = TypeChecker()
+        let checker = TypeChecker(source: source!)
     }
 }
