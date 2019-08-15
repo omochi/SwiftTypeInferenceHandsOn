@@ -9,4 +9,12 @@ public final class ClosureExpr : ASTContextNode {
         self.parentContext = parentContext
         self.parameter = parameter
     }
+    
+    public func replaceBody(old: ASTNode, new: ASTNode) {
+        guard old !== new else { return }
+        
+        if let index = (body.firstIndex { $0 === old }) {
+            body[index] = new
+        }
+    }
 }

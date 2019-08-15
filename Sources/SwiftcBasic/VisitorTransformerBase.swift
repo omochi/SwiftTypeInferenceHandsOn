@@ -1,5 +1,3 @@
-import SwiftcBasic
-
 public protocol VisitorTransformerBase : VisitorProtocol
     where VisitResult == VisitTarget
 {

@@ -1,9 +1,9 @@
 import SwiftcBasic
 
-public protocol ASTVisitor {
+public protocol ASTVisitor : VisitorProtocol {
     associatedtype VisitResult
     
-    func visit(node: ASTNode) -> VisitResult
+    func visit(_ node: ASTNode) -> VisitResult
     
     func visitSourceFile(_ node: SourceFile) -> VisitResult
     func visitFunctionDecl(_ node: FunctionDecl) -> VisitResult
@@ -15,7 +15,7 @@ public protocol ASTVisitor {
 }
 
 extension ASTVisitor {
-    public func visit(node: ASTNode) -> VisitResult {
+    public func visit(_ node: ASTNode) -> VisitResult {
         switch node {
         case let n as SourceFile:
             return visitSourceFile(n)

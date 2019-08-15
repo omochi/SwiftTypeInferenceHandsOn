@@ -32,7 +32,10 @@ public final class Parser {
     private func parse(_ source: SourceFileSyntax) throws -> SourceFile {
         let sourceFile = SourceFile()
         try scope(context: sourceFile) {
-            sourceFile.statements = try parse(source.statements)
+            let statements = try parse(source.statements)
+            for st in statements {
+                sourceFile.addStatement(st)
+            }
         }
         return sourceFile
     }
