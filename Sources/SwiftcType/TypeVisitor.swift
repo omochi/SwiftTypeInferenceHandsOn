@@ -1,18 +1,13 @@
-import Foundation
 import SwiftcBasic
 
-public protocol TypeVisitor {
-    associatedtype VisitResult
-    
-    func visit(type: Type) -> VisitResult
-  
+public protocol TypeVisitor : VisitorProtocol where VisitTarget == Type {
     func visitPrimitiveType(_ type: PrimitiveType) -> VisitResult
     func visitFunctionType(_ type: FunctionType) -> VisitResult
     func visitTypeVariable(_ type: _TypeVariable) -> VisitResult
 }
 
 extension TypeVisitor {
-    public func visit(type: Type) -> VisitResult {
+    public func visit(_ type: Type) -> VisitResult {
         switch type {
         case let t as PrimitiveType:
             return visitPrimitiveType(t)

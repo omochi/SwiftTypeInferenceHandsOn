@@ -1,17 +1,7 @@
-import Foundation
+import SwiftcBasic
 
-public final class TypeWalker : TypeVisitor {
-    public enum PreAction {
-        case `continue`
-        case skipChildren
-        case stop
-    }
-    
-    public enum Action {
-        case `continue`
-        case stop
-    }
-
+public final class TypeWalker : VisitorWalkerBase, TypeVisitor {
+    public typealias VisitTarget = Type
     public typealias VisitResult = Action
     
     public let preWalk: (Type) -> PreAction
@@ -24,43 +14,23 @@ public final class TypeWalker : TypeVisitor {
         self.preWalk = preWalk
         self.postWalk = postWalk
     }
-  
-    fileprivate func process(type: Type) -> Action {
-        switch preWalk(type) {
-        case .continue:
-            break
-        case .skipChildren:
-            return .continue
-        case .stop:
-            return .stop
-        }
-        
-        switch visit(type: type) {
-        case .continue:
-            break
-        case .stop:
-            return .stop
-        }
-        
-        switch postWalk(type) {
-        case .continue:
-            return .continue
-        case .stop:
-            return .stop
-        }
-    }
     
     public func visitPrimitiveType(_ type: PrimitiveType) -> Action {
         .continue
     }
     
     public func visitFunctionType(_ type: FunctionType) -> Action {
-        switch process(type: type.parameter) {
+        switch process(type.parameter) {
         case .continue: break
         case .stop: return .stop
         }
         
-        return process(type: type.result) 
+        switch process(type.result) {
+        case .continue: break
+        case .stop: return .stop
+        }
+        
+        return .continue
     }
     
     public func visitTypeVariable(_ type: _TypeVariable) -> Action {
@@ -69,15 +39,15 @@ public final class TypeWalker : TypeVisitor {
 }
 
 extension Type {
-    public func walk(preWalk: (Type) -> TypeWalker.PreAction = { (_) in .continue },
-                     postWalk: (Type) -> TypeWalker.Action = { (_) in .continue })
-        -> TypeWalker.Action
+    public func walk(preWalk: (Type) -> WalkerPreAction = { (_) in .continue },
+                     postWalk: (Type) -> WalkerAction = { (_) in .continue })
+        -> WalkerAction
     {
         withoutActuallyEscaping(preWalk) { (preWalk) in
             withoutActuallyEscaping(postWalk) { (postWalk) in
                 let walker = TypeWalker(preWalk: preWalk,
                                         postWalk: postWalk)
-                return walker.process(type: self)
+                return walker.process(self)
             }
         }
     }
@@ -87,7 +57,7 @@ extension Type {
      predは親が先に呼び出される。
      */
     public func find(_ pred: (Type) -> Bool) -> Bool {
-        func preWalk(type: Type) -> TypeWalker.PreAction {
+        func preWalk(type: Type) -> WalkerPreAction {
             if pred(type) {
                 return .stop
             }
