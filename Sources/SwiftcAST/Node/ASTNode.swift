@@ -1,5 +1,2 @@
-import SwiftSyntax
-
-public protocol ASTNode {
-    var sourceRange: Range<AbsolutePosition>? { get }
+public protocol ASTNode : AnyObject {
 }

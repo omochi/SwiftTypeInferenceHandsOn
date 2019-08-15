@@ -6,6 +6,8 @@ import SwiftcType
 public final class Parser {
     public let source: String
     
+    private var currentContext: ASTContextNode?
+    
     public init(source: String) {
         self.source = source
     }
@@ -15,16 +17,24 @@ public final class Parser {
         self.init(source: source)
     }
     
+    private func scope(context: ASTContextNode?, _ f: () throws -> Void) rethrows {
+        let old = currentContext
+        currentContext = context
+        try f()
+        currentContext = old
+    }
+    
     public func parse() throws -> SourceFile {
         let syn = try SyntaxParser.parse(source: source)
         return try parse(syn)
     }
     
     private func parse(_ source: SourceFileSyntax) throws -> SourceFile {
-        let stmts = try parse(source.statements)
-
-        return SourceFile(statements: stmts,
-                          sourceRange: source.position..<source.endPosition)
+        let sourceFile = SourceFile()
+        try scope(context: sourceFile) {
+            sourceFile.statements = try parse(source.statements)
+        }
+        return sourceFile
     }
     
     private func parse(_ synStmts: CodeBlockItemListSyntax) throws -> [ASTNode] {
@@ -65,8 +75,7 @@ public final class Parser {
                 }
                 let decl = VariableDecl(name: name,
                                         initializer: initializer,
-                                        typeAnnotation: type,
-                                        sourceRange: ident.position..<ident.endPosition)
+                                        typeAnnotation: type)
                 decls.append(decl)
             default:
                 break
@@ -76,43 +85,48 @@ public final class Parser {
         return decls
     }
     
-    private func parse(_ funcDecl: FunctionDeclSyntax) throws -> FunctionDecl {
-        let name = funcDecl.identifier.text
-        let param: Type
-        do {
-            let synParamList = funcDecl.signature.input.parameterList.map { $0 }
-            guard synParamList.count == 1 else {
-                throw MessageError("param num must be 1")
-            }
-            let synParam = synParamList[0]
-            guard let synType = synParam.type else {
-                throw MessageError("no param type")
-            }
-            param = try parse(type: synType)
+    private func parse(_ synFunc: FunctionDeclSyntax) throws -> FunctionDecl {
+        let name = synFunc.identifier.text
+        
+        let sig = try parse(synFunc.signature)
+        
+        let funcDecl = FunctionDecl(parentContext: currentContext,
+                                    name: name,
+                                    parameterType: sig.0,
+                                    resultType: sig.0)
+
+        // body...
+        
+        return funcDecl
+    }
+    
+    private func parse(_ synSig: FunctionSignatureSyntax) throws -> (Type, Type) {
+        let synParamList = synSig.input.parameterList.map { $0 }
+        guard synParamList.count == 1 else {
+            throw MessageError("param num must be 1")
         }
-        let result: Type
-        do {
-            if let output = funcDecl.signature.output {
-                result = try parse(type: output.returnType)
-            } else {
-                result = PrimitiveType.void
-            }
+        let synParam = synParamList[0]
+        guard let synType = synParam.type else {
+            throw MessageError("no param type")
         }
-        return FunctionDecl(name: name,
-                            parameterType: param,
-                            resultType: result,
-                            sourceRange: funcDecl.position..<funcDecl.endPosition)
+        
+        let param: Type = try parse(type: synType)
+        
+        let result: Type = try synSig.output
+            .map { try parse(type: $0.returnType) }
+            ?? PrimitiveType.void
+        
+        return (param, result)
     }
     
     private func parse(expr: ExprSyntax) throws -> ASTNode {
         switch expr {
         case let expr as IdentifierExprSyntax:
             let name = expr.identifier.text
-            return UnresolvedDeclRefExpr(name: name,
-                                         sourceRange: expr.position..<expr.endPosition)
+            return UnresolvedDeclRefExpr(name: name)
         case let expr as IntegerLiteralExprSyntax:
             _ = expr
-            return IntegerLiteralExpr(sourceRange: expr.position..<expr.endPosition)
+            return IntegerLiteralExpr()
         case let expr as FunctionCallExprSyntax:
             let callee = try parse(expr: expr.calledExpression)
             let synArgList = expr.argumentList.map { $0 }
@@ -121,8 +135,7 @@ public final class Parser {
             }
             let arg = try parse(expr: synArgList[0].expression)
             return CallExpr(callee: callee,
-                            argument: arg,
-                            sourceRange: expr.position..<expr.endPosition)
+                            argument: arg)
         case let expr as ClosureExprSyntax:
             return try parse(expr)
         default:
@@ -131,28 +144,45 @@ public final class Parser {
     }
     
     private func parse(_ expr: ClosureExprSyntax) throws -> ClosureExpr {
-        guard let sig = expr.signature,
-            let synParamClause = sig.input as? ParameterClauseSyntax,
-            let synParamList = .some(synParamClause.parameterList.map { $0 }),
-            synParamList.count == 1 else {
-                throw MessageError("param num must be 1")
+        guard let synSig = expr.signature else {
+            throw MessageError("no signature")
         }
-        let synParam = synParamList[0]
-        guard let paramName = synParam.firstName?.text else {
-            throw MessageError("param needs name")
+        
+        let param = try parse(synSig)
+        
+        let closure = ClosureExpr(parentContext: currentContext,
+                                  parameter: param)
+        
+        try scope(context: closure) {
+            closure.body = try parse(expr.statements)
         }
-        let paramDecl = VariableDecl(name: paramName,
-                                     initializer: nil,
-                                     typeAnnotation: try synParam.type.map { try parse(type: $0) },
-                                     sourceRange: expr.position..<expr.endPosition)
-        let stmts = try parse(expr.statements)
-        guard stmts.count == 1 else {
+        
+        guard closure.body.count == 1 else {
             throw MessageError("closure statements num must be 1")
         }
-        let body = stmts[0]
-        return ClosureExpr(parameter: paramDecl,
-                           expression: body,
-                           sourceRange: expr.position..<expr.endPosition)
+        
+        return closure
+    }
+    
+    private func parse(_ synSig: ClosureSignatureSyntax) throws -> VariableDecl {
+        guard let synParamClause = synSig.input as? ParameterClauseSyntax else {
+            throw MessageError("param num must be 1")
+        }
+        
+        let synParamList = synParamClause.parameterList.map { $0 }
+        guard synParamList.count == 1 else {
+            throw MessageError("param num must be 1")
+        }
+        let synParam = synParamList[0]
+        guard let name = synParam.firstName?.text else {
+            throw MessageError("no param name")
+        }
+        
+        let type: Type? = try synParam.type.map { try parse(type: $0) }
+        
+        return VariableDecl(name: name,
+                            initializer: nil,
+                            typeAnnotation: type)
     }
     
     private func parse(type: TypeSyntax) throws -> Type {

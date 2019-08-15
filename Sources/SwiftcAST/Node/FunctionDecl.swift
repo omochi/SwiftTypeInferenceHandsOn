@@ -1,19 +1,18 @@
-import SwiftSyntax
 import SwiftcType
 
-public final class FunctionDecl : ASTNodeBase {
+public final class FunctionDecl : ASTContextNode {
+    public weak var parentContext: ASTContextNode?
     public var name: String
     public var parameterType: Type
     public var resultType: Type
-    
-    public init(name: String,
+    public init(parentContext: ASTContextNode?,
+                name: String,
                 parameterType: Type,
-                resultType: Type,
-                sourceRange: Range<AbsolutePosition>?)
+                resultType: Type)
     {
+        self.parentContext = parentContext
         self.name = name
         self.parameterType = parameterType
         self.resultType = resultType
-        super.init(sourceRange: sourceRange)
     }
 }

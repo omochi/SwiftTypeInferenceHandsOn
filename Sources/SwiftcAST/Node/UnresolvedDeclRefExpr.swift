@@ -1,11 +1,7 @@
-import SwiftSyntax
-public final class UnresolvedDeclRefExpr : ASTNodeBase {
+public final class UnresolvedDeclRefExpr : ASTNode {
     public var name: String
     
-    public init(name: String,
-                sourceRange: Range<AbsolutePosition>?)
-    {
+    public init(name: String) {
         self.name = name
-        super.init(sourceRange: sourceRange)
     }
 }

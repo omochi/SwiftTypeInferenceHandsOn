@@ -1,21 +1,8 @@
-import SwiftSyntax
-
-public final class SourceFile : ASTNode,
-    ASTScope
+public final class SourceFile : ASTContextNode
 {
-    public let scopeRange: Range<AbsolutePosition>
+    public var parentContext: ASTContextNode? { nil }
+    public var statements: [ASTNode] = []
     
-    public var statements: [ASTNode]
-    
-    public init(statements: [ASTNode],
-                sourceRange: Range<AbsolutePosition>)
-    {
-        self.statements = statements
-        self.scopeRange = sourceRange
+    public init() {
     }
-    
-    public var source: SourceFile { self }
-    
-    public var sourceRange: Range<AbsolutePosition>? { scopeRange }
-    
 }
