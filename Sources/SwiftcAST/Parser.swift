@@ -96,7 +96,7 @@ public final class Parser {
         let funcDecl = FunctionDecl(parentContext: currentContext,
                                     name: name,
                                     parameterType: sig.0,
-                                    resultType: sig.0)
+                                    resultType: sig.1)
 
         // body...
         

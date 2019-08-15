@@ -3,6 +3,7 @@ public final class SourceFile : ASTContextNode
     public var parentContext: ASTContextNode? { nil }
     public var statements: [ASTNode] = []
     public var functions: [FunctionDecl] = []
+    public var variables: [VariableDecl] = []
     public var topLevelCodes: [ASTNode] = []
     
     public init() {
@@ -15,11 +16,12 @@ public final class SourceFile : ASTContextNode
         case let fn as FunctionDecl:
             functions.append(fn)
         case let vd as VariableDecl:
+            variables.append(vd)
             if let _ = vd.initializer {
                 topLevelCodes.append(vd)
             }
         default:
-            break
+            topLevelCodes.append(st)
         }
     }
     

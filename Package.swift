@@ -44,7 +44,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SwiftTypeInferenceTests",
-            dependencies: ["SwiftcTest", "SwiftcSema"],
+            dependencies: ["SwiftcTest", "SwiftcAST", "SwiftcSema"],
             linkerSettings: [
                 .unsafeFlags(["-rpath", rpath])
             ]
