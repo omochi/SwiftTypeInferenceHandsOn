@@ -14,6 +14,7 @@ open class _TypeVariable :
     open var id: Int { abstract() }
     
     public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(Self.self))
         hasher.combine(id)
     }
     

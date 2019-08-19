@@ -1,4 +1,4 @@
-public struct TypeEquatableAdapter : Equatable, CustomStringConvertible {
+public struct TypeEquatableAdapter : Equatable, Hashable, CustomStringConvertible {
     private var value: Type
     
     public init(_ value: Type) {
@@ -12,6 +12,10 @@ public struct TypeEquatableAdapter : Equatable, CustomStringConvertible {
     }
 
     public var description: String { value.description }
+    
+    public func hash(into hasher: inout Hasher) {
+        value.hash(into: &hasher)
+    }
 }
 
 extension Type {

@@ -1,5 +1,5 @@
 public struct FunctionType : _EquatableType {
-    private struct Eq : Equatable {
+    private struct Eq : Equatable, Hashable {
         public var parameter: TypeEquatableAdapter
         public var result: TypeEquatableAdapter
         public init(_ x: FunctionType) {
@@ -24,6 +24,11 @@ public struct FunctionType : _EquatableType {
     
     public static func == (lhs: FunctionType, rhs: FunctionType) -> Bool {
          Eq(lhs) == Eq(rhs)
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(Self.self))
+        hasher.combine(Eq(self))
     }
     
     public func accept<V>(visitor: V) -> V.VisitResult where V : TypeVisitor {

@@ -4,6 +4,8 @@ import SwiftcBasic
 public protocol Type : CustomStringConvertible {
     func isEqual(_ other: Type) -> Bool
     
+    func hash(into hasher: inout Hasher)
+    
     func accept<V: TypeVisitor>(visitor: V) -> V.VisitResult
 }
 

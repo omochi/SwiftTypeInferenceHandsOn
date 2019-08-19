@@ -1,7 +1,7 @@
 import SwiftcBasic
 import SwiftcType
 
-public enum Constraint : CustomStringConvertible {
+public enum Constraint : CustomStringConvertible, Hashable {
     public enum Kind : Hashable {
         case bind
     }
@@ -28,6 +28,15 @@ public enum Constraint : CustomStringConvertible {
                 return false
             }
             return al == bl && ar == br
+        }
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(kind)
+        switch self {
+        case .bind(left: let l, right: let r):
+            hasher.combine(l.wrapInEquatable())
+            hasher.combine(r.wrapInEquatable())
         }
     }
 
