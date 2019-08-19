@@ -18,7 +18,7 @@ public final class ConstraintSystem {
     public private(set) var typeVariables: [TypeVariable] = []
     public private(set) var bindings: TypeVariableBindings = TypeVariableBindings()
 
-    public private(set) var failedConstraint: Constraint?
+    public private(set) var failedConstraint: ConstraintEntry?
     
     public init() {}
     
@@ -57,15 +57,15 @@ public final class ConstraintSystem {
         bindings.assign(variable: variable, type: type)
     }
     
-    public func addConstraint(_ descriptor: Constraint.Descriptor) {
+    public func addConstraint(_ constraint: Constraint) {
         func submit() -> SolveResult {
             var options = MatchOptions()
             options.generateConstraintsWhenAmbiguous = true
-            switch descriptor {
+            switch constraint {
             case .bind(left: let left, right: let right):
                 return matchTypes(left: left,
                                   right: right,
-                                  kind: descriptor.kind,
+                                  kind: constraint.kind,
                                   options: options)
             }
         }
@@ -75,7 +75,7 @@ public final class ConstraintSystem {
             break
         case .failure:
             if failedConstraint == nil {
-                failedConstraint = Constraint(descriptor: descriptor)
+                failedConstraint = ConstraintEntry(constraint)
             }
             
             break

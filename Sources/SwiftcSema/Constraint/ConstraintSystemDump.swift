@@ -33,13 +33,13 @@ extension ConstraintSystem {
         }
     }
     
-    public func dump(constraint: Constraint, printer pr: Printer) {
+    public func dump(constraint: ConstraintEntry, printer pr: Printer) {
         if constraint.isActive {
             pr.print("* ")
         } else {
             pr.print("- ")
         }
         
-        pr.println(constraint.descriptor.description)
+        pr.println(constraint.constraint.description)
     }
 }
