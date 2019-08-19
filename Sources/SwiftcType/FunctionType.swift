@@ -25,4 +25,9 @@ public struct FunctionType : _EquatableType {
     public static func == (lhs: FunctionType, rhs: FunctionType) -> Bool {
          Eq(lhs) == Eq(rhs)
     }
+    
+    public func accept<V>(visitor: V) -> V.VisitResult where V : TypeVisitor {
+        visitor.visitFunctionType(self)
+    }
+    
 }

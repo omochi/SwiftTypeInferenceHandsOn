@@ -1,7 +1,5 @@
 import XCTest
 import SwiftcTest
-import SwiftcType
-import SwiftcSema
 
 final class ConstraintSystemTests: XCTestCase {
     func testTypeTypeVariables() {

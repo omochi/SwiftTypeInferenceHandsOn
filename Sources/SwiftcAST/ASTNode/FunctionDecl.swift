@@ -15,4 +15,17 @@ public final class FunctionDecl : ASTContextNode {
         self.parameterType = parameterType
         self.resultType = resultType
     }
+    
+    public func accept<V>(visitor: V) -> V.VisitResult where V : ASTVisitor {
+        visitor.visitFunctionDecl(self)
+    }
+    
+    public func resolve(name: String) -> ASTNode? {
+        // TODO: support parameters
+        if self.name == name {
+            return self
+        }
+        
+        return nil
+    }
 }

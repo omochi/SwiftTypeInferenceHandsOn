@@ -1,7 +1,5 @@
 import XCTest
 import SwiftcTest
-import SwiftcType
-import SwiftcAST
 
 class ParserTests: XCTestCase {
     

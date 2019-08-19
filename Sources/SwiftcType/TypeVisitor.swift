@@ -8,15 +8,6 @@ public protocol TypeVisitor : VisitorProtocol where VisitTarget == Type {
 
 extension TypeVisitor {
     public func visit(_ type: Type) -> VisitResult {
-        switch type {
-        case let t as PrimitiveType:
-            return visitPrimitiveType(t)
-        case let t as FunctionType:
-            return visitFunctionType(t)
-        case let t as _TypeVariable:
-            return visitTypeVariable(t)
-        default:
-            unimplemented()
-        }
+        type.accept(visitor: self)
     }
 }

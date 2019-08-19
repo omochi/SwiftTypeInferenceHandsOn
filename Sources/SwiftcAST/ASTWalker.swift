@@ -67,6 +67,10 @@ public final class ASTWalker : VisitorWalkerBase, ASTVisitor {
         .continue
     }
     
+    public func visitDeclRefExpr(_ node: DeclRefExpr) -> WalkerAction {
+        .continue
+    }
+    
     public func visitIntegerLiteralExpr(_ node: IntegerLiteralExpr) -> Action {
         .continue
     }

@@ -1,6 +1,8 @@
 import XCTest
-import SwiftcBasic
-import SwiftcType
+@_exported import SwiftcBasic
+@_exported import SwiftcType
+@_exported import SwiftcAST
+@_exported import SwiftcSema
 
 public func XCTAssertEqual(_ a: Type, _ b: Type,
                            file: StaticString = #file,

@@ -65,6 +65,10 @@ public final class ASTExprTransformer : VisitorTransformerBase, ASTVisitor {
         node
     }
     
+    public func visitDeclRefExpr(_ node: DeclRefExpr) -> ASTNode {
+        node
+    }
+    
     public func visitIntegerLiteralExpr(_ node: IntegerLiteralExpr) -> ASTNode {
         node
     }
@@ -77,6 +81,10 @@ extension ASTNode {
     {
         withoutActuallyEscaping(f) { (f) in
             var transformer: ASTExprTransformer!
+            
+            defer {
+                transformer = nil
+            }
             
             func tr(_ node: ASTNode) -> ASTNode? {
                 return f(node, transformer.context)

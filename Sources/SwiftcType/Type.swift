@@ -3,6 +3,8 @@ import SwiftcBasic
 
 public protocol Type : CustomStringConvertible {
     func isEqual(_ other: Type) -> Bool
+    
+    func accept<V: TypeVisitor>(visitor: V) -> V.VisitResult
 }
 
 public func ==(a: Type, b: Type) -> Bool {

@@ -9,6 +9,10 @@ public final class SourceFile : ASTContextNode
     public init() {
     }
     
+    public func accept<V>(visitor: V) -> V.VisitResult where V : ASTVisitor {
+        visitor.visitSourceFile(self)
+    }
+    
     public func addStatement(_ st: ASTNode) {
         statements.append(st)
         
@@ -25,6 +29,7 @@ public final class SourceFile : ASTContextNode
         }
     }
     
+    // TODO: improve to efficient
     public func replaceTopLevelCode(old: ASTNode, new: ASTNode) {
         guard old !== new else { return }
         
@@ -35,5 +40,15 @@ public final class SourceFile : ASTContextNode
         if let index = (statements.firstIndex { $0 === old }) {
             statements[index] = new
         }
+    }
+    
+    public func resolve(name: String) -> ASTNode? {
+        // TOOD: consider statement order
+        
+        if let fn = (functions.first { $0.name == name }) {
+            return fn
+        }
+        
+        return nil
     }
 }
