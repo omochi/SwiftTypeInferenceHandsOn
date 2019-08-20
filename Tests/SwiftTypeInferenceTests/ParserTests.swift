@@ -9,7 +9,7 @@ let a = 3
 """)
         let s = try pr.parse()
         
-        let v = try XCTCast(XCTArrayGet(s.topLevelCodes, 0), VariableDecl.self)
+        let v = try XCTCast(XCTArrayGet(s.statements, 0), VariableDecl.self)
         let ie = try XCTCast(v.initializer, IntegerLiteralExpr.self)
         _ = ie
     }
@@ -19,7 +19,7 @@ let a = 3
 func f(_ x: Int) { }
 """)
         let s = try pr.parse()
-        let f = try XCTCast(XCTArrayGet(s.functions, 0), FunctionDecl.self)
+        let f = try XCTCast(XCTArrayGet(s.statements, 0), FunctionDecl.self)
         XCTAssertEqual(f.parameterType, PrimitiveType.int)
         XCTAssertEqual(f.resultType, PrimitiveType.void)
     }
@@ -29,7 +29,7 @@ func f(_ x: Int) { }
 f({ (x) in x })
 """)
         let s = try pr.parse()
-        let ca = try XCTCast(XCTArrayGet(s.topLevelCodes, 0), CallExpr.self)
+        let ca = try XCTCast(XCTArrayGet(s.statements, 0), CallExpr.self)
         let ud1 = try XCTCast(ca.callee, UnresolvedDeclRefExpr.self)
         XCTAssertEqual(ud1.name, "f")
         let cl = try XCTCast(ca.argument, ClosureExpr.self)

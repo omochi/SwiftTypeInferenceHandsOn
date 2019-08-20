@@ -74,6 +74,10 @@ public final class ConstraintSystem {
             return ex.type
         }
         
+        if let ctx = node as? ASTContextNode {
+            return ctx.interfaceType
+        }
+        
         return nil
     }
     

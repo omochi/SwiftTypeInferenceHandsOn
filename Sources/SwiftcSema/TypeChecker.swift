@@ -10,37 +10,53 @@ public final class TypeChecker {
     }
     
     public func typeCheck() throws {
-        try resolveDeclRef()
-        
-        for code in source.topLevelCodes {
-            try typeCheckTopLevelCode(code)
+        for index in 0..<source.statements.count {
+            source.statements[index] = try typeCheckStatement(source.statements[index],
+                                                              context: source)
         }
     }
     
-    public func typeCheckTopLevelCode(_ code: ASTNode) throws {
-        switch code {
+    public func typeCheckStatement(_ stmt: ASTNode,
+                                   context: ASTContextNode) throws -> ASTNode {
+        switch stmt {
         case let vd as VariableDecl:
-            guard let ie = vd.initializer else {
-                break
+            if let ie = vd.initializer {
+                vd.initializer = try typeCheckExpr(ie,
+                                                   context: context)
             }
-            _ = try typeCheckExpr(ie)
         case let ex as ASTExprNode:
-            _ = try typeCheckExpr(ex)
+            return try typeCheckExpr(ex,
+                                     context: context)
         default:
             break
         }
+        return stmt
     }
     
-    public func typeCheckExpr(_ expr: ASTExprNode) throws -> Type {
+    public func typeCheckExpr(_ expr: ASTExprNode,
+                              context: ASTContextNode) throws -> ASTExprNode {
+        let expr = try preCheckExpr(expr,
+                                    context: context)
+        
         let cs = ConstraintSystem()
         let exprType = try cs.generateConstraints(expr: expr)
-        return exprType
+        _ = exprType
+        // TODO: apply
+        return expr
     }
     
-    public func resolveDeclRef() throws {
+    public func preCheckExpr(_ expr: ASTExprNode,
+                             context: ASTContextNode) throws -> ASTExprNode {
+        let expr = try resolveDeclRef(expr: expr,
+                                      context: context)
+        return expr
+    }
+    
+    public func resolveDeclRef(expr: ASTExprNode,
+                               context: ASTContextNode) throws -> ASTExprNode {
         var error: Error?
         
-        func tr(node: ASTNode, context: ASTContextNode?) -> ASTNode? {
+        func tr(node: ASTExprNode, context: ASTContextNode?) -> ASTExprNode? {
             if let _ = error { return nil }
             
             switch node {
@@ -63,10 +79,12 @@ public final class TypeChecker {
             }
         }
         
-        _ = source.transformExpr(context: nil, tr)
+        let expr = expr.transformExpr(context: context, tr)
         
         if let error = error {
             throw error
         }
+        
+        return expr
     }
 }

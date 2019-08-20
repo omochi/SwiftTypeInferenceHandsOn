@@ -13,6 +13,14 @@ public func XCTAssertEqual(_ a: Type, _ b: Type,
                    file: file, line: line)
 }
 
+public func XCTAssertEqual(_ a: Type?, _ b: Type?,
+                           file: StaticString = #file,
+                           line: UInt = #line)
+{
+    XCTAssertEqual(a.map { $0.wrapInEquatable() },
+                   b.map { $0.wrapInEquatable() })
+}
+
 public func XCTAssertEqual(_ a: [Type], _ b: [Type],
                            file: StaticString = #file,
                            line: UInt = #line)

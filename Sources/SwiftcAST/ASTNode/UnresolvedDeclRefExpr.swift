@@ -1,5 +1,9 @@
-public final class UnresolvedDeclRefExpr : ASTNode {
+import SwiftcType
+
+public final class UnresolvedDeclRefExpr : ASTExprNode {
     public var name: String
+    
+    public var type: Type?
     
     public init(name: String) {
         self.name = name

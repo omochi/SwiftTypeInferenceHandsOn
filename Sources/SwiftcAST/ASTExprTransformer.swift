@@ -4,14 +4,21 @@ public final class ASTExprTransformer : VisitorTransformerBase, ASTVisitor {
     public typealias VisitTarget = ASTNode
     public typealias VisitResult = ASTNode
     
-    public let transform: (ASTNode) -> ASTNode?
+    public let _transform: (ASTExprNode, ASTContextNode?) -> ASTExprNode?
     public var context: ASTContextNode?
     
     public init(context: ASTContextNode?,
-                transform: @escaping (ASTNode) -> ASTNode?)
+                transform: @escaping (ASTExprNode, ASTContextNode?) -> ASTExprNode?)
     {
         self.context = context
-        self.transform = transform
+        self._transform = transform
+    }
+    
+    public func transform(_ node: ASTNode) -> ASTNode? {
+        if let expr = node as? ASTExprNode {
+            return _transform(expr, context)
+        }
+        return nil
     }
     
     private func scope(context: ASTContextNode, f: () throws -> Void) rethrows {
@@ -25,10 +32,8 @@ public final class ASTExprTransformer : VisitorTransformerBase, ASTVisitor {
     
     public func visitSourceFile(_ node: SourceFile) -> ASTNode {
         scope(context: node) {
-            let codes = node.topLevelCodes
-            for code in codes {
-                node.replaceTopLevelCode(old: code,
-                                         new: process(code))
+            for index in 0..<node.statements.count {
+                node.statements[index] = process(node.statements[index])
             }
         }
         return node
@@ -39,12 +44,7 @@ public final class ASTExprTransformer : VisitorTransformerBase, ASTVisitor {
     }
     
     public func visitVariableDecl(_ node: VariableDecl) -> ASTNode {
-        if let ie = node.initializer {
-            let newIE = process(ie) as? ASTExprNode
-            if newIE !== ie {
-                node.initializer = newIE
-            }
-        }
+        node.initializer = node.initializer.map { process($0) as! ASTExprNode }
         return node
     }
     
@@ -56,8 +56,8 @@ public final class ASTExprTransformer : VisitorTransformerBase, ASTVisitor {
     
     public func visitClosureExpr(_ node: ClosureExpr) -> ASTNode {
         scope(context: node) {
-            for st in node.body {
-                node.replaceBody(old: st, new: process(st))
+            for index in 0..<node.body.count {
+                node.body[index] = process(node.body[index])
             }
         }
         return node
@@ -76,10 +76,10 @@ public final class ASTExprTransformer : VisitorTransformerBase, ASTVisitor {
     }
 }
 
-extension ASTNode {
+extension ASTExprNode {
     public func transformExpr(context: ASTContextNode?,
-                              _ f: (ASTNode, ASTContextNode?) -> ASTNode?
-    ) -> ASTNode
+                              _ f: (ASTExprNode, ASTContextNode?) -> ASTExprNode?
+    ) -> ASTExprNode
     {
         withoutActuallyEscaping(f) { (f) in
             var transformer: ASTExprTransformer!
@@ -88,13 +88,9 @@ extension ASTNode {
                 transformer = nil
             }
             
-            func tr(_ node: ASTNode) -> ASTNode? {
-                return f(node, transformer.context)
-            }
-            
             transformer = ASTExprTransformer(context: context,
-                                             transform: tr)
-            return transformer.process(self)
+                                             transform: f)
+            return transformer.process(self) as! ASTExprNode
         }
     }
 }

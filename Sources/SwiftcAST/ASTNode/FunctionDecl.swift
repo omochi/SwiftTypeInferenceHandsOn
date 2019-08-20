@@ -24,6 +24,10 @@ public final class FunctionDecl : ASTContextNode {
         try visitor.visitFunctionDecl(self)
     }
     
+    public var interfaceType: Type? {
+        FunctionType(parameter: parameterType, result: resultType)
+    }
+    
     public func resolve(name: String) -> ASTNode? {
         // TODO: support parameters
         if self.name == name {

@@ -21,14 +21,7 @@ public final class ClosureExpr : ASTContextNode, ASTExprNode {
         try visitor.visitClosureExpr(self)
     }
     
-    // TODO: improve to efficient
-    public func replaceBody(old: ASTNode, new: ASTNode) {
-        guard old !== new else { return }
-        
-        if let index = (body.firstIndex { $0 === old }) {
-            body[index] = new
-        }
-    }
+    public var interfaceType: Type? { type }
     
     public func resolve(name: String) -> ASTNode? {
         if parameter.name == name {

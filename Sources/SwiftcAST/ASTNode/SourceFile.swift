@@ -1,10 +1,8 @@
-public final class SourceFile : ASTContextNode
-{
+import SwiftcType
+
+public final class SourceFile : ASTContextNode {
     public var parentContext: ASTContextNode? { nil }
     public var statements: [ASTNode] = []
-    public var functions: [FunctionDecl] = []
-    public var variables: [VariableDecl] = []
-    public var topLevelCodes: [ASTNode] = []
     
     public init() {
     }
@@ -19,40 +17,25 @@ public final class SourceFile : ASTContextNode
     
     public func addStatement(_ st: ASTNode) {
         statements.append(st)
-        
-        switch st {
-        case let fn as FunctionDecl:
-            functions.append(fn)
-        case let vd as VariableDecl:
-            variables.append(vd)
-            if let _ = vd.initializer {
-                topLevelCodes.append(vd)
-            }
-        default:
-            topLevelCodes.append(st)
-        }
     }
     
-    // TODO: improve to efficient
-    public func replaceTopLevelCode(old: ASTNode, new: ASTNode) {
-        guard old !== new else { return }
-        
-        if let index = (topLevelCodes.firstIndex { $0 === old }) {
-            topLevelCodes[index] = new
-        }
-        
-        if let index = (statements.firstIndex { $0 === old }) {
-            statements[index] = new
-        }
-    }
+    public var interfaceType: Type? { nil }
     
     public func resolve(name: String) -> ASTNode? {
         // TOOD: consider statement order
         
-        if let fn = (functions.first { $0.name == name }) {
+        if let fn = (statements.first { self.name(for: $0) == name }) {
             return fn
         }
         
         return nil
+    }
+    
+    private func name(for statement: ASTNode) -> String? {
+        switch statement {
+        case let d as VariableDecl: return d.name
+        case let d as FunctionDecl: return d.name
+        default: return nil
+        }
     }
 }

@@ -4,10 +4,14 @@ public final class TypeTransformer : VisitorTransformerBase, TypeVisitor {
     public typealias VisitTarget = Type
     public typealias VisitResult = Type
     
-    public let transform: (Type) -> Type?
+    public let _transform: (Type) -> Type?
     
     public init(transform: @escaping (Type) -> Type?) {
-        self.transform = transform
+        _transform = transform
+    }
+    
+    public func transform(_ type: Type) -> Type? {
+        _transform(type)
     }
     
     public func visitPrimitiveType(_ type: PrimitiveType) -> Type {
