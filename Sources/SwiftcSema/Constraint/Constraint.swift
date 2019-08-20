@@ -4,13 +4,16 @@ import SwiftcType
 public enum Constraint : CustomStringConvertible, Hashable {
     public enum Kind : Hashable {
         case bind
+        case applicableFunction
     }
     
     case bind(left: Type, right: Type)
+    case applicableFunction(left: FunctionType, right: Type)
     
     public var kind: Kind {
         switch self {
         case .bind: return .bind
+        case .applicableFunction: return .applicableFunction
         }
     }
     
@@ -18,25 +21,35 @@ public enum Constraint : CustomStringConvertible, Hashable {
         switch self {
         case .bind(left: let left, right: let right):
             return "\(left) :bind: \(right)"
+        case .applicableFunction(left: let left, right: let right):
+            return "\(left) :applicable fn: \(right)"
         }
     }
     
     public static func ==(lhs: Constraint, rhs: Constraint) -> Bool {
         switch lhs {
         case .bind(left: let al, right: let ar):
-            guard case .bind(left: let bl, let br) = rhs else {
+            guard case .bind(let bl, let br) = rhs else {
+                return false
+            }
+            return al == bl && ar == br
+        case .applicableFunction(left: let al, right: let ar):
+            guard case .applicableFunction(let bl, let br) = rhs else {
                 return false
             }
             return al == bl && ar == br
         }
     }
     
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(kind)
+    public func hash(into h: inout Hasher) {
+        kind.hash(into: &h)
         switch self {
         case .bind(left: let l, right: let r):
-            hasher.combine(l.wrapInEquatable())
-            hasher.combine(r.wrapInEquatable())
+            l.hash(into: &h)
+            r.hash(into: &h)
+        case .applicableFunction(left: let l, right: let r):
+            l.hash(into: &h)
+            r.hash(into: &h)
         }
     }
 

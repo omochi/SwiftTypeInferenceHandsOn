@@ -20,8 +20,10 @@ public final class Parser {
     private func scope(context: ASTContextNode?, _ f: () throws -> Void) rethrows {
         let old = currentContext
         currentContext = context
+        defer {
+            currentContext = old
+        }
         try f()
-        currentContext = old
     }
     
     public func parse() throws -> SourceFile {
@@ -70,9 +72,9 @@ public final class Parser {
             switch binding.pattern {
             case let ident as IdentifierPatternSyntax:
                 let name = ident.identifier.text
-                let initializer: ASTNode? = try binding.initializer.map {
+                let initializer: ASTExprNode? = try binding.initializer.map {
                     try parse(expr: $0.value)
-                }
+                } as? ASTExprNode
                 let type: Type? = try binding.typeAnnotation.map {
                     try parse(type: $0.type)
                 }

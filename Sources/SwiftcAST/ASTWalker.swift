@@ -30,7 +30,14 @@ public final class ASTWalker : VisitorWalkerBase, ASTVisitor {
     }
     
     public func visitVariableDecl(_ node: VariableDecl) -> Action {
-        .continue
+        if let ie = node.initializer {
+            switch process(ie) {
+            case .continue: break
+            case .stop: return .stop
+            }
+        }
+        
+        return .continue
     }
     
     public func visitCallExpr(_ node: CallExpr) -> Action {
@@ -75,4 +82,19 @@ public final class ASTWalker : VisitorWalkerBase, ASTVisitor {
         .continue
     }
 
+}
+
+extension ASTNode {
+    public func walk(preWalk: (ASTNode) -> WalkerPreAction = { (_) in .continue },
+                     postWalk: (ASTNode) -> WalkerAction = { (_) in .continue })
+        -> WalkerAction
+    {
+        withoutActuallyEscaping(preWalk) { (preWalk) in
+            withoutActuallyEscaping(postWalk) { (postWalk) in
+                let walker = ASTWalker(preWalk: preWalk,
+                                       postWalk: postWalk)
+                return walker.process(self)
+            }
+        }
+    }
 }

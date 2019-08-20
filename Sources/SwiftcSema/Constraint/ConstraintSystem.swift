@@ -1,6 +1,7 @@
 import Foundation
 import SwiftcBasic
 import SwiftcType
+import SwiftcAST
 
 public final class ConstraintSystem {
     public enum SolveResult {
@@ -17,7 +18,8 @@ public final class ConstraintSystem {
 
     public private(set) var typeVariables: [TypeVariable] = []
     public private(set) var bindings: TypeVariableBindings = TypeVariableBindings()
-
+    public private(set) var astTypes: [ObjectIdentifier: Type] = [:]
+    
     public private(set) var failedConstraint: ConstraintEntry?
     
     public init() {}
@@ -33,9 +35,15 @@ public final class ConstraintSystem {
         return tv
     }
     
+    public func createTypeVariable(for node: ASTNode) -> TypeVariable {
+        let tv = createTypeVariable()
+        setASTType(for: node, tv)
+        return tv
+    }
+    
     /**
      型に含まれる型変数を再帰的に置換した型を返す。
-     具体型の割当がない場合は代表型変数に置換する。
+     固定型の割当がない場合は代表型変数に置換する。
      */
     public func simplify(type: Type) -> Type {
         type.simplify(bindings: bindings)
@@ -57,16 +65,34 @@ public final class ConstraintSystem {
         bindings.assign(variable: variable, type: type)
     }
     
+    public func astType(for node: ASTNode) -> Type? {
+        if let type = astTypes[ObjectIdentifier(node)] {
+            return type
+        }
+        
+        if let ex = node as? ASTExprNode {
+            return ex.type
+        }
+        
+        return nil
+    }
+    
+    public func setASTType(for node: ASTNode, _ type: Type) {
+        astTypes[ObjectIdentifier(node)] = type
+    }
+    
     public func addConstraint(_ constraint: Constraint) {
         func submit() -> SolveResult {
             var options = MatchOptions()
             options.generateConstraintsWhenAmbiguous = true
             switch constraint {
             case .bind(left: let left, right: let right):
-                return matchTypes(left: left,
-                                  right: right,
-                                  kind: constraint.kind,
-                                  options: options)
+                return matchTypes(left: left, right: right,
+                                  kind: constraint.kind, options: options)
+            case .applicableFunction(left: let left, right: let right):
+                return simplifyApplicableFunctionConstraint(left: left,
+                                                            right: right,
+                                                            options: options)
             }
         }
     
@@ -137,6 +163,8 @@ public final class ConstraintSystem {
         case .bind:
             mergeEquivalence(type1: left, type2: right)
             return .solved
+        case .applicableFunction:
+            preconditionFailure("invalid kind: \(kind)")
         }
     }
     
@@ -153,6 +181,8 @@ public final class ConstraintSystem {
             
             assignFixedType(variable: variable, type: type)
             return .solved
+        case .applicableFunction:
+            preconditionFailure("invalid kind: \(kind)")
         }
     }
     
@@ -188,6 +218,8 @@ public final class ConstraintSystem {
             }
             
             unimplemented()
+        case .applicableFunction:
+            preconditionFailure("invalid kind: \(kind)")
         }
     }
     
@@ -231,6 +263,8 @@ public final class ConstraintSystem {
             } else {
                 return .solved
             }
+        case .applicableFunction:
+            preconditionFailure("invalid kind: \(kind)")
         }
     }
 }

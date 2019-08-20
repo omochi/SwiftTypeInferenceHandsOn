@@ -13,6 +13,10 @@ public final class SourceFile : ASTContextNode
         visitor.visitSourceFile(self)
     }
     
+    public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTFailableVisitor {
+        try visitor.visitSourceFile(self)
+    }
+    
     public func addStatement(_ st: ASTNode) {
         statements.append(st)
         

@@ -163,7 +163,6 @@ final class ConstraintSystemTests: XCTestCase {
         // T3 :bind: T5
         cs.addConstraint(.bind(left: t3, right: t5))
 
-        
         XCTAssertEqual(cs.simplify(type: t1),
                        FunctionType(
                         parameter: FunctionType(parameter: ti, result: ti),
@@ -174,6 +173,40 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertEqual(cs.simplify(type: t3), FunctionType(parameter: ts, result: ts))
         XCTAssertEqual(cs.simplify(type: t4), FunctionType(parameter: ti, result: ti))
         XCTAssertEqual(cs.simplify(type: t5), FunctionType(parameter: ts, result: ts))
+    }
+    
+    func testApplicableFunction1() {
+        let cs = ConstraintSystem()
+        
+        let t1 = cs.createTypeVariable()
+        let ti = PrimitiveType.int
+        let ts = PrimitiveType.string
+        
+        cs.addConstraint(.applicableFunction(
+            left: FunctionType(parameter: ti, result: t1),
+            right: FunctionType(parameter: ti, result: ts)))
+        
+        XCTAssertNil(cs.failedConstraint)
+        
+        XCTAssertEqual(cs.simplify(type: t1), ts)
+    }
+    
+    func testApplicableFunction2() {
+        let cs = ConstraintSystem()
+        
+        let t1 = cs.createTypeVariable()
+        let ti = PrimitiveType.int
+        let ts = PrimitiveType.string
+        
+        let t2 = cs.createTypeVariable()
+        
+        cs.addConstraint(.applicableFunction(
+            left: FunctionType(parameter: ti, result: t1),
+            right: t2))
+        
+        XCTAssertNil(cs.failedConstraint)
+        
+        XCTAssertEqual(cs.simplify(type: t1), ts)
     }
 
 }

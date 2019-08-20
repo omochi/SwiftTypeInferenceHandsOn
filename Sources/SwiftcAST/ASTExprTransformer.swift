@@ -14,11 +14,13 @@ public final class ASTExprTransformer : VisitorTransformerBase, ASTVisitor {
         self.transform = transform
     }
     
-    private func scope(context: ASTContextNode, f: () -> Void) {
+    private func scope(context: ASTContextNode, f: () throws -> Void) rethrows {
         let old = self.context
         self.context = context
-        f()
-        self.context = old
+        defer {
+            self.context = old
+        }
+        try f()
     }
     
     public func visitSourceFile(_ node: SourceFile) -> ASTNode {
@@ -38,7 +40,7 @@ public final class ASTExprTransformer : VisitorTransformerBase, ASTVisitor {
     
     public func visitVariableDecl(_ node: VariableDecl) -> ASTNode {
         if let ie = node.initializer {
-            let newIE = process(ie)
+            let newIE = process(ie) as? ASTExprNode
             if newIE !== ie {
                 node.initializer = newIE
             }

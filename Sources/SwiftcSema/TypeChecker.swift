@@ -1,4 +1,5 @@
 import SwiftcBasic
+import SwiftcType
 import SwiftcAST
 
 public final class TypeChecker {
@@ -10,6 +11,30 @@ public final class TypeChecker {
     
     public func typeCheck() throws {
         try resolveDeclRef()
+        
+        for code in source.topLevelCodes {
+            try typeCheckTopLevelCode(code)
+        }
+    }
+    
+    public func typeCheckTopLevelCode(_ code: ASTNode) throws {
+        switch code {
+        case let vd as VariableDecl:
+            guard let ie = vd.initializer else {
+                break
+            }
+            _ = try typeCheckExpr(ie)
+        case let ex as ASTExprNode:
+            _ = try typeCheckExpr(ex)
+        default:
+            break
+        }
+    }
+    
+    public func typeCheckExpr(_ expr: ASTExprNode) throws -> Type {
+        let cs = ConstraintSystem()
+        let exprType = try cs.generateConstraints(expr: expr)
+        return exprType
     }
     
     public func resolveDeclRef() throws {

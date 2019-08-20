@@ -20,6 +20,10 @@ public final class FunctionDecl : ASTContextNode {
         visitor.visitFunctionDecl(self)
     }
     
+    public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTFailableVisitor {
+        try visitor.visitFunctionDecl(self)
+    }
+    
     public func resolve(name: String) -> ASTNode? {
         // TODO: support parameters
         if self.name == name {

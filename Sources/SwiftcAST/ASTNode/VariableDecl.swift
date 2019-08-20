@@ -2,10 +2,11 @@ import SwiftcType
 
 public final class VariableDecl : ASTNode {
     public var name: String
-    public var initializer: ASTNode?
+    public var initializer: ASTExprNode?
     public var typeAnnotation: Type?
+    public var type: Type?
     public init(name: String,
-                initializer: ASTNode?,
+                initializer: ASTExprNode?,
                 typeAnnotation: Type?)
     {
         self.name = name
@@ -15,5 +16,9 @@ public final class VariableDecl : ASTNode {
     
     public func accept<V>(visitor: V) -> V.VisitResult where V : ASTVisitor {
         visitor.visitVariableDecl(self)
+    }
+    
+    public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTFailableVisitor {
+        try visitor.visitVariableDecl(self)
     }
 }
