@@ -1,22 +1,22 @@
 import SwiftcBasic
 
-public final class ASTExprTransformer : VisitorTransformerBase, ASTVisitor {
+public final class ASTExprTransformer : FailableVisitorTransformerBase, ASTFailableVisitor {
     public typealias VisitTarget = ASTNode
     public typealias VisitResult = ASTNode
-    
-    public let _transform: (ASTExprNode, ASTContextNode?) -> ASTExprNode?
+
+    public let _transform: (ASTExprNode, ASTContextNode?) throws -> ASTExprNode?
     public var context: ASTContextNode?
     
     public init(context: ASTContextNode?,
-                transform: @escaping (ASTExprNode, ASTContextNode?) -> ASTExprNode?)
+                transform: @escaping (ASTExprNode, ASTContextNode?) throws -> ASTExprNode?)
     {
         self.context = context
         self._transform = transform
     }
     
-    public func transform(_ node: ASTNode) -> ASTNode? {
+    public func transform(_ node: ASTNode) throws -> ASTNode? {
         if let expr = node as? ASTExprNode {
-            return _transform(expr, context)
+            return try _transform(expr, context)
         }
         return nil
     }
@@ -30,48 +30,49 @@ public final class ASTExprTransformer : VisitorTransformerBase, ASTVisitor {
         try f()
     }
     
-    public func visitSourceFile(_ node: SourceFile) -> ASTNode {
-        scope(context: node) {
+    public func visitSourceFile(_ node: SourceFile) throws -> ASTNode {
+        try scope(context: node) {
             for index in 0..<node.statements.count {
-                node.statements[index] = process(node.statements[index])
+                node.statements[index] = try process(node.statements[index])
             }
         }
         return node
     }
     
-    public func visitFunctionDecl(_ node: FunctionDecl) -> ASTNode {
+    public func visitFunctionDecl(_ node: FunctionDecl) throws -> ASTNode {
         return node
     }
     
-    public func visitVariableDecl(_ node: VariableDecl) -> ASTNode {
-        node.initializer = node.initializer.map { process($0) as! ASTExprNode }
+    public func visitVariableDecl(_ node: VariableDecl) throws -> ASTNode {
+        node.initializer = try node.initializer
+            .map { try process($0) as! ASTExprNode }
         return node
     }
     
-    public func visitCallExpr(_ node: CallExpr) -> ASTNode {
-        node.callee = process(node.callee)
-        node.argument = process(node.argument)
+    public func visitCallExpr(_ node: CallExpr) throws -> ASTNode {
+        node.callee = try process(node.callee)
+        node.argument = try process(node.argument)
         return node
     }
     
-    public func visitClosureExpr(_ node: ClosureExpr) -> ASTNode {
-        scope(context: node) {
+    public func visitClosureExpr(_ node: ClosureExpr) throws -> ASTNode {
+        try scope(context: node) {
             for index in 0..<node.body.count {
-                node.body[index] = process(node.body[index])
+                node.body[index] = try process(node.body[index])
             }
         }
         return node
     }
     
-    public func visitUnresolvedDeclRefExpr(_ node: UnresolvedDeclRefExpr) -> ASTNode {
+    public func visitUnresolvedDeclRefExpr(_ node: UnresolvedDeclRefExpr) throws -> ASTNode {
         node
     }
     
-    public func visitDeclRefExpr(_ node: DeclRefExpr) -> ASTNode {
+    public func visitDeclRefExpr(_ node: DeclRefExpr) throws -> ASTNode {
         node
     }
     
-    public func visitIntegerLiteralExpr(_ node: IntegerLiteralExpr) -> ASTNode {
+    public func visitIntegerLiteralExpr(_ node: IntegerLiteralExpr) throws -> ASTNode {
         node
     }
 }
@@ -81,7 +82,18 @@ extension ASTExprNode {
                               _ f: (ASTExprNode, ASTContextNode?) -> ASTExprNode?
     ) -> ASTExprNode
     {
-        withoutActuallyEscaping(f) { (f) in
+        func ef(node: ASTExprNode, context: ASTContextNode?) throws -> ASTExprNode? {
+            f(node, context)
+        }
+        
+        return try! transformExpr(context: context, ef)
+    }
+    
+    public func transformExpr(context: ASTContextNode?,
+                              _ f: (ASTExprNode, ASTContextNode?) throws -> ASTExprNode?
+    ) throws -> ASTExprNode
+    {
+        try withoutActuallyEscaping(f) { (f) in
             var transformer: ASTExprTransformer!
             
             defer {
@@ -90,7 +102,7 @@ extension ASTExprNode {
             
             transformer = ASTExprTransformer(context: context,
                                              transform: f)
-            return transformer.process(self) as! ASTExprNode
+            return try transformer.process(self) as! ASTExprNode
         }
     }
 }

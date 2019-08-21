@@ -4,15 +4,23 @@ public final class TypeWalker : VisitorWalkerBase, TypeVisitor {
     public typealias VisitTarget = Type
     public typealias VisitResult = Action
     
-    public let preWalk: (Type) -> PreAction
-    public let postWalk: (Type) -> Action
+    public let _preWalk: (Type) -> PreAction
+    public let _postWalk: (Type) -> Action
     
     public init(
         preWalk: @escaping (Type) -> PreAction,
         postWalk: @escaping (Type) -> Action
     ) {
-        self.preWalk = preWalk
-        self.postWalk = postWalk
+        _preWalk = preWalk
+        _postWalk = postWalk
+    }
+    
+    public func preWalk(_ target: Type) -> PreAction {
+        _preWalk(target)
+    }
+    
+    public func postWalk(_ target: Type) -> Action {
+        _postWalk(target)
     }
     
     public func visitPrimitiveType(_ type: PrimitiveType) -> Action {

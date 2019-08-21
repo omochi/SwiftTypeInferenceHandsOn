@@ -15,9 +15,8 @@ public protocol VisitorWalkerBase : VisitorProtocol
     typealias PreAction = WalkerPreAction
     typealias Action = WalkerAction
     
-    var preWalk: (VisitTarget) -> PreAction { get }
-    var postWalk: (VisitTarget) -> Action { get }
-    
+    func preWalk(_ target: VisitTarget) -> PreAction
+    func postWalk(_ target: VisitTarget) -> Action
     func process(_ target: VisitTarget) -> Action
 }
 
@@ -47,3 +46,4 @@ extension VisitorWalkerBase {
         }
     }
 }
+

@@ -1,14 +1,22 @@
 import SwiftcBasic
 
 public final class ASTWalker : VisitorWalkerBase, ASTVisitor {
-    public let preWalk: (ASTNode) -> PreAction
-    public let postWalk: (ASTNode) -> Action
+    public let _preWalk: (ASTNode) -> PreAction
+    public let _postWalk: (ASTNode) -> Action
     
     public init(preWalk: @escaping (ASTNode) -> PreAction,
                 postWalk: @escaping (ASTNode) -> Action)
     {
-        self.preWalk = preWalk
-        self.postWalk = postWalk
+        _preWalk = preWalk
+        _postWalk = postWalk
+    }
+    
+    public func preWalk(_ target: ASTNode) -> PreAction {
+        _preWalk(target)
+    }
+    
+    public func postWalk(_ target: ASTNode) -> Action {
+        _postWalk(target)
     }
     
     public func visit(_ node: ASTNode) -> Action {

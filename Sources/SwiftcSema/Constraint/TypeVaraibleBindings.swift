@@ -1,12 +1,22 @@
 import SwiftcType
 
 public struct TypeVariableBindings {
+    /**
+     自分が代表の場合fixed、他と同一の場合equivalent
+     */
     public enum Binding {
         case fixed(Type?)
         case equivalent(TypeVariable)
     }
     
-    public var items: [TypeVariable: Binding] = [:]
+    public var map: [TypeVariable: Binding] = [:]
+    
+    public func binding(for variable: TypeVariable) -> Binding {
+        map[variable] ?? .fixed(nil)
+    }
+    public mutating func setBinding(for variable: TypeVariable, _ binding: Binding) {
+        map[variable] = binding
+    }
     
     public mutating func merge(type1: TypeVariable,
                                type2: TypeVariable)
@@ -29,7 +39,7 @@ public struct TypeVariableBindings {
         
         let newEqs = type2.equivalentTypeVariables(bindings: self)
         for newEq in newEqs {
-            items[newEq] = .equivalent(type1)
+            map[newEq] = .equivalent(type1)
         }
     }
     
@@ -40,7 +50,7 @@ public struct TypeVariableBindings {
         precondition(variable.fixedType(bindings: self) == nil)
         precondition(!(type is TypeVariable))
         
-        items[variable] = .fixed(type)
+        map[variable] = .fixed(type)
     }
 }
 
@@ -50,7 +60,7 @@ extension TypeVariable {
     }
     
     public func representative(bindings: TypeVariableBindings) -> TypeVariable {
-        switch bindings.items[self]! {
+        switch bindings.binding(for: self) {
         case .fixed:
             return self
         case .equivalent(let rep):
@@ -59,7 +69,7 @@ extension TypeVariable {
     }
     
     public func fixedType(bindings: TypeVariableBindings) -> Type? {
-        switch bindings.items[self]! {
+        switch bindings.binding(for: self) {
         case .fixed(let ft):
             return ft
         case .equivalent(let rep):
@@ -68,7 +78,7 @@ extension TypeVariable {
     }
     
     public func fixedOrRepresentative(bindings: TypeVariableBindings) -> Type {
-        switch bindings.items[self]! {
+        switch bindings.binding(for: self) {
         case .fixed(let ft):
             if let ft = ft {
                 return ft
@@ -81,7 +91,7 @@ extension TypeVariable {
     
     public func equivalentTypeVariables(bindings: TypeVariableBindings) -> Set<TypeVariable> {
         var ret = Set<TypeVariable>()
-        for (tv, b) in bindings.items {
+        for (tv, b) in bindings.map {
             switch b {
             case .fixed:
                 if tv == self { ret.insert(tv) }

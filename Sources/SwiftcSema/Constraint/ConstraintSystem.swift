@@ -15,6 +15,29 @@ public final class ConstraintSystem {
         
         public init() {}
     }
+    
+    public struct Solution {
+        public var bindings: TypeVariableBindings
+        public var astTypes: [ObjectIdentifier: Type]
+        
+        public init(bindings: TypeVariableBindings,
+                    astTypes: [ObjectIdentifier: Type])
+        {
+            self.bindings = bindings
+            self.astTypes = astTypes
+        }
+        
+        public func fixedType(for node: ASTNode) -> Type? {
+            guard let ty = astTypes[ObjectIdentifier(node)] else {
+                return nil
+            }
+            if let tv = ty as? TypeVariable {
+                return tv.fixedType(bindings: bindings)
+            } else {
+                return ty
+            }
+        }
+    }
 
     public private(set) var typeVariables: [TypeVariable] = []
     public private(set) var bindings: TypeVariableBindings = TypeVariableBindings()
@@ -30,7 +53,7 @@ public final class ConstraintSystem {
     public func createTypeVariable() -> TypeVariable {
         let id = typeVariables.count + 1
         let tv = TypeVariable(id: id)
-        bindings.items[tv] = .fixed(nil)
+        bindings.setBinding(for: tv, .fixed(nil))
         typeVariables.append(tv)
         return tv
     }
@@ -39,6 +62,17 @@ public final class ConstraintSystem {
         let tv = createTypeVariable()
         setASTType(for: node, tv)
         return tv
+    }
+    
+    public func normalize() {
+        for (node, type) in astTypes {
+            astTypes[node] = simplify(type: type)
+        }
+    }
+    
+    public func currentSolution() -> Solution {
+        return Solution(bindings: bindings,
+                        astTypes: astTypes)
     }
     
     /**

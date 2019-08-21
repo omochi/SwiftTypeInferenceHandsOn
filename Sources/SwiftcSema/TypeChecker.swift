@@ -35,13 +35,14 @@ public final class TypeChecker {
     
     public func typeCheckExpr(_ expr: ASTExprNode,
                               context: ASTContextNode) throws -> ASTExprNode {
-        let expr = try preCheckExpr(expr,
+        var expr = try preCheckExpr(expr,
                                     context: context)
         
         let cs = ConstraintSystem()
         let exprType = try cs.generateConstraints(expr: expr)
         _ = exprType
-        // TODO: apply
+        let solution = try cs.solve()
+        expr = try solution.apply(to: expr, context: context)
         return expr
     }
     
@@ -54,23 +55,17 @@ public final class TypeChecker {
     
     public func resolveDeclRef(expr: ASTExprNode,
                                context: ASTContextNode) throws -> ASTExprNode {
-        var error: Error?
-        
-        func tr(node: ASTExprNode, context: ASTContextNode?) -> ASTExprNode? {
-            if let _ = error { return nil }
-            
+        func tr(node: ASTExprNode, context: ASTContextNode?) throws -> ASTExprNode? {
             switch node {
             case let node as UnresolvedDeclRefExpr:
                 guard let context = context else {
-                    error = MessageError("no context in resolving")
-                    return nil
+                    throw MessageError("no context in resolving")
                 }
                 
                 let name = node.name
                 
                 guard let target = context.resolve(name: name) else {
-                    error = MessageError("failed to resolve: \(name)")
-                    return nil
+                    throw MessageError("failed to resolve: \(name)")
                 }
 
                 return DeclRefExpr(name: name, target: target)
@@ -79,12 +74,6 @@ public final class TypeChecker {
             }
         }
         
-        let expr = expr.transformExpr(context: context, tr)
-        
-        if let error = error {
-            throw error
-        }
-        
-        return expr
+        return try expr.transformExpr(context: context, tr)
     }
 }
