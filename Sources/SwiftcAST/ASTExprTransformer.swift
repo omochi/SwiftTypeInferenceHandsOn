@@ -18,6 +18,7 @@ public final class ASTExprTransformer : FailableVisitorTransformerBase, ASTFaila
         if let expr = node as? ASTExprNode {
             return try _transform(expr, context)
         }
+
         return nil
     }
     

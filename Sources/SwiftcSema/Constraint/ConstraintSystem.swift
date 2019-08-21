@@ -45,6 +45,8 @@ public final class ConstraintSystem {
     
     public private(set) var failedConstraint: ConstraintEntry?
     
+    public private(set) var constraints: [ConstraintEntry] = []
+    
     public init() {}
     
     deinit {
@@ -70,9 +72,18 @@ public final class ConstraintSystem {
         }
     }
     
+    public func doAllTypeVariablesHaveFixedType() -> Bool {
+        return bindings.doAllTypeVariablesHaveFixedType()
+    }
+    
     public func currentSolution() -> Solution {
         return Solution(bindings: bindings,
                         astTypes: astTypes)
+    }
+    
+    public func _addAmbiguousConstraint(_ constraint: Constraint) {
+        let entry = ConstraintEntry(constraint)
+        constraints.append(entry)
     }
     
     /**

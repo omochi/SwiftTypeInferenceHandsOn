@@ -204,7 +204,10 @@ final class ConstraintSystemTests: XCTestCase {
             left: FunctionType(parameter: ti, result: t1),
             right: t2))
         
+        
         XCTAssertNil(cs.failedConstraint)
+        
+        cs.dump()
         
         XCTAssertEqual(cs.simplify(type: t1), ts)
     }

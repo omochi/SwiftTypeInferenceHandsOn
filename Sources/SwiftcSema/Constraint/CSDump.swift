@@ -31,6 +31,15 @@ extension ConstraintSystem {
                 dump(constraint: con, printer: pr)
             }
         }
+        
+        if !constraints.isEmpty {
+            pr.println("constraints")
+            pr.nest {
+                for cs in constraints {
+                    dump(constraint: cs, printer: pr)
+                }
+            }
+        }
     }
     
     public func dump(constraint: ConstraintEntry, printer pr: Printer) {

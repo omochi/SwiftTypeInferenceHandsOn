@@ -20,9 +20,9 @@ public enum Constraint : CustomStringConvertible, Hashable {
     public var description: String {
         switch self {
         case .bind(left: let left, right: let right):
-            return "\(left) :bind: \(right)"
+            return "\(left) <<bind>> \(right)"
         case .applicableFunction(left: let left, right: let right):
-            return "\(left) :applicable fn: \(right)"
+            return "\(left) <<applicable fn>> \(right)"
         }
     }
     
