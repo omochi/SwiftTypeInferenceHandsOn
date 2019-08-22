@@ -9,7 +9,9 @@ public struct TypeVariableBindings {
         case equivalent(TypeVariable)
     }
     
-    public var map: [TypeVariable: Binding] = [:]
+    public private(set) var map: [TypeVariable: Binding] = [:]
+    
+    public init() {}
     
     public func binding(for variable: TypeVariable) -> Binding {
         map[variable] ?? .fixed(nil)

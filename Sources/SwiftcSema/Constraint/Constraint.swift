@@ -52,6 +52,21 @@ public enum Constraint : CustomStringConvertible, Hashable {
             r.hash(into: &h)
         }
     }
+    
+    private var _types: [Type] {
+        switch self {
+        case .bind(left: let l, right: let r): return [l, r]
+        case .applicableFunction(left: let l, right: let r): return [l, r]
+        }
+    }
+    
+    public var typeVariables: Set<TypeVariable> {
+        var ret = Set<TypeVariable>()
+        for ty in _types {
+            ret.formUnion(ty.typeVariables)
+        }
+        return ret
+    }
 
 }
 

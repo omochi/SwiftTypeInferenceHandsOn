@@ -211,5 +211,56 @@ final class ConstraintSystemTests: XCTestCase {
         
         XCTAssertEqual(cs.simplify(type: t1), ts)
     }
+    
+    func testGatherConstraints1() {
+        let cs = ConstraintSystem()
+        
+        var css: [ConstraintEntry] = []
+        
+        var bindings = TypeVariableBindings()
+        
+        var t: [TypeVariable] = []
+        t.append(TypeVariable(id: 99999))
+        for _ in 0..<20 {
+            t.append(cs.createTypeVariable())
+        }
+        for ti in t {
+            bindings.setBinding(for: ti, .fixed(nil))
+        }
+        
+        // [0] t1 left
+        css.append(ConstraintEntry(.bind(left: t[1], right: t[2])))
+        // [1] t1 right
+        css.append(ConstraintEntry(.bind(left: t[3], right: t[1])))
+        
+        // [2] t1 nested left
+        css.append(ConstraintEntry(.bind(left: FunctionType(parameter: t[1], result: t[4]), right: t[5])))
+        
+        // [3] t1 nested right
+        css.append(ConstraintEntry(.bind(left: t[6], right: FunctionType(parameter: t[1], result: t[7]))))
+        
+        // t8 equiv t1
+        bindings.setBinding(for: t[8], .equivalent(t[1]))
+        
+        // [4] t8 nested left
+        css.append(ConstraintEntry(.bind(left: FunctionType(parameter: t[8], result: t[9]), right: t[10])))
+        
+        // t1 assign fix, adj t11, t12
+        bindings.setBinding(for: t[1], .fixed(FunctionType(parameter: t[11], result: t[12])))
+
+        // [5] t11 nested left
+        css.append(ConstraintEntry(.bind(left: FunctionType(parameter: t[11], result: t[13]), right: t[14])))
+        
+        // [6] unrelates
+        css.append(ConstraintEntry(.bind(left: t[15], right: t[16])))
+        
+        let actual = ConstraintSystem.getherConstraints(involving: t[1],
+                                                        constraints: css,
+                                                        bindings: bindings)
+        let expected = [css[0], css[1], css[2], css[3], css[4], css[5]]
+        
+        XCTAssertEqual(Set(actual),
+                       Set(expected))
+    }
 
 }
