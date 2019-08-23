@@ -2,9 +2,21 @@ import SwiftcBasic
 import SwiftcType
 
 extension ConstraintSystem {
-    internal func simplifyApplicableFunctionConstraint(left lfn: FunctionType,
-                                                       right: Type,
-                                                       options: MatchOptions) -> SolveResult
+    public func simplify(constraint: Constraint) -> SolveResult {
+        let options = MatchOptions()
+        switch constraint {
+        case .bind(left: let left, right: let right):
+            return matchTypes(left: left, right: right,
+                              kind: .bind, options: options)
+        case .applicableFunction(left: let left, right: let right):
+            return simplifyApplicableFunctionConstraint(left: left, right: right,
+                                                        options: options)
+        }
+    }
+    
+    public func simplifyApplicableFunctionConstraint(left lfn: FunctionType,
+                                                     right: Type,
+                                                     options: MatchOptions) -> SolveResult
     {
         func ambiguous() -> SolveResult {
             if options.generateConstraintsWhenAmbiguous {

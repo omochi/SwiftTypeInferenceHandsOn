@@ -37,5 +37,16 @@ f(3)
         let ca2 = try XCTCast(XCTArrayGet(s.statements, 1), CallExpr.self)
         XCTAssertEqual(ca2.type, PrimitiveType.string)
     }
+    
+    func testClosureCall() throws {
+        let code = """
+{ (x) in x }(3)
+"""
+        let s = try Parser(source: code).parse()
+        
+        let tc = TypeChecker(source: s)
+        try tc.typeCheck()
+        
+    }
 
 }

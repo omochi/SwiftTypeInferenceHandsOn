@@ -99,15 +99,25 @@ public final class ConstraintSystem {
     }
     
     public func mergeEquivalence(type1: TypeVariable,
-                                 type2: TypeVariable)
+                                 type2: TypeVariable,
+                                 activate: Bool = true)
     {
         bindings.merge(type1: type1, type2: type2)
+        
+        if activate {
+            activateConstraints(involving: type1)
+        }
     }
     
     public func assignFixedType(variable: TypeVariable,
-                                type: Type)
+                                type: Type,
+                                activate: Bool = true)
     {
         bindings.assign(variable: variable, type: type)
+        
+        if activate {
+            activateConstraints(involving: variable)
+        }
     }
     
     public func astType(for node: ASTNode) -> Type? {
@@ -149,13 +159,31 @@ public final class ConstraintSystem {
         case .solved:
             break
         case .failure:
-            if failedConstraint == nil {
-                failedConstraint = ConstraintEntry(constraint)
-            }
-            
+            fail(constraint: ConstraintEntry(constraint))
             break
         case .ambiguous:
             fatalError("addConstraint forbids ambiguous")
+        }
+    }
+    
+    public func removeConstraint(_ constraint: ConstraintEntry) {
+        constraints.removeAll { $0 == constraint }
+    }
+    
+    public var isFailed: Bool {
+        failedConstraint != nil
+    }
+    
+    public func fail(constraint: ConstraintEntry) {
+        if failedConstraint == nil {
+            failedConstraint = constraint
+        }
+    }
+    
+    public func activateConstraints(involving typeVariable: TypeVariable) {
+        let cs = gatherConstraints(involving: typeVariable)
+        for c in cs {
+            c.isActive = true
         }
     }
 

@@ -11,7 +11,21 @@ extension ConstraintSystem {
             }
             cs.isActive = false
             
+            switch simplify(constraint: cs.constraint) {
+            case .failure:
+                removeConstraint(cs)
+                fail(constraint: cs)
+                
+            case .ambiguous:
+                break
+                
+            case .solved:
+                removeConstraint(cs)
+            }
             
+            if isFailed {
+                return false
+            }
         }
         
         return true

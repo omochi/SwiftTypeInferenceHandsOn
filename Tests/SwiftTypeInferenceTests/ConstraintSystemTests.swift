@@ -191,73 +191,101 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertEqual(cs.simplify(type: t1), ts)
     }
     
-    func testApplicableFunction2() {
-        let cs = ConstraintSystem()
+    func testApplicableFunction2() throws {
+        let cts = ConstraintSystem()
         
-        let t1 = cs.createTypeVariable()
+        let t1 = cts.createTypeVariable()
         let ti = PrimitiveType.int
         let ts = PrimitiveType.string
         
-        let t2 = cs.createTypeVariable()
+        let t2 = cts.createTypeVariable()
         
-        cs.addConstraint(.applicableFunction(
+        // (Int) -> T1 <<app>> T2
+        cts.addConstraint(.applicableFunction(
             left: FunctionType(parameter: ti, result: t1),
             right: t2))
         
+        let c1 = try XCTUnwrap(cts.constraints.first)
+        XCTAssertEqual(c1.constraint.kind, .applicableFunction)
+        XCTAssertFalse(c1.isActive)
         
-        XCTAssertNil(cs.failedConstraint)
+        // T2 <bind> (Int) -> (String)
+        cts.addConstraint(.bind(left: t2,
+                                right: FunctionType(parameter: ti, result: ts)))
+        cts.dump()
+        XCTAssertTrue(c1.isActive)
         
-        cs.dump()
+        XCTAssertTrue(cts.simplify())
+        XCTAssertFalse(cts.constraints.contains(c1))
         
-        XCTAssertEqual(cs.simplify(type: t1), ts)
+        XCTAssertEqual(cts.simplify(type: t1), ts)
+        XCTAssertEqual(cts.simplify(type: t2), FunctionType(parameter: ti, result: ts))
     }
     
     func testGatherConstraints1() {
-        let cs = ConstraintSystem()
-        
-        var css: [ConstraintEntry] = []
+        let cts = ConstraintSystem()
         
         var bindings = TypeVariableBindings()
         
         var t: [TypeVariable] = []
         t.append(TypeVariable(id: 99999))
-        for _ in 0..<20 {
-            t.append(cs.createTypeVariable())
+        for _ in 0..<40 {
+            t.append(cts.createTypeVariable())
         }
         for ti in t {
             bindings.setBinding(for: ti, .fixed(nil))
         }
         
-        // [0] t1 left
-        css.append(ConstraintEntry(.bind(left: t[1], right: t[2])))
-        // [1] t1 right
-        css.append(ConstraintEntry(.bind(left: t[3], right: t[1])))
+        var cs: [ConstraintEntry] = []
+        func add(_ c: Constraint) -> ConstraintEntry {
+            let e = ConstraintEntry(c)
+            cs.append(e)
+            return e
+        }
         
-        // [2] t1 nested left
-        css.append(ConstraintEntry(.bind(left: FunctionType(parameter: t[1], result: t[4]), right: t[5])))
+        // t1 left
+        let c0 = add(.bind(left: t[1], right: t[2]))
         
-        // [3] t1 nested right
-        css.append(ConstraintEntry(.bind(left: t[6], right: FunctionType(parameter: t[1], result: t[7]))))
+        // unrelates
+        _ = add(.bind(left: t[2], right: t[17]))
+        
+        // t1 right
+        let c1 = add(.bind(left: t[3], right: t[1]))
+        
+        // unrelates
+        _ = add(.bind(left: t[18], right: t[3]))
+        
+        // t1 nested left
+        let c2 = add(.bind(left: FunctionType(parameter: t[1], result: t[4]), right: t[5]))
+        
+        // t1 nested right
+        let c3 = add(.bind(left: t[6], right: FunctionType(parameter: t[1], result: t[7])))
         
         // t8 equiv t1
         bindings.setBinding(for: t[8], .equivalent(t[1]))
         
-        // [4] t8 nested left
-        css.append(ConstraintEntry(.bind(left: FunctionType(parameter: t[8], result: t[9]), right: t[10])))
+        // t8 nested left
+        let c4 = add(.bind(left: FunctionType(parameter: t[8], result: t[9]), right: t[10]))
         
         // t1 assign fix, adj t11, t12
         bindings.setBinding(for: t[1], .fixed(FunctionType(parameter: t[11], result: t[12])))
 
-        // [5] t11 nested left
-        css.append(ConstraintEntry(.bind(left: FunctionType(parameter: t[11], result: t[13]), right: t[14])))
+        // t11 nested left
+        let c5 = add(.bind(left: FunctionType(parameter: t[11], result: t[13]), right: t[14]))
         
-        // [6] unrelates
-        css.append(ConstraintEntry(.bind(left: t[15], right: t[16])))
+        // unrelates
+        _ = add(.bind(left: t[15], right: t[16]))
+        
+        // t3 quiv t19
+        bindings.setBinding(for: t[19], .equivalent(t[3]))
+        
+        // unrelates
+        _ = add(.bind(left: t[19], right: t[20]))
         
         let actual = ConstraintSystem.getherConstraints(involving: t[1],
-                                                        constraints: css,
+                                                        constraints: cs,
                                                         bindings: bindings)
-        let expected = [css[0], css[1], css[2], css[3], css[4], css[5]]
+        let expected = [c0, c1, c2, c3, c4, c5]
         
         XCTAssertEqual(Set(actual),
                        Set(expected))
