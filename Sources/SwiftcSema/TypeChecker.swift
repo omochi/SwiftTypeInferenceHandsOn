@@ -39,8 +39,8 @@ public final class TypeChecker {
                                     context: context)
         
         let cs = ConstraintSystem()
-        let exprType = try cs.generateConstraints(expr: expr)
-        _ = exprType
+        try cs.generateConstraints(expr: expr,
+                                   context: context)
         let solution = try cs.solve()
         expr = try solution.apply(to: expr, context: context)
         return expr

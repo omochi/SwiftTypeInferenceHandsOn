@@ -1,61 +1,67 @@
 import SwiftcBasic
 
-public final class TypeWalker : VisitorWalkerBase, TypeVisitor {
+public final class TypeWalker : WalkerBase, TypeVisitor {
     public typealias VisitTarget = Type
-    public typealias VisitResult = Action
+    public typealias VisitResult = WalkResult<Type>
     
-    public let _preWalk: (Type) -> PreAction
-    public let _postWalk: (Type) -> Action
+    public let _preWalk: (Type) throws -> PreWalkResult<Type>
+    public let _postWalk: (Type) throws -> WalkResult<Type>
     
     public init(
-        preWalk: @escaping (Type) -> PreAction,
-        postWalk: @escaping (Type) -> Action
+        preWalk: @escaping (Type) throws -> PreWalkResult<Type>,
+        postWalk: @escaping (Type) throws -> WalkResult<Type>
     ) {
         _preWalk = preWalk
         _postWalk = postWalk
     }
     
-    public func preWalk(_ target: Type) -> PreAction {
-        _preWalk(target)
+    public func preWalk(_ target: Type) throws -> PreWalkResult<Type> {
+        try _preWalk(target)
     }
     
-    public func postWalk(_ target: Type) -> Action {
-        _postWalk(target)
+    public func postWalk(_ target: Type) throws -> WalkResult<Type> {
+        try _postWalk(target)
     }
     
-    public func visitPrimitiveType(_ type: PrimitiveType) -> Action {
-        .continue
+    public func visitPrimitiveType(_ type: PrimitiveType) throws -> WalkResult<Type> {
+        .continue(type)
     }
     
-    public func visitFunctionType(_ type: FunctionType) -> Action {
-        switch process(type.parameter) {
-        case .continue: break
-        case .stop: return .stop
+    public func visitFunctionType(_ type: FunctionType) throws -> WalkResult<Type> {
+        var type = type
+        
+        switch try process(type.parameter) {
+        case .continue(let x):
+            type.parameter = x
+        case .terminate:
+            return .terminate
+        }
+
+        switch try process(type.result) {
+        case .continue(let x):
+            type.result = x
+        case .terminate:
+            return .terminate
         }
         
-        switch process(type.result) {
-        case .continue: break
-        case .stop: return .stop
-        }
-        
-        return .continue
+        return .continue(type)
     }
     
-    public func visitTypeVariable(_ type: _TypeVariable) -> Action {
-        .continue
+    public func visitTypeVariable(_ type: _TypeVariable) throws -> WalkResult<Type> {
+        .continue(type)
     }
 }
 
 extension Type {
-    public func walk(preWalk: (Type) -> WalkerPreAction = { (_) in .continue },
-                     postWalk: (Type) -> WalkerAction = { (_) in .continue })
-        -> WalkerAction
+    public func walk(preWalk: (Type) throws -> PreWalkResult<Type> = { (t) in .continue(t) },
+                     postWalk: (Type) throws -> WalkResult<Type> = { (t) in .continue(t) })
+        throws -> WalkResult<Type>
     {
-        withoutActuallyEscaping(preWalk) { (preWalk) in
-            withoutActuallyEscaping(postWalk) { (postWalk) in
+        try withoutActuallyEscaping(preWalk) { (preWalk) in
+            try withoutActuallyEscaping(postWalk) { (postWalk) in
                 let walker = TypeWalker(preWalk: preWalk,
                                         postWalk: postWalk)
-                return walker.process(self)
+                return try walker.process(self)
             }
         }
     }
@@ -65,16 +71,16 @@ extension Type {
      predは親が先に呼び出される。
      */
     public func find(_ pred: (Type) -> Bool) -> Bool {
-        func preWalk(type: Type) -> WalkerPreAction {
+        func preWalk(type: Type) -> PreWalkResult<Type> {
             if pred(type) {
-                return .stop
+                return .terminate
             }
-            return .continue
+            return .continue(type)
         }
-
-        switch walk(preWalk: preWalk) {
+        
+        switch try! walk(preWalk: preWalk) {
         case .continue: return false
-        case .stop: return true
+        case .terminate: return true
         }
     }
 }

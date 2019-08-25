@@ -1,49 +1,50 @@
-public enum WalkerPreAction {
-    case `continue`
-    case skipChildren
-    case stop
+public enum PreWalkResult<T> {
+    case `continue`(T)
+    case skipChildren(T)
+    case terminate
 }
 
-public enum WalkerAction {
-    case `continue`
-    case stop
+public enum WalkResult<T> {
+    case `continue`(T)
+    case terminate
 }
 
-public protocol VisitorWalkerBase : VisitorProtocol
-    where VisitResult == WalkerAction
+public protocol WalkerBase : VisitorProtocol
+    where VisitResult == WalkResult<VisitTarget>
 {
-    typealias PreAction = WalkerPreAction
-    typealias Action = WalkerAction
-    
-    func preWalk(_ target: VisitTarget) -> PreAction
-    func postWalk(_ target: VisitTarget) -> Action
-    func process(_ target: VisitTarget) -> Action
+    func preWalk(_ target: VisitTarget) throws -> PreWalkResult<VisitTarget>
+    func postWalk(_ target: VisitTarget) throws -> WalkResult<VisitTarget>
+    func process(_ target: VisitTarget) throws -> WalkResult<VisitTarget>
 }
 
-extension VisitorWalkerBase {
-    public func process(_ target: VisitTarget) -> Action {
-        switch preWalk(target) {
-        case .continue:
-            break
-        case .skipChildren:
-            return .continue
-        case .stop:
-            return .stop
+extension WalkerBase {
+    public func process(_ target: VisitTarget) throws -> WalkResult<VisitTarget> {
+        var target = target
+        
+        let pre = try preWalk(target)
+        switch pre {
+        case .continue(let x):
+            target = x
+        case .skipChildren(let x):
+            return .continue(x)
+        case .terminate:
+            return .terminate
         }
         
-        switch visit(target) {
-        case .continue:
-            break
-        case .stop:
-            return .stop
+        switch try visit(target) {
+        case .continue(let x):
+            target = x
+        case .terminate:
+            return .terminate
         }
         
-        switch postWalk(target) {
-        case .continue:
-            return .continue
-        case .stop:
-            return .stop
+        switch try postWalk(target) {
+        case .continue(let x):
+            target = x
+        case .terminate:
+            return .terminate
         }
+        
+        return .continue(target)
     }
 }
-

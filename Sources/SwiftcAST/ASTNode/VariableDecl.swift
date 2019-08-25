@@ -14,11 +14,7 @@ public final class VariableDecl : ASTNode {
         self.typeAnnotation = typeAnnotation
     }
     
-    public func accept<V>(visitor: V) -> V.VisitResult where V : ASTVisitor {
-        visitor.visitVariableDecl(self)
-    }
-    
-    public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTFailableVisitor {
+    public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
         try visitor.visitVariableDecl(self)
     }
 }

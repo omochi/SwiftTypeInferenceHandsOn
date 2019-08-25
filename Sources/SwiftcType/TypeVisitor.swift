@@ -1,13 +1,13 @@
 import SwiftcBasic
 
 public protocol TypeVisitor : VisitorProtocol where VisitTarget == Type {
-    func visitPrimitiveType(_ type: PrimitiveType) -> VisitResult
-    func visitFunctionType(_ type: FunctionType) -> VisitResult
-    func visitTypeVariable(_ type: _TypeVariable) -> VisitResult
+    func visitPrimitiveType(_ type: PrimitiveType) throws -> VisitResult
+    func visitFunctionType(_ type: FunctionType) throws -> VisitResult
+    func visitTypeVariable(_ type: _TypeVariable) throws -> VisitResult
 }
 
 extension TypeVisitor {
-    public func visit(_ type: Type) -> VisitResult {
-        type.accept(visitor: self)
+    public func visit(_ type: Type) throws -> VisitResult {
+        try type.accept(visitor: self)
     }
 }

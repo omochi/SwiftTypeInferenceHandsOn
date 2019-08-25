@@ -2,13 +2,23 @@ import SwiftcBasic
 import SwiftcType
 import SwiftcAST
 
-public final class ConstraintGenerator : ASTFailableVisitor {
+public final class ConstraintGenerator : ASTVisitor {
     public typealias VisitResult = Type
     
-    public let system: ConstraintSystem
+    private let cs: ConstraintSystem
     
-    public init(system: ConstraintSystem) {
-        self.system = system
+    public init(constraintSystem: ConstraintSystem) {
+        self.cs = constraintSystem
+    }
+    
+    public func preWalk(node: ASTNode, context: ASTContextNode) throws -> PreWalkResult<ASTNode> {
+        .continue(node)
+    }
+    
+    public func postWalk(node: ASTNode, context: ASTContextNode) throws -> WalkResult<ASTNode> {
+        let type = try visit(node)
+        cs.setASTType(for: node, type)
+        return .continue(node)
     }
     
     public func visitSourceFile(_ node: SourceFile) throws -> Type {
@@ -24,12 +34,12 @@ public final class ConstraintGenerator : ASTFailableVisitor {
     }
     
     public func visitCallExpr(_ node: CallExpr) throws -> Type {
-        let callee = try visit(node.callee)
-        let arg = try visit(node.argument)
+        let callee = cs.astType(for: node.callee)!
+        let arg = cs.astType(for: node.argument)!
         
-        let tv = system.createTypeVariable(for: node)
+        let tv = cs.createTypeVariable()
         
-        system.addConstraint(.applicableFunction(
+        cs.addConstraint(.applicableFunction(
             left: FunctionType(parameter: arg, result: tv),
             right: callee))
         
@@ -46,25 +56,25 @@ public final class ConstraintGenerator : ASTFailableVisitor {
     }
     
     public func visitDeclRefExpr(_ node: DeclRefExpr) throws -> Type {
-        guard let ty = system.astType(for: node.target) else {
+        guard let ty = cs.astType(for: node.target) else {
             throw MessageError("untyped ref target")
         }
-        system.setASTType(for: node, ty)
         return ty
     }
     
     public func visitIntegerLiteralExpr(_ node: IntegerLiteralExpr) throws -> Type {
-        let ti = PrimitiveType.int
-        system.setASTType(for: node, ti)
-        return ti
+        PrimitiveType.int
     }
     
 }
 
 extension ConstraintSystem {
-    public func generateConstraints(expr: ASTExprNode) throws -> Type {
-        let gen = ConstraintGenerator(system: self)
+    public func generateConstraints(expr: ASTExprNode,
+                                    context: ASTContextNode) throws {
+        let gen = ConstraintGenerator(constraintSystem: self)
         
-        return try gen.visit(expr)
+        try expr.walk(context: context,
+                      preWalk: gen.preWalk,
+                      postWalk: gen.postWalk)
     }
 }

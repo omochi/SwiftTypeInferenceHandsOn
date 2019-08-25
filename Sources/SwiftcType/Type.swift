@@ -6,7 +6,7 @@ public protocol Type : CustomStringConvertible {
     
     func hash(into hasher: inout Hasher)
     
-    func accept<V: TypeVisitor>(visitor: V) -> V.VisitResult
+    func accept<V: TypeVisitor>(visitor: V) throws -> V.VisitResult
 }
 
 public func ==(a: Type, b: Type) -> Bool {

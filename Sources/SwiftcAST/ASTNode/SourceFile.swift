@@ -7,11 +7,7 @@ public final class SourceFile : ASTContextNode {
     public init() {
     }
     
-    public func accept<V>(visitor: V) -> V.VisitResult where V : ASTVisitor {
-        visitor.visitSourceFile(self)
-    }
-    
-    public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTFailableVisitor {
+    public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
         try visitor.visitSourceFile(self)
     }
     

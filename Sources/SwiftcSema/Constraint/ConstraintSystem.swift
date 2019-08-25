@@ -60,20 +60,21 @@ public final class ConstraintSystem {
         return tv
     }
     
-    public func createTypeVariable(for node: ASTNode) -> TypeVariable {
-        let tv = createTypeVariable()
-        setASTType(for: node, tv)
-        return tv
-    }
-    
+//    public func createTypeVariable(for node: ASTNode) -> TypeVariable {
+//        let tv = createTypeVariable()
+//        setASTType(for: node, tv)
+//        return tv
+//    }
+//    
     public func normalize() {
         for (node, type) in astTypes {
             astTypes[node] = simplify(type: type)
         }
     }
     
-    public func doAllTypeVariablesHaveFixedType() -> Bool {
-        return bindings.doAllTypeVariablesHaveFixedType()
+    public func hasFreeTypeVariables() -> Bool {
+        return typeVariables.contains {
+            $0.isFree(bindings: bindings) }
     }
     
     public func currentSolution() -> Solution {

@@ -6,11 +6,7 @@ public final class IntegerLiteralExpr : ASTExprNode {
     public init() {
     }
     
-    public func accept<V>(visitor: V) -> V.VisitResult where V : ASTVisitor {
-        visitor.visitIntegerLiteralExpr(self)
-    }
-    
-    public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTFailableVisitor {
+    public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
         try visitor.visitIntegerLiteralExpr(self)
     }
 }

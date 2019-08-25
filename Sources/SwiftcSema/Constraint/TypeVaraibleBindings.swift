@@ -54,15 +54,6 @@ public struct TypeVariableBindings {
         
         map[variable] = .fixed(type)
     }
-    
-    public func doAllTypeVariablesHaveFixedType() -> Bool {
-        return map.allSatisfy { (tv, binding) in
-            switch binding {
-            case .fixed(let ft): return ft != nil
-            case .equivalent: return true
-            }
-        }
-    }
 }
 
 extension TypeVariable {
@@ -111,6 +102,13 @@ extension TypeVariable {
             }
         }
         return ret
+    }
+    
+    public func isFree(bindings: TypeVariableBindings) -> Bool {
+        switch bindings.binding(for: self) {
+        case .fixed(let ft): return ft == nil
+        case .equivalent: return false
+        }
     }
 }
 

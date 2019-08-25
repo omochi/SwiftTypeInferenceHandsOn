@@ -31,8 +31,8 @@ public struct FunctionType : _EquatableType {
         hasher.combine(Eq(self))
     }
     
-    public func accept<V>(visitor: V) -> V.VisitResult where V : TypeVisitor {
-        visitor.visitFunctionType(self)
+    public func accept<V>(visitor: V) throws -> V.VisitResult where V : TypeVisitor {
+        try visitor.visitFunctionType(self)
     }
     
 }

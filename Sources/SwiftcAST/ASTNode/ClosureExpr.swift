@@ -13,11 +13,7 @@ public final class ClosureExpr : ASTContextNode, ASTExprNode {
         self.parameter = parameter
     }
     
-    public func accept<V>(visitor: V) -> V.VisitResult where V : ASTVisitor {
-        visitor.visitClosureExpr(self)
-    }
-    
-    public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTFailableVisitor {
+    public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
         try visitor.visitClosureExpr(self)
     }
     

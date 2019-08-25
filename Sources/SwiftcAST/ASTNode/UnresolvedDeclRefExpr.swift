@@ -9,11 +9,7 @@ public final class UnresolvedDeclRefExpr : ASTExprNode {
         self.name = name
     }
     
-    public func accept<V>(visitor: V) -> V.VisitResult where V : ASTVisitor {
-        visitor.visitUnresolvedDeclRefExpr(self)
-    }
-    
-    public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTFailableVisitor {
+    public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
         try visitor.visitUnresolvedDeclRefExpr(self)
     }
 }

@@ -12,8 +12,8 @@ public struct PrimitiveType : _EquatableType {
         hasher.combine(name)
     }
     
-    public func accept<V>(visitor: V) -> V.VisitResult where V : TypeVisitor {
-        visitor.visitPrimitiveType(self)
+    public func accept<V>(visitor: V) throws -> V.VisitResult where V : TypeVisitor {
+        try visitor.visitPrimitiveType(self)
     }
         
     public static var void: PrimitiveType { PrimitiveType(name: "Void") }
