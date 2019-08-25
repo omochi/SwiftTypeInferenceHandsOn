@@ -47,6 +47,16 @@ f(3)
         let tc = TypeChecker(source: s)
         try tc.typeCheck()
         
+        let ap = try XCTCast(XCTArrayGet(s.statements, 0), CallExpr.self)
+        XCTAssertEqual(ap.type, PrimitiveType.int)
+        
+        let cl = try XCTCast(ap.callee, ClosureExpr.self)
+        XCTAssertEqual(cl.type, FunctionType(parameter: PrimitiveType.int, result: PrimitiveType.int))
+        
+        XCTAssertEqual(cl.parameter.type, PrimitiveType.int)
+        
+        let ag = try XCTCast(ap.argument, IntegerLiteralExpr.self)
+        XCTAssertEqual(ag.type, PrimitiveType.int)
     }
 
 }

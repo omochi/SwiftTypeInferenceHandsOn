@@ -2,19 +2,26 @@ import SwiftcBasic
 import SwiftcAST
 
 extension ConstraintSystem.Solution {
-    public func apply(to expr: ASTExprNode,
-                      context: ASTContextNode) throws -> ASTExprNode {
-        func tr(node: ASTExprNode, context: ASTContextNode?) throws -> ASTExprNode? {
-            if let _ = node.type {
-                return nil
-            }
+    public func apply(to expr: ASTNode,
+                      context: ASTContextNode) throws -> ASTNode {
+        func tr(node: ASTNode, context: ASTContextNode?) throws -> ASTNode? {
             guard let ty = fixedType(for: node) else {
                 throw MessageError("node type unknown: \(node)")
             }
-            node.type = ty
-            return node
+            
+            if let expr = node as? ASTExprNode {
+                expr.type = ty
+                return nil
+            }
+            
+            if let vd = node as? VariableDecl {
+                vd.type = ty
+                return nil
+            }
+        
+            return nil
         }
         
-        return try expr.transformExpr(context: context, tr)
+        return try expr.transform(context: context, tr)
     }
 }

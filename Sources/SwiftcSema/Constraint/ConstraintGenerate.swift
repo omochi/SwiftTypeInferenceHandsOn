@@ -30,7 +30,12 @@ public final class ConstraintGenerator : ASTVisitor {
     }
     
     public func visitVariableDecl(_ node: VariableDecl) throws -> Type {
-        throw MessageError("variable")
+        if let ta = node.typeAnnotation {
+            return ta
+        }
+        
+        let tv = cs.createTypeVariable()
+        return tv
     }
     
     public func visitCallExpr(_ node: CallExpr) throws -> Type {
@@ -47,8 +52,15 @@ public final class ConstraintGenerator : ASTVisitor {
     }
     
     public func visitClosureExpr(_ node: ClosureExpr) throws -> Type {
-        // TODO
-        unimplemented()
+        let paramTy = cs.astType(for: node.parameter)!
+        let resultTy = cs.createTypeVariable()
+        let closureTy = FunctionType(parameter: paramTy, result: resultTy)
+        
+        let bodyTy = cs.astType(for: node.body[0])!
+        
+        cs.addConstraint(.bind(left: bodyTy, right: resultTy))
+        
+        return closureTy
     }
     
     public func visitUnresolvedDeclRefExpr(_ node: UnresolvedDeclRefExpr) throws -> Type {
