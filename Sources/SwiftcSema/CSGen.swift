@@ -16,8 +16,7 @@ public final class ConstraintGenerator : ASTVisitor {
     }
     
     public func postWalk(node: ASTNode, context: ASTContextNode) throws -> WalkResult<ASTNode> {
-        let type = try visit(node)
-        cs.setASTType(for: node, type)
+        _ = try visit(node)
         return .continue(node)
     }
     
@@ -34,7 +33,7 @@ public final class ConstraintGenerator : ASTVisitor {
             return ta
         }
         
-        let tv = cs.createTypeVariable()
+        let tv = cs.createTypeVariable(for: node)
         return tv
     }
     
@@ -42,7 +41,7 @@ public final class ConstraintGenerator : ASTVisitor {
         let callee = cs.astType(for: node.callee)!
         let arg = cs.astType(for: node.argument)!
         
-        let tv = cs.createTypeVariable()
+        let tv = cs.createTypeVariable(for: node)
         
         cs.addConstraint(.applicableFunction(
             left: FunctionType(parameter: arg, result: tv),
@@ -55,6 +54,7 @@ public final class ConstraintGenerator : ASTVisitor {
         let paramTy = cs.astType(for: node.parameter)!
         let resultTy = cs.createTypeVariable()
         let closureTy = FunctionType(parameter: paramTy, result: resultTy)
+        cs.setASTType(for: node, closureTy)
         
         let bodyTy = cs.astType(for: node.body[0])!
         
@@ -68,14 +68,19 @@ public final class ConstraintGenerator : ASTVisitor {
     }
     
     public func visitDeclRefExpr(_ node: DeclRefExpr) throws -> Type {
-        guard let ty = cs.astType(for: node.target) else {
-            throw MessageError("untyped ref target")
-        }
-        return ty
+        let tv = cs.createTypeVariable(for: node)
+        
+        let choice = OverloadChoice(decl: node.target)
+
+        try cs.resolveOverload(node: node, boundType: tv, choice: choice)
+        
+        return tv
     }
     
     public func visitIntegerLiteralExpr(_ node: IntegerLiteralExpr) throws -> Type {
-        PrimitiveType.int
+        let ty = PrimitiveType.int
+        cs.setASTType(for: node, ty)
+        return ty
     }
     
 }

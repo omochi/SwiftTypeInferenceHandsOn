@@ -16,15 +16,26 @@ public final class ConstraintSystem {
         public init() {}
     }
     
+    public struct OverloadSelection {
+        public var choice: OverloadChoice
+        
+        public init(choice: OverloadChoice) {
+            self.choice = choice
+        }
+    }
+    
     public struct Solution {
         public var bindings: TypeVariableBindings
         public var astTypes: [ObjectIdentifier: Type]
+        public var overloadSelections: [ObjectIdentifier: OverloadSelection]
         
         public init(bindings: TypeVariableBindings,
-                    astTypes: [ObjectIdentifier: Type])
+                    astTypes: [ObjectIdentifier: Type],
+                    overloadSelections: [ObjectIdentifier: OverloadSelection])
         {
             self.bindings = bindings
             self.astTypes = astTypes
+            self.overloadSelections = overloadSelections
         }
         
         public func fixedType(for node: ASTNode) -> Type? {
@@ -40,8 +51,10 @@ public final class ConstraintSystem {
     }
 
     public private(set) var typeVariables: [TypeVariable] = []
+    
     public private(set) var bindings: TypeVariableBindings = TypeVariableBindings()
     public private(set) var astTypes: [ObjectIdentifier: Type] = [:]
+    public private(set) var overloadSelections: [ObjectIdentifier: OverloadSelection] = [:]
     
     public private(set) var failedConstraint: ConstraintEntry?
     
@@ -60,12 +73,12 @@ public final class ConstraintSystem {
         return tv
     }
     
-//    public func createTypeVariable(for node: ASTNode) -> TypeVariable {
-//        let tv = createTypeVariable()
-//        setASTType(for: node, tv)
-//        return tv
-//    }
-//    
+    public func createTypeVariable(for node: ASTNode) -> TypeVariable {
+        let tv = createTypeVariable()
+        setASTType(for: node, tv)
+        return tv
+    }
+
     public func normalize() {
         for (node, type) in astTypes {
             astTypes[node] = simplify(type: type)
@@ -79,7 +92,8 @@ public final class ConstraintSystem {
     
     public func currentSolution() -> Solution {
         return Solution(bindings: bindings,
-                        astTypes: astTypes)
+                        astTypes: astTypes,
+                        overloadSelections: overloadSelections)
     }
     
     public func _addAmbiguousConstraint(_ constraint: Constraint) {
@@ -237,5 +251,17 @@ public final class ConstraintSystem {
         }
         
         return result.map { $0 }
+    }
+    
+    public func resolveOverload(node: ASTNode,
+                                boundType: Type,
+                                choice: OverloadChoice) throws
+    {
+        guard var declType = astType(for: choice.decl) else {
+            throw MessageError("untyped decl")
+        }
+        
+        addConstraint(.bind(left: boundType, right: declType))
+        overloadSelections[ObjectIdentifier(node)] = OverloadSelection(choice: choice)
     }
 }

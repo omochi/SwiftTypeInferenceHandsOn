@@ -1,4 +1,4 @@
-public struct IdentityAdapter<X: AnyObject> : Hashable {
+public struct Identity<X: AnyObject> : Hashable {
     public var value: X
     
     public init(_ x: X) {
@@ -13,12 +13,12 @@ public struct IdentityAdapter<X: AnyObject> : Hashable {
         identifier.hash(into: &hasher)
     }
     
-    public static func ==(a: IdentityAdapter<X>, b: IdentityAdapter<X>) -> Bool {
+    public static func ==(a: Identity<X>, b: Identity<X>) -> Bool {
         a.identifier == b.identifier
     }
 }
 
-extension IdentityAdapter : CustomStringConvertible where X : CustomStringConvertible {
+extension Identity : CustomStringConvertible where X : CustomStringConvertible {
     public var description: String {
         value.description
     }
