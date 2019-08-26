@@ -57,7 +57,8 @@ extension ConstraintSystem {
             mergeEquivalence(type1: left, type2: right)
             return .solved
         case .applicableFunction,
-             .bindOverload:
+             .bindOverload,
+             .disjunction:
             preconditionFailure("invalid kind: \(kind)")
         }
     }
@@ -76,7 +77,8 @@ extension ConstraintSystem {
             assignFixedType(variable: variable, type: type)
             return .solved
         case .applicableFunction,
-             .bindOverload:
+             .bindOverload,
+             .disjunction:
             preconditionFailure("invalid kind: \(kind)")
         }
     }
@@ -115,7 +117,8 @@ extension ConstraintSystem {
             
             unimplemented()
         case .applicableFunction,
-             .bindOverload:
+             .bindOverload,
+             .disjunction:
             preconditionFailure("invalid kind: \(kind)")
         }
     }
@@ -163,7 +166,8 @@ extension ConstraintSystem {
                 return .solved
             }
         case .applicableFunction,
-             .bindOverload:
+             .bindOverload,
+             .disjunction:
             preconditionFailure("invalid kind: \(kind)")
         }
     }

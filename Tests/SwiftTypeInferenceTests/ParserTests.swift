@@ -20,20 +20,23 @@ class ParserTests: XCTestCase {
             let m = SourceLineMap(source: s)
             XCTAssertEqual(m.offsets, [0, 4, 8, 13, 17])
             
-            let l1 = SourcePosition(rawValue: 0).toLocation(name: nil, map: m)
-            XCTAssertEqual(l1, SourceLocation(name: nil, line: 1, column: 1))
+            var loc = SourcePosition(rawValue: 0).toLocation(name: nil, map: m)
+            XCTAssertEqual(loc, SourceLocation(name: nil, line: 1, column: 1))
             
-            let l2 = SourcePosition(rawValue: 5).toLocation(name: "a.swift", map: m)
-            XCTAssertEqual(l2, SourceLocation(name: "a.swift", line: 2, column: 2))
+            loc = SourcePosition(rawValue: 4).toLocation(name: nil, map: m)
+            XCTAssertEqual(loc, SourceLocation(name: nil, line: 2, column: 1))
             
-            let l3 = SourcePosition(rawValue: 16).toLocation(name: nil, map: m)
-            XCTAssertEqual(l3, SourceLocation(name: nil, line: 4, column: 4))
+            loc = SourcePosition(rawValue: 5).toLocation(name: "a.swift", map: m)
+            XCTAssertEqual(loc, SourceLocation(name: "a.swift", line: 2, column: 2))
             
-            let l4 = SourcePosition(rawValue: 17).toLocation(name: nil, map: m)
-            XCTAssertEqual(l4, SourceLocation(name: nil, line: 5, column: 1))
+            loc = SourcePosition(rawValue: 16).toLocation(name: nil, map: m)
+            XCTAssertEqual(loc, SourceLocation(name: nil, line: 4, column: 4))
             
-            let l5 = SourcePosition(rawValue: 18).toLocation(name: nil, map: m)
-            XCTAssertEqual(l5, SourceLocation(name: nil, line: 5, column: 2))
+            loc = SourcePosition(rawValue: 17).toLocation(name: nil, map: m)
+            XCTAssertEqual(loc, SourceLocation(name: nil, line: 5, column: 1))
+            
+            loc = SourcePosition(rawValue: 18).toLocation(name: nil, map: m)
+            XCTAssertEqual(loc, SourceLocation(name: nil, line: 5, column: 2))
         }
     }
     

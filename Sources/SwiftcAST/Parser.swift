@@ -92,8 +92,7 @@ public final class Parser {
                     try parse(type: $0.type)
                 }
                 let decl = VariableDecl(source: source,
-                                        sourceRange: SourceRange(begin: binding.position,
-                                                                 end: binding.endPosition),
+                                        sourceRange: SourceRange(syntax: binding),
                                         parentContext: currentContext,
                                         name: name,
                                         initializer: initializer,
@@ -113,8 +112,7 @@ public final class Parser {
         let sig = try parse(synFunc.signature)
         
         let funcDecl = FunctionDecl(source: source,
-                                    sourceRange: SourceRange(begin: synFunc.position,
-                                                             end: synFunc.endPosition),
+                                    sourceRange: SourceRange(syntax: synFunc),
                                     parentContext: currentContext,
                                     name: name,
                                     parameterType: sig.0,
@@ -145,8 +143,7 @@ public final class Parser {
     }
     
     private func parse(expr: ExprSyntax) throws -> ASTNode {
-        let sourceRange = SourceRange(begin: expr.position,
-                                      end: expr.endPosition)
+        let sourceRange = SourceRange(syntax: expr)
         switch expr {
         case let expr as IdentifierExprSyntax:
             let name = expr.identifier.text
@@ -183,8 +180,7 @@ public final class Parser {
         let param = try parse(synSig)
         
         let closure = ClosureExpr(source: source,
-                                  sourceRange: SourceRange(begin: expr.position,
-                                                           end: expr.endPosition),
+                                  sourceRange: SourceRange(syntax: expr),
                                   parentContext: currentContext,
                                   parameter: param)
         
@@ -216,8 +212,7 @@ public final class Parser {
         let type: Type? = try synParam.type.map { try parse(type: $0) }
         
         return VariableDecl(source: source,
-                            sourceRange: SourceRange(begin: synParam.position,
-                                                     end: synParam.endPosition),
+                            sourceRange: SourceRange(syntax: synParam),
                             parentContext: currentContext,
                             name: name,
                             initializer: nil,

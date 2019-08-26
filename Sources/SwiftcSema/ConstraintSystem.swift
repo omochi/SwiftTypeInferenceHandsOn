@@ -174,7 +174,8 @@ public final class ConstraintSystem {
                 return simplifyApplicableFunctionConstraint(left: left as! FunctionType,
                                                             right: right,
                                                             options: options)
-            case .bindOverload:
+            case .bindOverload,
+                 .disjunction:
                 preconditionFailure("invalid kind: \(kind)")
             }
         }
@@ -193,6 +194,10 @@ public final class ConstraintSystem {
     
     public func removeConstraint(_ constraint: ConstraintEntry) {
         constraints.removeAll { $0 == constraint }
+    }
+    
+    public func addDisjunctionConstraint(_ constraints: [Constraint]) {
+        _addAmbiguousConstraint(.disjunction(constraints: constraints))
     }
     
     public var isFailed: Bool {

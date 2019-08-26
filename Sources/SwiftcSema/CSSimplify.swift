@@ -15,6 +15,8 @@ extension ConstraintSystem {
         case .bindOverload(left: let left, choice: let choice, location: let location):
             resolveOverload(boundType: left, choice: choice, location: location)
             return .solved
+        case .disjunction:
+            return .ambiguous
         }
     }
     

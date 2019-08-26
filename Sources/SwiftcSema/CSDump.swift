@@ -19,8 +19,10 @@ extension ConstraintSystem {
                         pr.println("eq to \(tv.representative(bindings: bindings))")
                     }
                     
-                    pr.print("fixed: ")
-                    pr.println(tv.fixedType(bindings: bindings)?.description ?? "nil")
+                    if let ft = tv.fixedType(bindings: bindings) {
+                        pr.print("fixed: ")
+                        pr.println(ft.description)
+                    }
                 }
             }
         }

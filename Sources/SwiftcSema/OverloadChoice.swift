@@ -1,7 +1,7 @@
 import SwiftcType
 import SwiftcAST
 
-public struct OverloadChoice : Hashable {
+public struct OverloadChoice : CustomStringConvertible, Hashable {
     public struct Eq : Hashable {
         public var decl: AnyASTNode
         public init(_ x: OverloadChoice) {

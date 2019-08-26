@@ -1,3 +1,3 @@
-public protocol Decl : ASTNode, DeclContext {
+public protocol Decl : DeclContext, ASTNode {
     
 }

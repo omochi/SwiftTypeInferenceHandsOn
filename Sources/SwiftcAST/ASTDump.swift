@@ -59,10 +59,21 @@ public final class ASTDumper : ASTVisitor {
         pr.print(" range=\(range)")
     }
     
+    public func visitDeclContext(_ con: DeclContext) {
+        if let ty = con.interfaceType {
+            pr.print(" type=\"\(ty)\"")
+        }
+    }
+    
+    public func visitDecl(_ decl: Decl) {
+        visitDeclContext(decl)
+        visitASTNode(decl)
+    }
+    
     public func visitValueDecl(_ valueDecl: ValueDecl) {
         pr.print(" name=\(valueDecl.name)")
         
-        visitASTNode(valueDecl)
+        visitDecl(valueDecl)
     }
     
     public func visitExpr(_ expr: ASTExprNode) {
@@ -113,7 +124,7 @@ public final class ASTDumper : ASTVisitor {
 }
 
 extension ASTNode {
-    public func dump(source: SourceFile) {
+    public func dump() {
         let dumper = ASTDumper(printer: Printer(),
                                source: source,
                                node: self)
@@ -121,8 +132,7 @@ extension ASTNode {
                   postWalk: dumper.postWalk)
     }
     
-    public func print(source: SourceFile,
-                      printer: Printer)
+    public func print(printer: Printer)
     {
         let dumper = ASTDumper(printer: printer,
                                source: source,
@@ -133,7 +143,7 @@ extension ASTNode {
     
     public var description: String {
         let pr = Printer(doesCapture: true)
-        print(source: source, printer: pr)
+        print(printer: pr)
         return pr.output
     }
 }

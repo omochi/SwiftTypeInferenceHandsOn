@@ -5,10 +5,10 @@ import SwiftcAST
 public final class ConstraintGenerator : ASTVisitor {
     public typealias VisitResult = Type
     
-    private let cs: ConstraintSystem
+    private let cts: ConstraintSystem
     
     public init(constraintSystem: ConstraintSystem) {
-        self.cs = constraintSystem
+        self.cts = constraintSystem
     }
     
     public func preWalk(node: ASTNode, context: DeclContext) throws -> PreWalkResult<ASTNode> {
@@ -17,7 +17,7 @@ public final class ConstraintGenerator : ASTVisitor {
     
     public func postWalk(node: ASTNode, context: DeclContext) throws -> WalkResult<ASTNode> {
         let ty = try visit(node)
-        cs.setASTType(for: node, ty)
+        cts.setASTType(for: node, ty)
         return .continue(node)
     }
     
@@ -34,16 +34,16 @@ public final class ConstraintGenerator : ASTVisitor {
             return ta
         }
         
-        return cs.createTypeVariable()
+        return cts.createTypeVariable()
     }
     
     public func visitCallExpr(_ node: CallExpr) throws -> Type {
-        let callee = cs.astType(for: node.callee)!
-        let arg = cs.astType(for: node.argument)!
+        let callee = cts.astType(for: node.callee)!
+        let arg = cts.astType(for: node.argument)!
         
-        let tv = cs.createTypeVariable()
+        let tv = cts.createTypeVariable()
         
-        cs.addConstraint(kind: .applicableFunction,
+        cts.addConstraint(kind: .applicableFunction,
             left: FunctionType(parameter: arg, result: tv),
             right: callee)
         
@@ -51,13 +51,13 @@ public final class ConstraintGenerator : ASTVisitor {
     }
     
     public func visitClosureExpr(_ node: ClosureExpr) throws -> Type {
-        let paramTy = cs.astType(for: node.parameter)!
-        let resultTy = cs.createTypeVariable()
+        let paramTy = cts.astType(for: node.parameter)!
+        let resultTy = cts.createTypeVariable()
         let closureTy = FunctionType(parameter: paramTy, result: resultTy)
         
-        let bodyTy = cs.astType(for: node.body[0])!
+        let bodyTy = cts.astType(for: node.body[0])!
         
-        cs.addConstraint(kind: .bind, left: bodyTy, right: resultTy)
+        cts.addConstraint(kind: .bind, left: bodyTy, right: resultTy)
         
         return closureTy
     }
@@ -67,18 +67,24 @@ public final class ConstraintGenerator : ASTVisitor {
     }
     
     public func visitDeclRefExpr(_ node: DeclRefExpr) throws -> Type {
-        let tv = cs.createTypeVariable()
+        let tv = cts.createTypeVariable()
         
         let choice = OverloadChoice(decl: node.target)
 
-        cs.resolveOverload(boundType: tv, choice: choice, location: node)
+        cts.resolveOverload(boundType: tv, choice: choice, location: node)
 
         return tv
     }
     
     public func visitOverloadedDeclRefExpr(_ node: OverloadedDeclRefExpr) throws -> Type {
-        let tv = cs.createTypeVariable()
+        let tv = cts.createTypeVariable()
         
+        var cs: [Constraint] = []
+        for target in node.targets {
+            let choice = OverloadChoice(decl: target)
+            cs.append(.bindOverload(left: tv, choice: choice, location: node))
+        }
+        cts.addDisjunctionConstraint(cs)
         return tv
     }
     

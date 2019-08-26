@@ -17,6 +17,11 @@ public struct SourceRange : Hashable {
         self.init(begin: SourcePosition(position: begin),
                   end: SourcePosition(position: end))
     }
+    
+    public init(syntax: Syntax) {
+        self.init(begin: syntax.positionAfterSkippingLeadingTrivia,
+                  end: syntax.endPositionBeforeTrailingTrivia)
+    }
 
     public func toLocation(name: String?, map: SourceLineMap) -> SourceLocationRange {
         map.location(of: self, name: name)
