@@ -1,18 +1,21 @@
 import SwiftcType
 
 public final class VariableDecl : ValueDecl {
+    public unowned let source: SourceFile
     public let sourceRange: SourceRange
     public weak var parentContext: DeclContext?
     public var name: String
     public var initializer: ASTExprNode?
     public var typeAnnotation: Type?
     public var type: Type?
-    public init(sourceRange: SourceRange,
+    public init(source: SourceFile,
+                sourceRange: SourceRange,
                 parentContext: DeclContext,
                 name: String,
                 initializer: ASTExprNode?,
                 typeAnnotation: Type?)
     {
+        self.source = source
         self.sourceRange = sourceRange
         self.name = name
         self.initializer = initializer

@@ -1,6 +1,7 @@
 import SwiftcType
 
 public final class SourceFile : Decl {
+    public var source: SourceFile { self }
     public let sourceRange: SourceRange
     public var parentContext: DeclContext? { nil }
     

@@ -1,16 +1,18 @@
 import SwiftcType
 
 public final class OverloadedDeclRefExpr : ASTExprNode {
+    public unowned let source: SourceFile
     public let sourceRange: SourceRange
     public var name: String
     public var targets: [ValueDecl]
     public var type: Type?
     
-    public init(sourceRange: SourceRange,
+    public init(source: SourceFile,
+                sourceRange: SourceRange,
                 name: String,
-                targets: [ValueDecl],
-                source: SourceFile)
+                targets: [ValueDecl])
     {
+        self.source = source
         self.sourceRange = sourceRange
         self.name = name
         self.targets = targets

@@ -1,16 +1,18 @@
 import SwiftcType
 
 public final class DeclRefExpr : ASTExprNode {
+    public unowned let source: SourceFile
     public let sourceRange: SourceRange
     public var name: String
     public var target: ValueDecl!
     public var type: Type?
     
-    public init(sourceRange: SourceRange,
+    public init(source: SourceFile,
+                sourceRange: SourceRange,
                 name: String,
-                target: ValueDecl,
-                source: SourceFile)
+                target: ValueDecl)
     {
+        self.source = source
         self.sourceRange = sourceRange
         self.name = name
         self.target = target

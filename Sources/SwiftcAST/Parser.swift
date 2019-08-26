@@ -4,13 +4,14 @@ import SwiftcBasic
 import SwiftcType
 
 public final class Parser {
-    public let source: String
+    public let sourceString: String
     public let fileName: String?
     
+    public var source: SourceFile!
     private var currentContext: DeclContext!
     
     public init(source: String, fileName: String? = nil) {
-        self.source = source
+        self.sourceString = source
         self.fileName = fileName
     }
     
@@ -30,9 +31,9 @@ public final class Parser {
     }
     
     public func parse() throws -> SourceFile {
-        let syn = try SyntaxParser.parse(source: source)
+        let syn = try SyntaxParser.parse(source: sourceString)
 
-        var data = source.data(using: .utf8)!
+        var data = sourceString.data(using: .utf8)!
         let size = data.count
         data.append(0)
         
@@ -41,16 +42,17 @@ public final class Parser {
         
         let lineMap = SourceLineMap(nullTerminatedData: data)
         
-        let sourceFile = SourceFile(sourceRange: sourceRange,
+        let source = SourceFile(sourceRange: sourceRange,
                                     fileName: fileName,
                                     sourceLineMap: lineMap)
-        try scope(context: sourceFile) {
+        self.source = source
+        try scope(context: source) {
             let statements = try parse(syn.statements)
             for st in statements {
-                sourceFile.addStatement(st)
+                source.addStatement(st)
             }
         }
-        return sourceFile
+        return source
     }
     
     private func parse(_ synStmts: CodeBlockItemListSyntax) throws -> [ASTNode] {
@@ -89,7 +91,8 @@ public final class Parser {
                 let type: Type? = try binding.typeAnnotation.map {
                     try parse(type: $0.type)
                 }
-                let decl = VariableDecl(sourceRange: SourceRange(begin: binding.position,
+                let decl = VariableDecl(source: source,
+                                        sourceRange: SourceRange(begin: binding.position,
                                                                  end: binding.endPosition),
                                         parentContext: currentContext,
                                         name: name,
@@ -109,7 +112,8 @@ public final class Parser {
         
         let sig = try parse(synFunc.signature)
         
-        let funcDecl = FunctionDecl(sourceRange: SourceRange(begin: synFunc.position,
+        let funcDecl = FunctionDecl(source: source,
+                                    sourceRange: SourceRange(begin: synFunc.position,
                                                              end: synFunc.endPosition),
                                     parentContext: currentContext,
                                     name: name,
@@ -146,11 +150,13 @@ public final class Parser {
         switch expr {
         case let expr as IdentifierExprSyntax:
             let name = expr.identifier.text
-            return UnresolvedDeclRefExpr(sourceRange: sourceRange,
+            return UnresolvedDeclRefExpr(source: source,
+                                         sourceRange: sourceRange,
                                          name: name)
         case let expr as IntegerLiteralExprSyntax:
             _ = expr
-            return IntegerLiteralExpr(sourceRange: sourceRange)
+            return IntegerLiteralExpr(source: source,
+                                      sourceRange: sourceRange)
         case let expr as FunctionCallExprSyntax:
             let callee = try parse(expr: expr.calledExpression)
             let synArgList = expr.argumentList.map { $0 }
@@ -158,7 +164,8 @@ public final class Parser {
                 throw MessageError("arg num must be 1")
             }
             let arg = try parse(expr: synArgList[0].expression)
-            return CallExpr(sourceRange: sourceRange,
+            return CallExpr(source: source,
+                            sourceRange: sourceRange,
                             callee: callee,
                             argument: arg)
         case let expr as ClosureExprSyntax:
@@ -175,7 +182,8 @@ public final class Parser {
         
         let param = try parse(synSig)
         
-        let closure = ClosureExpr(sourceRange: SourceRange(begin: expr.position,
+        let closure = ClosureExpr(source: source,
+                                  sourceRange: SourceRange(begin: expr.position,
                                                            end: expr.endPosition),
                                   parentContext: currentContext,
                                   parameter: param)
@@ -207,7 +215,8 @@ public final class Parser {
         
         let type: Type? = try synParam.type.map { try parse(type: $0) }
         
-        return VariableDecl(sourceRange: SourceRange(begin: synParam.position,
+        return VariableDecl(source: source,
+                            sourceRange: SourceRange(begin: synParam.position,
                                                      end: synParam.endPosition),
                             parentContext: currentContext,
                             name: name,

@@ -27,8 +27,6 @@ public final class ASTDumper : ASTVisitor {
         
         printOpen(node)
         
-        try node.accept(visitor: self)
-        
         return .continue(node)
     }
     
@@ -47,6 +45,8 @@ public final class ASTDumper : ASTVisitor {
     public func printOpen(_ node: ASTNode) {
         let name = "\(type(of: node))"
         pr.print("(\(name)")
+        
+        try! node.accept(visitor: self)
     }
     
     public func printClose() {
@@ -54,7 +54,7 @@ public final class ASTDumper : ASTVisitor {
     }
     
     public func visitASTNode(_ node: ASTNode) {
-        var range = node.sourceLocationRange(source: source)
+        var range = node.sourceLocationRange
         range.name = nil
         pr.print(" range=\(range)")
     }
@@ -121,11 +121,19 @@ extension ASTNode {
                   postWalk: dumper.postWalk)
     }
     
-    public func printSingle(source: SourceFile, printer: Printer) {
+    public func print(source: SourceFile,
+                      printer: Printer)
+    {
         let dumper = ASTDumper(printer: printer,
                                source: source,
                                node: self)
         dumper.printOpen(self)
         dumper.printClose()
+    }
+    
+    public var description: String {
+        let pr = Printer(doesCapture: true)
+        print(source: source, printer: pr)
+        return pr.output
     }
 }

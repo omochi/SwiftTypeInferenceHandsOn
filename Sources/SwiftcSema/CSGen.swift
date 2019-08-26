@@ -72,7 +72,7 @@ public final class ConstraintGenerator : ASTVisitor {
         let choice = OverloadChoice(decl: node.target)
 
         cs.resolveOverload(boundType: tv, choice: choice, location: node)
-        
+
         return tv
     }
     

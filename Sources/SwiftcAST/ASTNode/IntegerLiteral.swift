@@ -1,10 +1,14 @@
 import SwiftcType
 
 public final class IntegerLiteralExpr : ASTExprNode {
+    public unowned let source: SourceFile
     public let sourceRange: SourceRange
     public var type: Type?
     
-    public init(sourceRange: SourceRange) {
+    public init(source: SourceFile,
+                sourceRange: SourceRange)
+    {
+        self.source = source
         self.sourceRange = sourceRange
     }
     

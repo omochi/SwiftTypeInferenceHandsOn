@@ -1,7 +1,7 @@
 import SwiftcType
 import SwiftcAST
 
-public struct OverloadChoice : CustomStringConvertible, Hashable {
+public struct OverloadChoice : Hashable {
     public struct Eq : Hashable {
         public var decl: AnyASTNode
         public init(_ x: OverloadChoice) {
@@ -16,7 +16,7 @@ public struct OverloadChoice : CustomStringConvertible, Hashable {
     }
     
     public var description: String {
-        return decl.name
+        return "(decl=\(decl))"
     }
     
     public static func == (lhs: OverloadChoice, rhs: OverloadChoice) -> Bool {

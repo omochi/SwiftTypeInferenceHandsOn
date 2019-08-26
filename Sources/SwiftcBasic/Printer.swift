@@ -3,8 +3,14 @@ import Foundation
 public final class Printer {
     public var depth: Int
     public var needsIndent: Bool
+    public var doesCapture: Bool
+    public var output: String
     
-    public init(depth: Int = 0) {
+    public init(doesCapture: Bool = false,
+                depth: Int = 0)
+    {
+        self.doesCapture = doesCapture
+        self.output = ""
         self.depth = depth
         self.needsIndent = true
     }
@@ -52,6 +58,10 @@ public final class Printer {
     }
     
     private func printRaw(_ message: String) {
-        Swift.print(message, terminator: "")
+        if doesCapture {
+            output.append(message)
+        } else {
+            Swift.print(message, terminator: "")
+        }
     }
 }

@@ -1,13 +1,16 @@
 import SwiftcType
 
 public final class UnresolvedDeclRefExpr : ASTExprNode {
+    public unowned let source: SourceFile
     public let sourceRange: SourceRange
     public var name: String
     public var type: Type?
     
-    public init(sourceRange: SourceRange,
+    public init(source: SourceFile,
+                sourceRange: SourceRange,
                 name: String)
     {
+        self.source = source
         self.sourceRange = sourceRange
         self.name = name
     }
