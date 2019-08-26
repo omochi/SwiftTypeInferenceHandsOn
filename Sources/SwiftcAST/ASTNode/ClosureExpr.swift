@@ -1,12 +1,12 @@
 import SwiftcType
 
-public final class ClosureExpr : ASTContextNode, ASTExprNode {
-    public weak var parentContext: ASTContextNode?
+public final class ClosureExpr : DeclContext, ASTExprNode {
+    public weak var parentContext: DeclContext?
     public var parameter: VariableDecl
     public var body: [ASTNode] = []
     public var type: Type?
     
-    public init(parentContext: ASTContextNode?,
+    public init(parentContext: DeclContext?,
                 parameter: VariableDecl)
     {
         self.parentContext = parentContext
@@ -19,11 +19,11 @@ public final class ClosureExpr : ASTContextNode, ASTExprNode {
     
     public var interfaceType: Type? { type }
     
-    public func resolve(name: String) -> ASTNode? {
+    public func resolveInSelf(name: String) -> [ValueDecl] {
+        var decls: [ValueDecl] = []
         if parameter.name == name {
-            return parameter
+            decls.append(parameter)
         }
-        
-        return nil
+        return decls
     }
 }

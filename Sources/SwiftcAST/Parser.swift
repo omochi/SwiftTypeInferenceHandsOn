@@ -6,7 +6,7 @@ import SwiftcType
 public final class Parser {
     public let source: String
     
-    private var currentContext: ASTContextNode?
+    private var currentContext: DeclContext!
     
     public init(source: String) {
         self.source = source
@@ -17,7 +17,7 @@ public final class Parser {
         self.init(source: source)
     }
     
-    private func scope(context: ASTContextNode?, _ f: () throws -> Void) rethrows {
+    private func scope(context: DeclContext, _ f: () throws -> Void) rethrows {
         let old = currentContext
         currentContext = context
         defer {
@@ -78,7 +78,8 @@ public final class Parser {
                 let type: Type? = try binding.typeAnnotation.map {
                     try parse(type: $0.type)
                 }
-                let decl = VariableDecl(name: name,
+                let decl = VariableDecl(parentContext: currentContext,
+                                        name: name,
                                         initializer: initializer,
                                         typeAnnotation: type)
                 decls.append(decl)
@@ -185,7 +186,8 @@ public final class Parser {
         
         let type: Type? = try synParam.type.map { try parse(type: $0) }
         
-        return VariableDecl(name: name,
+        return VariableDecl(parentContext: currentContext,
+                            name: name,
                             initializer: nil,
                             typeAnnotation: type)
     }

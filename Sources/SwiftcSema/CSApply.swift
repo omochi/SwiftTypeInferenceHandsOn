@@ -3,8 +3,8 @@ import SwiftcAST
 
 extension ConstraintSystem.Solution {
     public func apply(to expr: ASTNode,
-                      context: ASTContextNode) throws -> ASTNode {
-        func tr(node: ASTNode, context: ASTContextNode?) throws -> ASTNode? {
+                      context: DeclContext) throws -> ASTNode {
+        func tr(node: ASTNode, context: DeclContext) throws -> ASTNode? {
             guard let ty = fixedType(for: node) else {
                 throw MessageError("node type unknown: \(node)")
             }

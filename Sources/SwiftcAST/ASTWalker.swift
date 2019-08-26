@@ -4,14 +4,14 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
     public typealias VisitTarget = ASTNode
     public typealias VisitResult = WalkResult<ASTNode>
     
-    public let _preWalk: (ASTNode, ASTContextNode) throws -> PreWalkResult<ASTNode>
-    public let _postWalk: (ASTNode, ASTContextNode) throws -> WalkResult<ASTNode>
+    public let _preWalk: (ASTNode, DeclContext) throws -> PreWalkResult<ASTNode>
+    public let _postWalk: (ASTNode, DeclContext) throws -> WalkResult<ASTNode>
     
-    public var context: ASTContextNode
+    public var context: DeclContext
     
-    public init(context: ASTContextNode,
-                preWalk: @escaping (ASTNode, ASTContextNode) throws -> PreWalkResult<ASTNode>,
-                postWalk: @escaping (ASTNode, ASTContextNode) throws -> WalkResult<ASTNode>)
+    public init(context: DeclContext,
+                preWalk: @escaping (ASTNode, DeclContext) throws -> PreWalkResult<ASTNode>,
+                postWalk: @escaping (ASTNode, DeclContext) throws -> WalkResult<ASTNode>)
     {
         self.context = context
         _preWalk = preWalk
@@ -26,7 +26,7 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
         try _postWalk(target, context)
     }
     
-    private func scope<R>(context: ASTContextNode, f: () throws -> R) rethrows -> R {
+    private func scope<R>(context: DeclContext, f: () throws -> R) rethrows -> R {
         let old = self.context
         self.context = context
         defer {
@@ -54,16 +54,18 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
     }
     
     public func visitVariableDecl(_ node: VariableDecl) throws -> WalkResult<ASTNode> {
-        if let ie = node.initializer {
-            switch try process(ie) {
-            case .continue(let x):
-                node.initializer = (x as! ASTExprNode)
-            case .terminate:
-                return .terminate
+        try scope(context: node) {
+            if let ie = node.initializer {
+                switch try process(ie) {
+                case .continue(let x):
+                    node.initializer = (x as! ASTExprNode)
+                case .terminate:
+                    return .terminate
+                }
             }
+            
+            return .continue(node)
         }
-        
-        return .continue(node)
     }
     
     public func visitCallExpr(_ node: CallExpr) throws -> WalkResult<ASTNode> {
@@ -114,6 +116,10 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
         .continue(node)
     }
     
+    public func visitOverloadedDeclRefExpr(_ node: OverloadedDeclRefExpr) throws -> WalkResult<ASTNode> {
+        .continue(node)
+    }
+    
     public func visitIntegerLiteralExpr(_ node: IntegerLiteralExpr) throws -> WalkResult<ASTNode> {
         .continue(node)
     }
@@ -121,10 +127,10 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
 
 extension ASTNode {
     @discardableResult
-    public func walk(context: ASTContextNode,
-                     preWalk: (ASTNode, ASTContextNode) throws -> PreWalkResult<ASTNode> =
+    public func walk(context: DeclContext,
+                     preWalk: (ASTNode, DeclContext) throws -> PreWalkResult<ASTNode> =
         { (n, _) in .continue(n) },
-                     postWalk: (ASTNode, ASTContextNode) throws -> WalkResult<ASTNode> =
+                     postWalk: (ASTNode, DeclContext) throws -> WalkResult<ASTNode> =
         { (n, _) in .continue(n) })
         throws -> WalkResult<ASTNode>
     {

@@ -58,5 +58,17 @@ f(3)
         let ag = try XCTCast(ap.argument, IntegerLiteralExpr.self)
         XCTAssertEqual(ag.type, PrimitiveType.int)
     }
+    
+    func testOverload() throws {
+        let code = """
+func f(_ a: Int) { }
+func f(_ a: String) { }
+f(3)
+"""
+        let s = try Parser(source: code).parse()
+        dump(s)
+        let tc = TypeChecker(source: s)
+        try tc.typeCheck()
+    }
 
 }

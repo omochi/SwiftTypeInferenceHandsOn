@@ -26,12 +26,12 @@ public final class ConstraintSystem {
     
     public struct Solution {
         public var bindings: TypeVariableBindings
-        public var astTypes: [ObjectIdentifier: Type]
-        public var overloadSelections: [ObjectIdentifier: OverloadSelection]
+        public var astTypes: [AnyASTNode: Type]
+        public var overloadSelections: [AnyASTNode: OverloadSelection]
         
         public init(bindings: TypeVariableBindings,
-                    astTypes: [ObjectIdentifier: Type],
-                    overloadSelections: [ObjectIdentifier: OverloadSelection])
+                    astTypes: [AnyASTNode: Type],
+                    overloadSelections: [AnyASTNode: OverloadSelection])
         {
             self.bindings = bindings
             self.astTypes = astTypes
@@ -39,7 +39,7 @@ public final class ConstraintSystem {
         }
         
         public func fixedType(for node: ASTNode) -> Type? {
-            guard let ty = astTypes[ObjectIdentifier(node)] else {
+            guard let ty = astTypes[node.eraseToAnyASTNode()] else {
                 return nil
             }
             if let tv = ty as? TypeVariable {
@@ -53,8 +53,8 @@ public final class ConstraintSystem {
     public private(set) var typeVariables: [TypeVariable] = []
     
     public private(set) var bindings: TypeVariableBindings = TypeVariableBindings()
-    public private(set) var astTypes: [ObjectIdentifier: Type] = [:]
-    public private(set) var overloadSelections: [ObjectIdentifier: OverloadSelection] = [:]
+    public private(set) var astTypes: [AnyASTNode: Type] = [:]
+    public private(set) var overloadSelections: [AnyASTNode: OverloadSelection] = [:]
     
     public private(set) var failedConstraint: ConstraintEntry?
     
@@ -136,7 +136,7 @@ public final class ConstraintSystem {
     }
     
     public func astType(for node: ASTNode) -> Type? {
-        if let type = astTypes[ObjectIdentifier(node)] {
+        if let type = astTypes[node.eraseToAnyASTNode()] {
             return type
         }
         
@@ -144,7 +144,7 @@ public final class ConstraintSystem {
             return ex.type
         }
         
-        if let ctx = node as? ASTContextNode {
+        if let ctx = node as? DeclContext {
             return ctx.interfaceType
         }
         
@@ -152,21 +152,30 @@ public final class ConstraintSystem {
     }
     
     public func setASTType(for node: ASTNode, _ type: Type) {
-        astTypes[ObjectIdentifier(node)] = type
+        let key = node.eraseToAnyASTNode()
+        if let _ = astTypes[key] {
+            preconditionFailure("already set")
+        }
+        astTypes[key] = type
     }
     
-    public func addConstraint(_ constraint: Constraint) {
+    public func addConstraint(kind: Constraint.Kind,
+                              left: Type, right: Type)
+    {
         func submit() -> SolveResult {
             var options = MatchOptions()
             options.generateConstraintsWhenAmbiguous = true
-            switch constraint {
-            case .bind(left: let left, right: let right):
-                return matchTypes(left: left, right: right,
-                                  kind: constraint.kind, options: options)
-            case .applicableFunction(left: let left, right: let right):
-                return simplifyApplicableFunctionConstraint(left: left,
+            switch kind {
+            case .bind:
+                return matchTypes(kind: kind,
+                                  left: left, right: right,
+                                  options: options)
+            case .applicableFunction:
+                return simplifyApplicableFunctionConstraint(left: left as! FunctionType,
                                                             right: right,
                                                             options: options)
+            case .bindOverload:
+                preconditionFailure("invalid kind: \(kind)")
             }
         }
     
@@ -174,7 +183,8 @@ public final class ConstraintSystem {
         case .solved:
             break
         case .failure:
-            fail(constraint: ConstraintEntry(constraint))
+            let fc = Constraint(kind: kind, left: left, right: right)
+            fail(constraint: ConstraintEntry(fc))
             break
         case .ambiguous:
             fatalError("addConstraint forbids ambiguous")
@@ -253,15 +263,18 @@ public final class ConstraintSystem {
         return result.map { $0 }
     }
     
-    public func resolveOverload(node: ASTNode,
-                                boundType: Type,
-                                choice: OverloadChoice) throws
+    public func resolveOverload(boundType: Type,                                
+                                choice: OverloadChoice,
+                                location: ASTNode)
     {
-        guard var declType = astType(for: choice.decl) else {
-            throw MessageError("untyped decl")
+        guard let declType = astType(for: choice.decl) else {
+            fail(constraint: ConstraintEntry(.bindOverload(left: boundType,
+                                                           choice: choice,
+                                                           location: location)))
+            return
         }
         
-        addConstraint(.bind(left: boundType, right: declType))
-        overloadSelections[ObjectIdentifier(node)] = OverloadSelection(choice: choice)
+        addConstraint(kind: .bind, left: boundType, right: declType)
+        overloadSelections[location.eraseToAnyASTNode()] = OverloadSelection(choice: choice)
     }
 }

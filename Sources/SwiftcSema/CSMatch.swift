@@ -2,9 +2,9 @@ import SwiftcBasic
 import SwiftcType
 
 extension ConstraintSystem {
-    public func matchTypes(left: Type,
+    public func matchTypes(kind: Constraint.Kind,
+                           left: Type,
                            right: Type,
-                           kind: Constraint.Kind,
                            options: MatchOptions) -> SolveResult
     {
         let left = simplify(type: left)
@@ -31,13 +31,14 @@ extension ConstraintSystem {
                 type = left
             }
             
-            return matchTypeVariableAndFixedType(variable: variable,
-                                                 type: type,
-                                                 kind: kind)
+            return matchTypeVariableAndFixedType(kind: kind,
+                                                 variable: variable,
+                                                 type: type)
         }
         
-        return matchFixedTypes(type1: left, type2: right,
-                               kind: kind, options: options)
+        return matchFixedTypes(kind: kind,
+                               type1: left, type2: right,
+                               options: options)
     }
     
     private func matchTypeVariables(left: TypeVariable,
@@ -55,14 +56,15 @@ extension ConstraintSystem {
         case .bind:
             mergeEquivalence(type1: left, type2: right)
             return .solved
-        case .applicableFunction:
+        case .applicableFunction,
+             .bindOverload:
             preconditionFailure("invalid kind: \(kind)")
         }
     }
     
-    private func matchTypeVariableAndFixedType(variable: TypeVariable,
-                                               type: Type,
-                                               kind: Constraint.Kind) -> SolveResult
+    private func matchTypeVariableAndFixedType(kind: Constraint.Kind,
+                                               variable: TypeVariable,
+                                               type: Type) -> SolveResult
     {
         precondition(variable.isRepresentative(bindings: bindings))
         switch kind {
@@ -73,14 +75,15 @@ extension ConstraintSystem {
             
             assignFixedType(variable: variable, type: type)
             return .solved
-        case .applicableFunction:
+        case .applicableFunction,
+             .bindOverload:
             preconditionFailure("invalid kind: \(kind)")
         }
     }
     
-    private func matchFixedTypes(type1: Type,
+    private func matchFixedTypes(kind: Constraint.Kind,
+                                 type1: Type,
                                  type2: Type,
-                                 kind: Constraint.Kind,
                                  options: MatchOptions) -> SolveResult
     {
         precondition(!(type1 is TypeVariable))
@@ -105,19 +108,21 @@ extension ConstraintSystem {
                     return .failure
                 }
                 
-                return matchFunctionTypes(type1: type1, type2: type2,
-                                          kind: kind, options: options)
+                return matchFunctionTypes(kind: kind,
+                                          type1: type1, type2: type2,
+                                          options: options)
             }
             
             unimplemented()
-        case .applicableFunction:
+        case .applicableFunction,
+             .bindOverload:
             preconditionFailure("invalid kind: \(kind)")
         }
     }
     
-    private func matchFunctionTypes(type1: FunctionType,
+    private func matchFunctionTypes(kind: Constraint.Kind,
+                                    type1: FunctionType,
                                     type2: FunctionType,
-                                    kind: Constraint.Kind,
                                     options: MatchOptions) -> SolveResult
     {
         let arg1 = type1.parameter
@@ -130,8 +135,9 @@ extension ConstraintSystem {
         
         switch kind {
         case .bind:
-            switch matchTypes(left: arg1, right: arg2,
-                              kind: kind, options: options)
+            switch matchTypes(kind: kind,
+                              left: arg1, right: arg2,
+                              options: options)
             {
             case .failure: return .failure
             case .ambiguous:
@@ -140,8 +146,9 @@ extension ConstraintSystem {
             case .solved: break
             }
             
-            switch matchTypes(left: ret1, right: ret2,
-                              kind: kind, options: options)
+            switch matchTypes(kind: kind,
+                              left: ret1, right: ret2,
+                              options: options)
             {
             case .failure: return .failure
             case .ambiguous:
@@ -155,7 +162,8 @@ extension ConstraintSystem {
             } else {
                 return .solved
             }
-        case .applicableFunction:
+        case .applicableFunction,
+             .bindOverload:
             preconditionFailure("invalid kind: \(kind)")
         }
     }

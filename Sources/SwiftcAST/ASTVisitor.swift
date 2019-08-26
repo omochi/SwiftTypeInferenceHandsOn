@@ -10,6 +10,7 @@ public protocol ASTVisitor : VisitorProtocol where VisitTarget == ASTNode {
     func visitClosureExpr(_ node: ClosureExpr) throws -> VisitResult
     func visitUnresolvedDeclRefExpr(_ node: UnresolvedDeclRefExpr) throws -> VisitResult
     func visitDeclRefExpr(_ node: DeclRefExpr) throws -> VisitResult
+    func visitOverloadedDeclRefExpr(_ node: OverloadedDeclRefExpr) throws -> VisitResult
     func visitIntegerLiteralExpr(_ node: IntegerLiteralExpr) throws -> VisitResult
 }
 

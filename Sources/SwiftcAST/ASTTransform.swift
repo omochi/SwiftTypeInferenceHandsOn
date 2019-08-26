@@ -7,12 +7,12 @@ extension ASTNode {
      fが型を返すと子の巡回はされない。
      fがnilを返した場合は子を巡回する。
      */
-    public func transform(context: ASTContextNode,
-                          _ f: (ASTNode, ASTContextNode) throws -> ASTNode?
+    public func transform(context: DeclContext,
+                          _ f: (ASTNode, DeclContext) throws -> ASTNode?
     ) throws -> ASTNode
     {
         try withoutActuallyEscaping(f) { (f) in
-            func preWalk(node: ASTNode, context: ASTContextNode) throws -> PreWalkResult<ASTNode> {
+            func preWalk(node: ASTNode, context: DeclContext) throws -> PreWalkResult<ASTNode> {
                 if let expr = try f(node, context) {
                     return .skipChildren(expr)
                 }

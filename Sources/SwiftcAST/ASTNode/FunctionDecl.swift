@@ -1,11 +1,11 @@
 import SwiftcType
 
-public final class FunctionDecl : ASTContextNode {
-    public weak var parentContext: ASTContextNode?
+public final class FunctionDecl : ValueDecl {
+    public weak var parentContext: DeclContext?
     public var name: String
     public var parameterType: Type
     public var resultType: Type
-    public init(parentContext: ASTContextNode?,
+    public init(parentContext: DeclContext?,
                 name: String,
                 parameterType: Type,
                 resultType: Type)
@@ -24,12 +24,11 @@ public final class FunctionDecl : ASTContextNode {
         FunctionType(parameter: parameterType, result: resultType)
     }
     
-    public func resolve(name: String) -> ASTNode? {
-        // TODO: support parameters
+    public func resolveInSelf(name: String) -> [ValueDecl] {
+        var decls: [ValueDecl] = []
         if self.name == name {
-            return self
+            decls.append(self)
         }
-        
-        return nil
+        return decls
     }
 }

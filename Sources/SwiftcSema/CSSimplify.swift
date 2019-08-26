@@ -6,11 +6,15 @@ extension ConstraintSystem {
         let options = MatchOptions()
         switch constraint {
         case .bind(left: let left, right: let right):
-            return matchTypes(left: left, right: right,
-                              kind: .bind, options: options)
+            return matchTypes(kind: .bind,
+                              left: left, right: right,
+                              options: options)
         case .applicableFunction(left: let left, right: let right):
             return simplifyApplicableFunctionConstraint(left: left, right: right,
                                                         options: options)
+        case .bindOverload(left: let left, choice: let choice, location: let location):
+            resolveOverload(boundType: left, choice: choice, location: location)
+            return .solved
         }
     }
     
@@ -40,18 +44,16 @@ extension ConstraintSystem {
         var subOpts = options
         subOpts.generateConstraintsWhenAmbiguous = true
         
-        switch matchTypes(left: lfn.parameter,
-                          right: rfn.parameter,
-                          kind: .bind,
+        switch matchTypes(kind: .bind,
+                          left: lfn.parameter, right: rfn.parameter,
                           options: subOpts) {
         case .failure: return .failure
         case .ambiguous: preconditionFailure("never")
         case .solved: break
         }
         
-        switch matchTypes(left: rfn.result,
-                          right: lfn.result,
-                          kind: .bind,
+        switch matchTypes(kind: .bind,
+                          left: rfn.result, right: lfn.result,
                           options: subOpts) {
         case .failure: return .failure
         case .ambiguous: preconditionFailure("never")

@@ -17,12 +17,12 @@ public final class TypeChecker {
     }
     
     public func typeCheckStatement(_ stmt: ASTNode,
-                                   context: ASTContextNode) throws -> ASTNode {
+                                   context: DeclContext) throws -> ASTNode {
         switch stmt {
         case let vd as VariableDecl:
             if let ie = vd.initializer {
                 vd.initializer = try typeCheckExpr(ie,
-                                                   context: context)
+                                                   context: vd)
             }
         case let ex as ASTExprNode:
             return try typeCheckExpr(ex,
@@ -34,7 +34,7 @@ public final class TypeChecker {
     }
     
     public func typeCheckExpr(_ expr: ASTExprNode,
-                              context: ASTContextNode) throws -> ASTExprNode {
+                              context: DeclContext) throws -> ASTExprNode {
         var expr = try preCheckExpr(expr,
                                     context: context)
         
@@ -47,28 +47,29 @@ public final class TypeChecker {
     }
     
     public func preCheckExpr(_ expr: ASTExprNode,
-                             context: ASTContextNode) throws -> ASTExprNode {
+                             context: DeclContext) throws -> ASTExprNode {
         let expr = try resolveDeclRef(expr: expr,
                                       context: context)
         return expr
     }
     
     public func resolveDeclRef(expr: ASTExprNode,
-                               context: ASTContextNode) throws -> ASTExprNode {
-        func tr(node: ASTNode, context: ASTContextNode?) throws -> ASTNode? {
+                               context: DeclContext) throws -> ASTExprNode {
+        func tr(node: ASTNode, context: DeclContext) throws -> ASTNode? {
             switch node {
             case let node as UnresolvedDeclRefExpr:
-                guard let context = context else {
-                    throw MessageError("no context in resolving")
-                }
-                
                 let name = node.name
                 
-                guard let target = context.resolve(name: name) else {
+                let targets = context.resolve(name: name)
+                guard targets.count > 0 else {
                     throw MessageError("failed to resolve: \(name)")
                 }
-
-                return DeclRefExpr(name: name, target: target)
+                
+                if targets.count == 1 {
+                    return DeclRefExpr(name: name, target: targets[0], source: source)
+                } else {
+                    return OverloadedDeclRefExpr(name: name, targets: targets, source: source)
+                }
             default:
                 return nil
             }

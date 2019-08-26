@@ -11,12 +11,13 @@ public final class ConstraintGenerator : ASTVisitor {
         self.cs = constraintSystem
     }
     
-    public func preWalk(node: ASTNode, context: ASTContextNode) throws -> PreWalkResult<ASTNode> {
+    public func preWalk(node: ASTNode, context: DeclContext) throws -> PreWalkResult<ASTNode> {
         .continue(node)
     }
     
-    public func postWalk(node: ASTNode, context: ASTContextNode) throws -> WalkResult<ASTNode> {
-        _ = try visit(node)
+    public func postWalk(node: ASTNode, context: DeclContext) throws -> WalkResult<ASTNode> {
+        let ty = try visit(node)
+        cs.setASTType(for: node, ty)
         return .continue(node)
     }
     
@@ -33,19 +34,18 @@ public final class ConstraintGenerator : ASTVisitor {
             return ta
         }
         
-        let tv = cs.createTypeVariable(for: node)
-        return tv
+        return cs.createTypeVariable()
     }
     
     public func visitCallExpr(_ node: CallExpr) throws -> Type {
         let callee = cs.astType(for: node.callee)!
         let arg = cs.astType(for: node.argument)!
         
-        let tv = cs.createTypeVariable(for: node)
+        let tv = cs.createTypeVariable()
         
-        cs.addConstraint(.applicableFunction(
+        cs.addConstraint(kind: .applicableFunction,
             left: FunctionType(parameter: arg, result: tv),
-            right: callee))
+            right: callee)
         
         return tv
     }
@@ -54,11 +54,10 @@ public final class ConstraintGenerator : ASTVisitor {
         let paramTy = cs.astType(for: node.parameter)!
         let resultTy = cs.createTypeVariable()
         let closureTy = FunctionType(parameter: paramTy, result: resultTy)
-        cs.setASTType(for: node, closureTy)
         
         let bodyTy = cs.astType(for: node.body[0])!
         
-        cs.addConstraint(.bind(left: bodyTy, right: resultTy))
+        cs.addConstraint(kind: .bind, left: bodyTy, right: resultTy)
         
         return closureTy
     }
@@ -68,26 +67,30 @@ public final class ConstraintGenerator : ASTVisitor {
     }
     
     public func visitDeclRefExpr(_ node: DeclRefExpr) throws -> Type {
-        let tv = cs.createTypeVariable(for: node)
+        let tv = cs.createTypeVariable()
         
         let choice = OverloadChoice(decl: node.target)
 
-        try cs.resolveOverload(node: node, boundType: tv, choice: choice)
+        cs.resolveOverload(boundType: tv, choice: choice, location: node)
+        
+        return tv
+    }
+    
+    public func visitOverloadedDeclRefExpr(_ node: OverloadedDeclRefExpr) throws -> Type {
+        let tv = cs.createTypeVariable()
         
         return tv
     }
     
     public func visitIntegerLiteralExpr(_ node: IntegerLiteralExpr) throws -> Type {
-        let ty = PrimitiveType.int
-        cs.setASTType(for: node, ty)
-        return ty
+        return PrimitiveType.int
     }
     
 }
 
 extension ConstraintSystem {
     public func generateConstraints(expr: ASTExprNode,
-                                    context: ASTContextNode) throws {
+                                    context: DeclContext) throws {
         let gen = ConstraintGenerator(constraintSystem: self)
         
         try expr.walk(context: context,
