@@ -1,12 +1,15 @@
 import SwiftcType
 
 public final class CallExpr : ASTExprNode {
+    public let sourceRange: SourceRange
     public var callee: ASTNode
     public var argument: ASTNode
     public var type: Type?
-    public init(callee: ASTNode,
+    public init(sourceRange: SourceRange,
+                callee: ASTNode,
                 argument: ASTNode)
     {
+        self.sourceRange = sourceRange
         self.callee = callee
         self.argument = argument
     }

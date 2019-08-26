@@ -1,14 +1,17 @@
 import SwiftcType
 
-public final class ClosureExpr : DeclContext, ASTExprNode {
+public final class ClosureExpr : ASTExprNode, DeclContext {
+    public let sourceRange: SourceRange
     public weak var parentContext: DeclContext?
     public var parameter: VariableDecl
     public var body: [ASTNode] = []
     public var type: Type?
     
-    public init(parentContext: DeclContext?,
+    public init(sourceRange: SourceRange,
+                parentContext: DeclContext?,
                 parameter: VariableDecl)
     {
+        self.sourceRange = sourceRange
         self.parentContext = parentContext
         self.parameter = parameter
     }

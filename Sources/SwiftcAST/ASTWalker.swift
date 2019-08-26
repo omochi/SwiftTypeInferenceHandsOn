@@ -4,14 +4,14 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
     public typealias VisitTarget = ASTNode
     public typealias VisitResult = WalkResult<ASTNode>
     
-    public let _preWalk: (ASTNode, DeclContext) throws -> PreWalkResult<ASTNode>
-    public let _postWalk: (ASTNode, DeclContext) throws -> WalkResult<ASTNode>
+    public let _preWalk: (ASTNode, DeclContext?) throws -> PreWalkResult<ASTNode>
+    public let _postWalk: (ASTNode, DeclContext?) throws -> WalkResult<ASTNode>
     
-    public var context: DeclContext
+    public var context: DeclContext?
     
-    public init(context: DeclContext,
-                preWalk: @escaping (ASTNode, DeclContext) throws -> PreWalkResult<ASTNode>,
-                postWalk: @escaping (ASTNode, DeclContext) throws -> WalkResult<ASTNode>)
+    public init(context: DeclContext?,
+                preWalk: @escaping (ASTNode, DeclContext?) throws -> PreWalkResult<ASTNode>,
+                postWalk: @escaping (ASTNode, DeclContext?) throws -> WalkResult<ASTNode>)
     {
         self.context = context
         _preWalk = preWalk
@@ -137,8 +137,28 @@ extension ASTNode {
         try withoutActuallyEscaping(preWalk) { (preWalk) in
             try withoutActuallyEscaping(postWalk) { (postWalk) in
                 let walker = ASTWalker(context: context,
-                                       preWalk: preWalk,
-                                       postWalk: postWalk)
+                                       preWalk: { (n, c) in try preWalk(n, c!) },
+                                       postWalk: { (n, c) in try postWalk(n, c!) }
+                )
+                return try walker.process(self)
+            }
+        }
+    }
+    
+    @discardableResult
+    public func walk(
+        preWalk: (ASTNode) throws -> PreWalkResult<ASTNode> =
+        { (n) in .continue(n) },
+        postWalk: (ASTNode) throws -> WalkResult<ASTNode> =
+        { (n) in .continue(n) })
+        throws -> WalkResult<ASTNode>
+    {
+        try withoutActuallyEscaping(preWalk) { (preWalk) in
+            try withoutActuallyEscaping(postWalk) { (postWalk) in
+                let walker = ASTWalker(context: nil,
+                                       preWalk: { (n, _) in try preWalk(n) },
+                                       postWalk: { (n, _) in try postWalk(n) }
+                )
                 return try walker.process(self)
             }
         }

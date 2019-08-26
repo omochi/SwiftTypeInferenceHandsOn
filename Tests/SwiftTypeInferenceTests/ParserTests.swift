@@ -2,6 +2,40 @@ import XCTest
 import SwiftcTest
 
 class ParserTests: XCTestCase {
+    func testSourceLineMap() throws {
+        do {
+            let s = [
+                "abc"
+                ].joined()
+            let m = SourceLineMap(source: s)
+            XCTAssertEqual(m.offsets, [0])
+        }
+        do {
+            let s = [
+                "aaa\n",
+                "bbb\r",
+                "ccc\r\n",
+                "ddd\n"
+                ].joined()
+            let m = SourceLineMap(source: s)
+            XCTAssertEqual(m.offsets, [0, 4, 8, 13, 17])
+            
+            let l1 = SourcePosition(rawValue: 0).toLocation(name: nil, map: m)
+            XCTAssertEqual(l1, SourceLocation(name: nil, line: 1, column: 1))
+            
+            let l2 = SourcePosition(rawValue: 5).toLocation(name: "a.swift", map: m)
+            XCTAssertEqual(l2, SourceLocation(name: "a.swift", line: 2, column: 2))
+            
+            let l3 = SourcePosition(rawValue: 16).toLocation(name: nil, map: m)
+            XCTAssertEqual(l3, SourceLocation(name: nil, line: 4, column: 4))
+            
+            let l4 = SourcePosition(rawValue: 17).toLocation(name: nil, map: m)
+            XCTAssertEqual(l4, SourceLocation(name: nil, line: 5, column: 1))
+            
+            let l5 = SourcePosition(rawValue: 18).toLocation(name: nil, map: m)
+            XCTAssertEqual(l5, SourceLocation(name: nil, line: 5, column: 2))
+        }
+    }
     
     func testTopLetInit() throws {
         let pr = Parser(source: """

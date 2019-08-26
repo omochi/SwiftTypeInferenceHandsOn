@@ -66,9 +66,11 @@ public final class TypeChecker {
                 }
                 
                 if targets.count == 1 {
-                    return DeclRefExpr(name: name, target: targets[0], source: source)
+                    return DeclRefExpr(sourceRange: node.sourceRange,
+                                       name: name, target: targets[0], source: source)
                 } else {
-                    return OverloadedDeclRefExpr(name: name, targets: targets, source: source)
+                    return OverloadedDeclRefExpr(sourceRange: node.sourceRange,
+                                                 name: name, targets: targets, source: source)
                 }
             default:
                 return nil

@@ -1,11 +1,22 @@
 import SwiftcType
 
 public final class SourceFile : Decl {
+    public let sourceRange: SourceRange
     public var parentContext: DeclContext? { nil }
+    
+    public var fileName: String?
+    public var sourceLineMap: SourceLineMap
+    
     public var statements: [ASTNode] = []
     public var ownedNodes: [ASTNode] = []
     
-    public init() {
+    public init(sourceRange: SourceRange,
+                fileName: String?,
+                sourceLineMap: SourceLineMap)
+    {
+        self.sourceRange = sourceRange
+        self.fileName = fileName
+        self.sourceLineMap = sourceLineMap
     }
     
     public func dispose() {
