@@ -38,6 +38,10 @@ public final class ConstraintSystem {
             self.overloadSelections = overloadSelections
         }
         
+        public func simplify(type: Type) -> Type {
+            type.simplify(bindings: bindings)
+        }
+        
         public func fixedType(for node: ASTNode) -> Type? {
             guard let ty = astTypes[node.eraseToAnyASTNode()] else {
                 return nil

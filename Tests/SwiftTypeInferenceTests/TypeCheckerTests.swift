@@ -83,5 +83,40 @@ f(3)
         let tc = TypeChecker(source: s)
         try tc.typeCheck()
     }
+    
+    func testAssignment() throws {
+        do {
+            let code = """
+let a = 3
+"""
+            let s = try Parser(source: code).parse()
+            let tc = TypeChecker(source: s)
+            try tc.typeCheck()
+            
+            let vd = try XCTCast(XCTArrayGet(s.statements, 0), VariableDecl.self)
+            XCTAssertEqual(vd.type, PrimitiveType.int)
+        }
+        
+        do {
+            let code = """
+let a: Int = 3
+"""
+            let s = try Parser(source: code).parse()
+            let tc = TypeChecker(source: s)
+            try tc.typeCheck()
+            
+            let vd = try XCTCast(XCTArrayGet(s.statements, 0), VariableDecl.self)
+            XCTAssertEqual(vd.type, PrimitiveType.int)
+        }
+        
+        do {
+            let code = """
+let a: String = 3
+"""
+            let s = try Parser(source: code).parse()
+            let tc = TypeChecker(source: s)
+            XCTAssertThrowsError(try tc.typeCheck())
+        }
+    }
 
 }

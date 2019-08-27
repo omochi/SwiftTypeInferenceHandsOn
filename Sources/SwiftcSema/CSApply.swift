@@ -70,9 +70,9 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
 }
 
 extension ConstraintSystem.Solution {
-    public func apply(to expr: ASTNode,
+    public func apply(to expr: Expr,
                       context: DeclContext,
-                      constraintSystem: ConstraintSystem) throws -> ASTNode
+                      constraintSystem: ConstraintSystem) throws -> Expr
     {
         let applier = ConstraintSolutionApplicator(constraintSystem: constraintSystem,
                                                    solution: self)
@@ -80,7 +80,7 @@ extension ConstraintSystem.Solution {
                              preWalk: applier.preWalk,
                              postWalk: applier.postWalk)
         {
-        case .continue(let node): return node
+        case .continue(let node): return node as! Expr
         case .terminate: preconditionFailure()
         }
     }

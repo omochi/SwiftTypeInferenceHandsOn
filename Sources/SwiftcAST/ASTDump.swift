@@ -1,4 +1,5 @@
 import SwiftcBasic
+import SwiftcType
 
 public final class ASTDumper : ASTVisitor {
     public typealias VisitResult = Void
@@ -39,6 +40,10 @@ public final class ASTDumper : ASTVisitor {
         pr.print(")")
     }
     
+    private func str(_ type: Type?) -> String {
+        type?.description ?? "(nil)"
+    }
+    
     public func visitASTNode(_ node: ASTNode) {
         var range = node.sourceLocationRange
         range.name = nil
@@ -63,8 +68,7 @@ public final class ASTDumper : ASTVisitor {
     }
     
     public func visitExpr(_ expr: Expr) {
-        let typeStr = expr.type?.description ?? "(nil)"
-        pr.print(" type=\"\(typeStr)\"")
+        pr.print(" type=\"\(str(expr.type))\"")
     
         visitASTNode(expr)
     }
@@ -80,6 +84,9 @@ public final class ASTDumper : ASTVisitor {
     }
     
     public func visitVariableDecl(_ node: VariableDecl) throws -> Void {
+        let type = node.typeAnnotation ?? node.type
+        pr.print(" type=\"\(str(type))\"")
+        
         visitValueDecl(node)
     }
     

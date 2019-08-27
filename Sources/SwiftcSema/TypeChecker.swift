@@ -20,33 +20,76 @@ public final class TypeChecker {
                                    context: DeclContext) throws -> ASTNode {
         switch stmt {
         case let vd as VariableDecl:
-            if let ie = vd.initializer {
-                vd.initializer = try typeCheckExpr(ie,
-                                                   context: vd)
-            }
+           return try typeCheckVariableDecl(vd, context: context)
         case let ex as Expr:
             return try typeCheckExpr(ex,
-                                     context: context)
+                                     context: context,
+                                     callbacks: nil)
         default:
             break
         }
         return stmt
     }
     
+    public func typeCheckVariableDecl(_ vd: VariableDecl,
+                                      context: DeclContext) throws -> ASTNode {
+        if var ie = vd.initializer {
+            var varTy: Type!
+            
+            let callbacks = ExprTypeCheckCallbacks(
+                didGenerateConstraints: { (cts, expr, context) in
+                    if let ta = vd.typeAnnotation {
+                        varTy = ta
+                    } else {
+                        varTy = cts.createTypeVariable()
+                    }
+                    
+                    let exprTy = cts.astType(for: expr)!
+                    
+                    cts.addConstraint(kind: .bind, left: exprTy, right: varTy)
+            },
+                didFoundSolution: nil,
+                didApplySolution: { (cts, solution, expr, context) -> Expr in
+                    varTy = solution.simplify(type: varTy)
+                    
+                    vd.type = varTy
+                    
+                    return expr
+            })
+                
+            ie = try typeCheckExpr(ie,
+                                   context: vd,
+                                   callbacks: callbacks)
+            
+            vd.initializer = ie
+        }
+        
+        return vd
+    }
+    
     public func typeCheckExpr(_ expr: Expr,
-                              context: DeclContext) throws -> Expr {
+                              context: DeclContext,
+                              callbacks: ExprTypeCheckCallbacks?) throws -> Expr {
         var expr = try preCheckExpr(expr,
                                     context: context)
         
         let cts = ConstraintSystem()
         try cts.generateConstraints(expr: expr,
                                    context: context)
+        try callbacks?.didGenerateConstraints?(cts, expr, context)
+        
         let solutions = cts.solve()
         guard let solution = solutions.first else {
             throw MessageError("no solution")
         }
-        expr = try (solution.apply(to: expr, context: context,
-                                   constraintSystem: cts) as! Expr)
+        
+        expr = try callbacks?.didFoundSolution?(cts, solution, expr, context) ?? expr
+        
+        expr = try solution.apply(to: expr, context: context,
+                                  constraintSystem: cts)
+        
+        expr = try callbacks?.didApplySolution?(cts, solution, expr, context) ?? expr
+        
         return expr
     }
     
