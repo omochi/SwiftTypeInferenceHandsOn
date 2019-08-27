@@ -28,14 +28,17 @@ public final class ConstraintSystem {
         public var bindings: TypeVariableBindings
         public var astTypes: [AnyASTNode: Type]
         public var overloadSelections: [AnyASTNode: OverloadSelection]
+        public var typeConversionRelations: [TypeConversionRelation] = []
         
         public init(bindings: TypeVariableBindings,
                     astTypes: [AnyASTNode: Type],
-                    overloadSelections: [AnyASTNode: OverloadSelection])
+                    overloadSelections: [AnyASTNode: OverloadSelection],
+                    typeConversionRelations: [TypeConversionRelation])
         {
             self.bindings = bindings
             self.astTypes = astTypes
             self.overloadSelections = overloadSelections
+            self.typeConversionRelations = typeConversionRelations
         }
         
         public func simplify(type: Type) -> Type {
@@ -66,6 +69,7 @@ public final class ConstraintSystem {
     public internal(set) var bindings: TypeVariableBindings = TypeVariableBindings()
     public internal(set) var astTypes: [AnyASTNode: Type] = [:]
     public internal(set) var overloadSelections: [AnyASTNode: OverloadSelection] = [:]
+    public internal(set) var typeConversionRelations: [TypeConversionRelation] = []
     
     public internal(set) var failedConstraint: ConstraintEntry?
     
@@ -108,12 +112,8 @@ public final class ConstraintSystem {
         
         return Solution(bindings: bindings,
                         astTypes: astTypes,
-                        overloadSelections: overloadSelections)
-    }
-    
-    public func _addAmbiguousConstraint(_ constraint: Constraint) {
-        let entry = ConstraintEntry(constraint)
-        constraints.append(entry)
+                        overloadSelections: overloadSelections,
+                        typeConversionRelations: typeConversionRelations)
     }
     
     /**
@@ -130,23 +130,23 @@ public final class ConstraintSystem {
     
     public func mergeEquivalence(type1: TypeVariable,
                                  type2: TypeVariable,
-                                 activate: Bool = true)
+                                 doesActivate: Bool = true)
     {
         bindings.merge(type1: type1, type2: type2)
         
-        if activate {
+        if doesActivate {
             activateConstraints(involving: type1)
         }
     }
     
-    public func assignFixedType(variable: TypeVariable,
-                                type: Type,
-                                activate: Bool = true)
+    public func assignFixedType(for typeVariable: TypeVariable,
+                                _ fixedType: Type,
+                                doesActivate: Bool = true)
     {
-        bindings.assign(variable: variable, type: type)
+        bindings.assign(variable: typeVariable, type: fixedType)
         
-        if activate {
-            activateConstraints(involving: variable)
+        if doesActivate {
+            activateConstraints(involving: typeVariable)
         }
     }
     
@@ -181,9 +181,11 @@ public final class ConstraintSystem {
             var options = MatchOptions()
             options.generateConstraintsWhenAmbiguous = true
             switch kind {
-            case .bind:
+            case .bind,
+                 .conversion:
                 return matchTypes(kind: kind,
-                                  left: left, right: right,
+                                  left: left,
+                                  right: right,
                                   options: options)
             case .applicableFunction:
                 return simplifyApplicableFunctionConstraint(left: left as! FunctionType,
@@ -216,7 +218,7 @@ public final class ConstraintSystem {
     }
     
     public func addDisjunctionConstraint(_ constraints: [Constraint]) {
-        _addAmbiguousConstraint(.disjunction(constraints: constraints))
+        _addConstraintEntry(ConstraintEntry(.disjunction(constraints: constraints)))
     }
     
     public var isFailed: Bool {

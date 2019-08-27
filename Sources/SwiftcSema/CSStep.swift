@@ -7,6 +7,7 @@ extension ConstraintSystem {
         public var bindings: TypeVariableBindings
         public var astTypes: [AnyASTNode: Type]
         public var overloadSelections: [AnyASTNode: OverloadSelection]
+        public var typeConversionRelations: [TypeConversionRelation]
         public var failedConstraint: ConstraintEntry?
         public var constraints: [ConstraintEntry]
     }
@@ -15,6 +16,7 @@ extension ConstraintSystem {
         return StepState(bindings: bindings,
                          astTypes: astTypes,
                          overloadSelections: overloadSelections,
+                         typeConversionRelations: typeConversionRelations,
                          failedConstraint: failedConstraint,
                          constraints: constraints)
     }
@@ -23,6 +25,7 @@ extension ConstraintSystem {
         self.bindings = s.bindings
         self.astTypes = s.astTypes
         self.overloadSelections = s.overloadSelections
+        self.typeConversionRelations = s.typeConversionRelations
         self.failedConstraint = s.failedConstraint
         self.constraints = s.constraints
     }

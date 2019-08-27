@@ -5,8 +5,9 @@ extension ConstraintSystem {
     public func simplify(constraint: Constraint) -> SolveResult {
         let options = MatchOptions()
         switch constraint {
-        case .bind(left: let left, right: let right):
-            return matchTypes(kind: .bind,
+        case .bind(left: let left, right: let right),
+             .conversion(left: let left, right: let right):
+            return matchTypes(kind: constraint.kind,
                               left: left, right: right,
                               options: options)
         case .applicableFunction(left: let left, right: let right):
@@ -20,14 +21,48 @@ extension ConstraintSystem {
         }
     }
     
+    public func simplify(conversion: Conversion,
+                         left leftType: Type,
+                         right rightType: Type,
+                         kind: Constraint.Kind,
+                         options: MatchOptions) -> SolveResult {
+        switch _simplify(conversion: conversion,
+                         left: leftType, right: rightType,
+                         kind: kind, options: options) {
+        case .solved:
+            let rel = TypeConversionRelation(conversion: conversion, left: leftType, right: rightType)
+            typeConversionRelations.append(rel)
+            return .solved
+        case .ambiguous: return .ambiguous
+        case .failure: return .failure
+        }
+    }
+    
+    private func _simplify(conversion: Conversion,
+                           left leftType: Type,
+                           right rightType: Type,
+                           kind: Constraint.Kind,
+                           options: MatchOptions) -> SolveResult
+    {
+        precondition(!(leftType is TypeVariable))
+        precondition(!(rightType is TypeVariable))
+        
+//        let subOptions = decompositionOptions(options)
+        
+        switch conversion {
+        case .deepEquality:
+            return matchDeepEqualityTypes(left: leftType, right: rightType)
+        }
+    }
+    
     public func simplifyApplicableFunctionConstraint(left lfn: FunctionType,
                                                      right: Type,
                                                      options: MatchOptions) -> SolveResult
     {
         func ambiguous() -> SolveResult {
             if options.generateConstraintsWhenAmbiguous {
-                let cs = Constraint.applicableFunction(left: lfn, right: right)
-                _addAmbiguousConstraint(cs)
+                let c = Constraint.applicableFunction(left: lfn, right: right)
+                _addConstraintEntry(ConstraintEntry(c))
                 return .solved
             }
             return .ambiguous

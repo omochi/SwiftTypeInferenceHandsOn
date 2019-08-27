@@ -42,6 +42,15 @@ extension ConstraintSystem {
                 }
             }
         }
+        
+        if !typeConversionRelations.isEmpty {
+            pr.println("type conversions")
+            pr.nest {
+                for cv in typeConversionRelations {
+                    pr.println(cv.description)
+                }
+            }
+        }
     }
     
     public func dump(constraint: ConstraintEntry, printer pr: Printer) {

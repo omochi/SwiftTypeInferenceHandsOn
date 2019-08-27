@@ -5,6 +5,7 @@ import SwiftcAST
 public enum Constraint : CustomStringConvertible, Hashable {
     public enum Kind : Hashable {
         case bind
+        case conversion
         case applicableFunction
         case bindOverload
         case disjunction
@@ -36,6 +37,7 @@ public enum Constraint : CustomStringConvertible, Hashable {
     }
     
     case bind(left: Type, right: Type)
+    case conversion(left: Type, right: Type)
     case applicableFunction(left: FunctionType, right: Type)
     case bindOverload(left: Type, choice: OverloadChoice, location: ASTNode)
     case disjunction(Disjunction)
@@ -44,6 +46,8 @@ public enum Constraint : CustomStringConvertible, Hashable {
         switch kind {
         case .bind:
             self = .bind(left: left, right: right)
+        case .conversion:
+            self = .conversion(left: left, right: right)
         case .applicableFunction:
             self = .applicableFunction(left: left as! FunctionType, right: right)
         case .bindOverload,
@@ -59,6 +63,7 @@ public enum Constraint : CustomStringConvertible, Hashable {
     public var kind: Kind {
         switch self {
         case .bind: return .bind
+        case .conversion: return .conversion
         case .applicableFunction: return .applicableFunction
         case .bindOverload: return .bindOverload
         case .disjunction: return .disjunction
@@ -69,6 +74,8 @@ public enum Constraint : CustomStringConvertible, Hashable {
         switch self {
         case .bind(left: let left, right: let right):
             return "\(left) <<bind>> \(right)"
+        case .conversion(left: let left, right: let right):
+            return "\(left) <<conversion>> \(right)"
         case .applicableFunction(left: let left, right: let right):
             return "\(left) <<applicable fn>> \(right)"
         case .bindOverload(left: let left, choice: let choice, location: _):
@@ -82,6 +89,7 @@ public enum Constraint : CustomStringConvertible, Hashable {
     public var left: Type {
         switch self {
         case .bind(left: let left, right: _),
+             .conversion(left: let left, right: _),
              .bindOverload(left: let left, choice: _, location: _):
             return left
         case .applicableFunction(left: let left, right: _):
@@ -97,6 +105,11 @@ public enum Constraint : CustomStringConvertible, Hashable {
               .bind(left: let bl, right: let br)):
             return al == bl && ar == br
         case (.bind, _): return false
+            
+        case (.conversion(left: let al, right: let ar),
+              .conversion(left: let bl, right: let br)):
+            return al == bl && ar == br
+        case (.conversion, _): return false
             
         case (.applicableFunction(left: let al, right: let ar),
               .applicableFunction(let bl, let br)):
@@ -121,6 +134,9 @@ public enum Constraint : CustomStringConvertible, Hashable {
         case .bind(left: let l, right: let r):
             l.hash(into: &h)
             r.hash(into: &h)
+        case .conversion(left: let l, right: let r):
+            l.hash(into: &h)
+            r.hash(into: &h)
         case .applicableFunction(left: let l, right: let r):
             l.hash(into: &h)
             r.hash(into: &h)
@@ -136,6 +152,7 @@ public enum Constraint : CustomStringConvertible, Hashable {
     public var containingTypes: [Type] {
         switch self {
         case .bind(left: let l, right: let r): return [l, r]
+        case .conversion(left: let l, right: let r): return [l, r]
         case .applicableFunction(left: let l, right: let r): return [l, r]
         case .bindOverload(left: let t, choice: let c, location: _): return [t] + c.containingTypes
         case .disjunction(let dj): return dj.constraints.flatMap { $0.containingTypes }

@@ -3,172 +3,197 @@ import SwiftcType
 
 extension ConstraintSystem {
     public func matchTypes(kind: Constraint.Kind,
-                           left: Type,
-                           right: Type,
+                           left leftType: Type,
+                           right rightType: Type,
                            options: MatchOptions) -> SolveResult
     {
-        let left = simplify(type: left)
-        let right = simplify(type: right)
+        let leftType = simplify(type: leftType)
+        let rightType = simplify(type: rightType)
         
-        let leftVar = left as? TypeVariable
-        let rightVar = right as? TypeVariable
+        func ambiguous() -> SolveResult {
+            if options.generateConstraintsWhenAmbiguous {
+                let c = Constraint(kind: kind, left: leftType, right: rightType)
+                _addConstraintEntry(ConstraintEntry(c))
+                return .solved
+            }
+            return .ambiguous
+        }
         
-        if leftVar != nil || rightVar != nil {
-            if let left = leftVar, let right = rightVar {
-                return matchTypeVariables(left: left,
-                                          right: right,
-                                          kind: kind)
+        let leftVarOrNone = leftType as? TypeVariable
+        let rightVarOrNone = rightType as? TypeVariable
+        
+        if leftVarOrNone != nil || rightVarOrNone != nil {
+            if let leftVar = leftVarOrNone,
+                let rightVar = rightVarOrNone
+            {
+                if leftVar == rightVar {
+                    return .solved
+                }
             }
             
-            var variable: TypeVariable!
-            var type: Type!
-            
-            if let left = leftVar {
-                variable = left
-                type = right
-            } else {
-                variable = rightVar!
-                type = left
+            switch kind {
+            case .bind:
+                if let leftVar = leftVarOrNone,
+                    let rightVar = rightVarOrNone
+                {
+                    mergeEquivalence(type1: leftVar, type2: rightVar)
+                    return .solved
+                }
+                
+                let variable: TypeVariable
+                let fixedType: Type
+                if let leftVar = leftVarOrNone {
+                    variable = leftVar
+                    fixedType = rightType
+                } else {
+                    variable = rightVarOrNone!
+                    fixedType = leftType
+                }
+                
+                return matchTypesBind(kind: kind,
+                                      typeVariable: variable,
+                                      fixedType: fixedType)
+            case .conversion:
+                return ambiguous()
+            case .applicableFunction,
+                 .bindOverload,
+                 .disjunction:
+                preconditionFailure("invalid kind: \(kind)")
             }
-            
-            return matchTypeVariableAndFixedType(kind: kind,
-                                                 variable: variable,
-                                                 type: type)
         }
         
         return matchFixedTypes(kind: kind,
-                               type1: left, type2: right,
+                               left: leftType,
+                               right: rightType,
                                options: options)
     }
     
-    private func matchTypeVariables(left: TypeVariable,
-                                    right: TypeVariable,
-                                    kind: Constraint.Kind) -> SolveResult
+    private func matchTypesBind(kind: Constraint.Kind,
+                                typeVariable: TypeVariable,
+                                fixedType: Type) -> SolveResult
     {
-        precondition(left.isRepresentative(bindings: bindings))
-        precondition(right.isRepresentative(bindings: bindings))
+        precondition(typeVariable.isRepresentative(bindings: bindings))
         
-        if left == right {
-            return .solved
+        if typeVariable.occurs(in: fixedType) {
+            return .failure
         }
         
-        switch kind {
-        case .bind:
-            mergeEquivalence(type1: left, type2: right)
-            return .solved
-        case .applicableFunction,
-             .bindOverload,
-             .disjunction:
-            preconditionFailure("invalid kind: \(kind)")
-        }
+        assignFixedType(for: typeVariable, fixedType)
+        return .solved
     }
     
-    private func matchTypeVariableAndFixedType(kind: Constraint.Kind,
-                                               variable: TypeVariable,
-                                               type: Type) -> SolveResult
-    {
-        precondition(variable.isRepresentative(bindings: bindings))
-        switch kind {
-        case .bind:
-            if variable.occurs(in: type) {
-                return .failure
-            }
-            
-            assignFixedType(variable: variable, type: type)
-            return .solved
-        case .applicableFunction,
-             .bindOverload,
-             .disjunction:
-            preconditionFailure("invalid kind: \(kind)")
-        }
+    internal func decompositionOptions(_ options: MatchOptions) -> MatchOptions {
+        var options = options
+        options.generateConstraintsWhenAmbiguous = true
+        return options
     }
     
     private func matchFixedTypes(kind: Constraint.Kind,
-                                 type1: Type,
-                                 type2: Type,
+                                 left leftType: Type,
+                                 right rightType: Type,
                                  options: MatchOptions) -> SolveResult
     {
-        precondition(!(type1 is TypeVariable))
-        precondition(!(type2 is TypeVariable))
+        precondition(!(leftType is TypeVariable))
+        precondition(!(rightType is TypeVariable))
         
-        switch kind {
-        case .bind:
-            if let type1 = type1 as? PrimitiveType {
-                guard let type2 = type2 as? PrimitiveType else {
-                    return .failure
-                }
-                
-                if type1.name == type2.name {
-                    return .solved
-                } else {
-                    return .failure
-                }
+        var conversions: [Conversion] = []
+        
+        if let leftType = leftType as? PrimitiveType,
+            let rightType = rightType as? PrimitiveType
+        {
+            if leftType.name == rightType.name {
+                conversions.append(.deepEquality)
             }
-            
-            if let type1 = type1 as? FunctionType {
-                guard let type2 = type2 as? FunctionType else {
-                    return .failure
-                }
-                
-                return matchFunctionTypes(kind: kind,
-                                          type1: type1, type2: type2,
-                                          options: options)
-            }
-            
-            unimplemented()
-        case .applicableFunction,
-             .bindOverload,
-             .disjunction:
-            preconditionFailure("invalid kind: \(kind)")
         }
+        
+        if let leftType = leftType as? FunctionType,
+        let rightType = rightType as? FunctionType
+        {
+            return matchFunctionTypes(kind: kind,
+                                      left: leftType,
+                                      right: rightType,
+                                      options: options)
+        }
+        
+        if conversions.isEmpty {
+            return .failure
+        }
+        
+        func subKind(_ kind: Constraint.Kind, conversion: Conversion) -> Constraint.Kind {
+            if conversion == .deepEquality { return .bind }
+            else { return kind }
+        }
+        
+        if conversions.count == 1 {
+            // 1つなら即時投入
+            let conversion = conversions[0]
+            return simplify(conversion: conversion,
+                            left: leftType, right: rightType,
+                            kind: subKind(kind, conversion: conversion),
+                            options: options)
+        }
+
+        // TODO: disjunction
+        fatalError()
+        
     }
     
     private func matchFunctionTypes(kind: Constraint.Kind,
-                                    type1: FunctionType,
-                                    type2: FunctionType,
+                                    left leftType: FunctionType,
+                                    right rightType: FunctionType,
                                     options: MatchOptions) -> SolveResult
     {
-        let arg1 = type1.parameter
-        let arg2 = type2.parameter
+        let leftArg = leftType.parameter
+        let rightArg = rightType.parameter
         
-        let ret1 = type1.result
-        let ret2 = type2.result
+        let leftRet = leftType.result
+        let rightRet = rightType.result
         
-        var isAmbiguous = false
+        let subKind: Constraint.Kind
         
         switch kind {
-        case .bind:
-            switch matchTypes(kind: kind,
-                              left: arg1, right: arg2,
-                              options: options)
-            {
-            case .failure: return .failure
-            case .ambiguous:
-                isAmbiguous = true
-                break
-            case .solved: break
-            }
-            
-            switch matchTypes(kind: kind,
-                              left: ret1, right: ret2,
-                              options: options)
-            {
-            case .failure: return .failure
-            case .ambiguous:
-                isAmbiguous = true
-                break
-            case .solved: break
-            }
-            
-            if isAmbiguous {
-                return .ambiguous
-            } else {
-                return .solved
-            }
+        case .bind: subKind = .bind
+        case .conversion: subKind = .conversion
         case .applicableFunction,
              .bindOverload,
              .disjunction:
             preconditionFailure("invalid kind: \(kind)")
         }
+        
+        let subOptions = decompositionOptions(options)
+        
+        switch matchTypes(kind: subKind,
+                          left: leftArg, right: rightArg,
+                          options: subOptions) {
+        case .failure: return .failure
+        case .ambiguous: preconditionFailure()
+        case .solved: break
+        }
+        
+        switch matchTypes(kind: subKind,
+                          left: rightRet, right: leftRet,
+                          options: subOptions) {
+        case .failure: return .failure
+        case .ambiguous: preconditionFailure()
+        case .solved: break
+        }
+        
+        return .solved
+    }
+    
+    internal func matchDeepEqualityTypes(left leftType: Type,
+                                        right rightType: Type) -> SolveResult
+    {
+        if let leftType = leftType as? PrimitiveType,
+            let rightType = rightType as? PrimitiveType
+        {
+            if leftType.name != rightType.name {
+                return .failure
+            }
+            
+            return .solved
+        }
+        
+        return .failure
     }
 }
