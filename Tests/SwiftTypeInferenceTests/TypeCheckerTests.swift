@@ -2,9 +2,9 @@ import XCTest
 import SwiftcTest
 
 class TypeCheckerTests: XCTestCase {
-    func testResolveDeclRef() throws {
+    func testClosureExpr() throws {
         let s = try Parser(source: """
-{ (x) in
+{ (x: Int) in
     x
 }
 """
@@ -14,11 +14,24 @@ class TypeCheckerTests: XCTestCase {
         let _ = try XCTCast(XCTArrayGet(cl1.body, 0), UnresolvedDeclRefExpr.self)
         
         let tc = TypeChecker(source: s)
-        let cl2 = try tc.resolveDeclRef(expr: cl1, context: s) as! ClosureExpr
-
+        try tc.typeCheck()
+        
+        let cl2 = try XCTCast(XCTArrayGet(s.statements, 0), ClosureExpr.self)
         let vd = cl2.parameter
         let dr = try XCTCast(XCTArrayGet(cl2.body, 0), DeclRefExpr.self)
         XCTAssertTrue(dr.target === vd)
+    }
+    
+    func testClosureExprError() throws {
+        let s = try Parser(source: """
+{ (x) in
+    x
+}
+"""
+        ).parse()
+        
+        let tc = TypeChecker(source: s)
+        XCTAssertThrowsError(try tc.typeCheck())
     }
     
     func testFunctionApplication() throws {

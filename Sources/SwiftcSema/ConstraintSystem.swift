@@ -52,15 +52,19 @@ public final class ConstraintSystem {
 
     public private(set) var typeVariables: [TypeVariable] = []
     
-    public private(set) var bindings: TypeVariableBindings = TypeVariableBindings()
-    public private(set) var astTypes: [AnyASTNode: Type] = [:]
-    public private(set) var overloadSelections: [AnyASTNode: OverloadSelection] = [:]
+    public internal(set) var bindings: TypeVariableBindings = TypeVariableBindings()
+    public internal(set) var astTypes: [AnyASTNode: Type] = [:]
+    public internal(set) var overloadSelections: [AnyASTNode: OverloadSelection] = [:]
     
-    public private(set) var failedConstraint: ConstraintEntry?
+    public internal(set) var failedConstraint: ConstraintEntry?
     
-    public private(set) var constraints: [ConstraintEntry] = []
+    public internal(set) var constraints: [ConstraintEntry] = []
     
-    public init() {}
+    public let printer: Printer
+    
+    public init() {
+        printer = Printer()
+    }
     
     deinit {
     }
@@ -79,18 +83,18 @@ public final class ConstraintSystem {
         return tv
     }
 
-    public func normalize() {
-        for (node, type) in astTypes {
-            astTypes[node] = simplify(type: type)
-        }
-    }
-    
     public func hasFreeTypeVariables() -> Bool {
         return typeVariables.contains {
             $0.isFree(bindings: bindings) }
     }
     
-    public func currentSolution() -> Solution {
+    public func formSolution() -> Solution {
+        var astTypes = self.astTypes
+        
+        for (node, type) in astTypes {
+            astTypes[node] = type.simplify(bindings: bindings)
+        }
+        
         return Solution(bindings: bindings,
                         astTypes: astTypes,
                         overloadSelections: overloadSelections)
@@ -192,7 +196,11 @@ public final class ConstraintSystem {
         }
     }
     
-    public func removeConstraint(_ constraint: ConstraintEntry) {
+    public func _addConstraintEntry(_ constraint: ConstraintEntry) {
+        constraints.append(constraint)
+    }
+    
+    public func _removeConstraintEntry(_ constraint: ConstraintEntry) {
         constraints.removeAll { $0 == constraint }
     }
     

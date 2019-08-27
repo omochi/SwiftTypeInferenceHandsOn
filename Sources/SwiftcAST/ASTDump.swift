@@ -6,7 +6,6 @@ public final class ASTDumper : ASTVisitor {
     private let pr: Printer
     private let source: SourceFile
     private let node: ASTNode
-    private var stack: [ASTNode]
 
     public init(printer: Printer,
                 source: SourceFile,
@@ -15,37 +14,24 @@ public final class ASTDumper : ASTVisitor {
         self.pr = printer
         self.source = source
         self.node = node
-        self.stack = []
     }
     
     public func preWalk(node: ASTNode) throws -> PreWalkResult<ASTNode> {
-        if !stack.isEmpty {
-            pr.ln()
-            pr.push()
-        }
-        stack.append(node)
-        
+        pr.goToLineHead()
         printOpen(node)
-        
+        pr.push()
         return .continue(node)
     }
     
     public func postWalk(node: ASTNode) throws -> WalkResult<ASTNode> {
-        printClose()
-        
-        stack.removeLast()
-        
         pr.pop()
-        if stack.isEmpty {
-            pr.ln()
-        }
+        printClose()
         return .continue(node)
     }
     
     public func printOpen(_ node: ASTNode) {
         let name = "\(type(of: node))"
         pr.print("(\(name)")
-        
         try! node.accept(visitor: self)
     }
     
@@ -125,11 +111,13 @@ public final class ASTDumper : ASTVisitor {
 
 extension ASTNode {
     public func dump() {
-        let dumper = ASTDumper(printer: Printer(),
+        let pr = Printer()
+        let dumper = ASTDumper(printer: pr,
                                source: source,
                                node: self)
         try! walk(preWalk: dumper.preWalk,
                   postWalk: dumper.postWalk)
+        pr.ln()
     }
     
     public func print(printer: Printer)
@@ -142,8 +130,9 @@ extension ASTNode {
     }
     
     public var description: String {
-        let pr = Printer(doesCapture: true)
-        print(printer: pr)
-        return pr.output
+        let pr = Printer()
+        return pr.capture {
+            print(printer: pr)
+        }
     }
 }

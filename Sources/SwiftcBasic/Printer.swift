@@ -2,17 +2,18 @@ import Foundation
 
 public final class Printer {
     public var depth: Int
-    public var needsIndent: Bool
+    public var isAtLineHead: Bool
+    public var isEnabled: Bool
     public var doesCapture: Bool
-    public var output: String
+    public var capturedOutput: String
     
-    public init(doesCapture: Bool = false,
-                depth: Int = 0)
+    public init(depth: Int = 0)
     {
-        self.doesCapture = doesCapture
-        self.output = ""
+        self.isEnabled = true
+        self.doesCapture = false
+        self.capturedOutput = ""
         self.depth = depth
-        self.needsIndent = true
+        self.isAtLineHead = true
     }
     
     public func push() {
@@ -23,21 +24,27 @@ public final class Printer {
         depth -= 1
     }
     
-    public func nest(_ f: () throws -> Void) rethrows {
+    public func nest<R>(_ f: () throws -> R) rethrows -> R {
         push()
         defer { pop() }
+        return try f()
+    }
+    
+    public func capture(_ f: () throws -> Void) rethrows -> String {
+        doesCapture = true
         try f()
+        return capturedOutput
     }
     
     public func print(_ message: String, newLine: Bool = false) {
-        if (needsIndent) {
-            needsIndent = false
+        if (isAtLineHead) {
             printRaw(String(repeating: "  ", count: depth))
+            isAtLineHead = false
         }
         printRaw(message)
         if newLine {
             printRaw("\n")
-            needsIndent = true
+            isAtLineHead = true
         }
     }
 
@@ -57,9 +64,19 @@ public final class Printer {
         print("", newLine: true)
     }
     
+    public func goToLineHead() {
+        if !isAtLineHead {
+            ln()
+        }
+    }
+    
     private func printRaw(_ message: String) {
+        guard isEnabled else {
+            return
+        }
+        
         if doesCapture {
-            output.append(message)
+            capturedOutput.append(message)
         } else {
             Swift.print(message, terminator: "")
         }

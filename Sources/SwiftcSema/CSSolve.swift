@@ -1,33 +1,30 @@
+import SwiftcBasic
+
 extension ConstraintSystem {
-    public func solve() throws -> Solution {
-        normalize()
-        return currentSolution()
-    }
-    
-    public func simplify() -> Bool {
-        while true {
-            guard let cs = (constraints.first { $0.isActive }) else {
-                break
-            }
-            cs.isActive = false
-            
-            switch simplify(constraint: cs.constraint) {
-            case .failure:
-                removeConstraint(cs)
-                fail(constraint: cs)
-                
-            case .ambiguous:
-                break
-                
-            case .solved:
-                removeConstraint(cs)
-            }
-            
-            if isFailed {
-                return false
-            }
+    public final class SolveWork {
+        public let cts: ConstraintSystem
+        private let pr: Printer
+        public var solutions: [Solution] = []
+        
+        public init(constraintSystem: ConstraintSystem) {
+            self.cts = constraintSystem
+            self.pr = cts.printer
         }
         
-        return true
+        public func run() {
+            pr.println("==== solve start ====")
+            
+            _ = ComponentStep(work: self).run()
+            
+            pr.goToLineHead()
+            pr.println("==== solve end ======")
+            pr.println("solutions: \(solutions.count)")
+        }
+    }
+    
+    public func solve() -> [Solution] {
+        let work = SolveWork(constraintSystem: self)
+        work.run()        
+        return work.solutions
     }
 }

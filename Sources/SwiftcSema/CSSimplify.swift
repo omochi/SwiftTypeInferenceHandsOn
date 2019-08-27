@@ -64,4 +64,34 @@ extension ConstraintSystem {
         
         return .solved
     }
+    
+    /**
+     現在活性化している制約を可能な限り簡約化する事を繰り返す。
+     */
+    public func simplify() -> Bool {
+        while true {
+            if isFailed {
+                return false
+            }
+            
+            guard let cs = (constraints.first { $0.isActive }) else {
+                break
+            }
+            cs.isActive = false
+            
+            switch simplify(constraint: cs.constraint) {
+            case .failure:
+                _removeConstraintEntry(cs)
+                fail(constraint: cs)
+                
+            case .ambiguous:
+                break
+                
+            case .solved:
+                _removeConstraintEntry(cs)
+            }
+        }
+        
+        return true
+    }
 }

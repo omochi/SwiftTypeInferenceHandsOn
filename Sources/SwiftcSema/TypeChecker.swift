@@ -41,20 +41,23 @@ public final class TypeChecker {
         let cs = ConstraintSystem()
         try cs.generateConstraints(expr: expr,
                                    context: context)
-        let solution = try cs.solve()
+        let solutions = cs.solve()
+        guard let solution = solutions.first else {
+            throw MessageError("no solution")
+        }
         expr = try (solution.apply(to: expr, context: context) as! ASTExprNode)
         return expr
     }
     
-    public func preCheckExpr(_ expr: ASTExprNode,
-                             context: DeclContext) throws -> ASTExprNode {
+    private func preCheckExpr(_ expr: ASTExprNode,
+                              context: DeclContext) throws -> ASTExprNode {
         let expr = try resolveDeclRef(expr: expr,
                                       context: context)
         return expr
     }
     
-    public func resolveDeclRef(expr: ASTExprNode,
-                               context: DeclContext) throws -> ASTExprNode {
+    private func resolveDeclRef(expr: ASTExprNode,
+                                context: DeclContext) throws -> ASTExprNode {
         func tr(node: ASTNode, context: DeclContext) throws -> ASTNode? {
             switch node {
             case let node as UnresolvedDeclRefExpr:
