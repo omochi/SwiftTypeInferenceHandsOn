@@ -31,17 +31,27 @@ public final class TypeWalker : WalkerBase, TypeVisitor {
         var type = type
         
         switch try process(type.parameter) {
+        case .terminate: return .terminate
         case .continue(let x):
             type.parameter = x
-        case .terminate:
-            return .terminate
         }
 
         switch try process(type.result) {
+        case .terminate: return .terminate
         case .continue(let x):
             type.result = x
-        case .terminate:
-            return .terminate
+        }
+        
+        return .continue(type)
+    }
+    
+    public func visitOptionalType(_ type: OptionalType) throws -> WalkResult<Type> {
+        var type = type
+        
+        switch try process(type.wrapped) {
+        case .terminate: return .terminate
+        case .continue(let x):
+            type.wrapped = x
         }
         
         return .continue(type)

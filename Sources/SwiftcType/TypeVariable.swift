@@ -7,11 +7,11 @@ open class _TypeVariable :
 {
     public init() {}
     
-    public var description: String {
-        return "$T\(id)"
-    }
-    
     open var id: Int { abstract() }
+    
+    public func print(options: TypePrintOptions) -> String {
+        "$T\(id)"
+    }
     
     public func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(Self.self))

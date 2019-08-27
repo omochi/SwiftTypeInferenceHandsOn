@@ -75,4 +75,17 @@ f({ (x) in x })
         let b = try XCTCast(XCTArrayGet(cl.body, 0), UnresolvedDeclRefExpr.self)
         XCTAssertEqual(b.name, "x")
     }
+    
+    func testOptional() throws {
+        let code = """
+let a: Int?
+let b: Int??
+"""
+        let s = try Parser(source: code).parse()
+        let vd1 = try XCTCast(XCTArrayGet(s.statements, 0), VariableDecl.self)
+        XCTAssertEqual(vd1.typeAnnotation, OptionalType(PrimitiveType.int))
+        
+        let vd2 = try XCTCast(XCTArrayGet(s.statements, 1), VariableDecl.self)
+        XCTAssertEqual(vd2.typeAnnotation, OptionalType(OptionalType(PrimitiveType.int)))
+    }
 }

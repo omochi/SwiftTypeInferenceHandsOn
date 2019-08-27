@@ -4,8 +4,10 @@ public struct PrimitiveType : _EquatableType {
     public init(name: String) {
         self.name = name
     }
-    
-    public var description: String { name }
+        
+    public func print(options: TypePrintOptions) -> String {
+        name
+    }
     
     public func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(Self.self))

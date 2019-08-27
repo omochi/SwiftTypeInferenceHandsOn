@@ -224,6 +224,9 @@ public final class Parser {
         case let type as SimpleTypeIdentifierSyntax:
             let name = type.name.text
             return PrimitiveType(name: name)
+        case let type as OptionalTypeSyntax:
+            let wrapped = try parse(type: type.wrappedType)
+            return OptionalType(wrapped)
         case let type as FunctionTypeSyntax:
             let synParamList = type.arguments.map { $0 }
             guard synParamList.count == 1 else {

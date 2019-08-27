@@ -1,5 +1,5 @@
 public struct FunctionType : _EquatableType {
-    private struct Eq : Equatable, Hashable {
+    private struct Eq : Hashable {
         public var parameter: TypeEquatableAdapter
         public var result: TypeEquatableAdapter
         public init(_ x: FunctionType) {
@@ -18,7 +18,7 @@ public struct FunctionType : _EquatableType {
         self.result = result
     }
     
-    public var description: String {
+    public func print(options: TypePrintOptions) -> String {
         "(\(parameter)) -> \(result)"
     }
     
