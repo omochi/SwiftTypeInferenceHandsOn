@@ -24,7 +24,7 @@ public final class TypeChecker {
                 vd.initializer = try typeCheckExpr(ie,
                                                    context: vd)
             }
-        case let ex as ASTExprNode:
+        case let ex as Expr:
             return try typeCheckExpr(ex,
                                      context: context)
         default:
@@ -33,31 +33,32 @@ public final class TypeChecker {
         return stmt
     }
     
-    public func typeCheckExpr(_ expr: ASTExprNode,
-                              context: DeclContext) throws -> ASTExprNode {
+    public func typeCheckExpr(_ expr: Expr,
+                              context: DeclContext) throws -> Expr {
         var expr = try preCheckExpr(expr,
                                     context: context)
         
-        let cs = ConstraintSystem()
-        try cs.generateConstraints(expr: expr,
+        let cts = ConstraintSystem()
+        try cts.generateConstraints(expr: expr,
                                    context: context)
-        let solutions = cs.solve()
+        let solutions = cts.solve()
         guard let solution = solutions.first else {
             throw MessageError("no solution")
         }
-        expr = try (solution.apply(to: expr, context: context) as! ASTExprNode)
+        expr = try (solution.apply(to: expr, context: context,
+                                   constraintSystem: cts) as! Expr)
         return expr
     }
     
-    private func preCheckExpr(_ expr: ASTExprNode,
-                              context: DeclContext) throws -> ASTExprNode {
+    private func preCheckExpr(_ expr: Expr,
+                              context: DeclContext) throws -> Expr {
         let expr = try resolveDeclRef(expr: expr,
                                       context: context)
         return expr
     }
     
-    private func resolveDeclRef(expr: ASTExprNode,
-                                context: DeclContext) throws -> ASTExprNode {
+    private func resolveDeclRef(expr: Expr,
+                                context: DeclContext) throws -> Expr {
         func tr(node: ASTNode, context: DeclContext) throws -> ASTNode? {
             switch node {
             case let node as UnresolvedDeclRefExpr:
@@ -80,6 +81,6 @@ public final class TypeChecker {
             }
         }
         
-        return try expr.transform(context: context, tr) as! ASTExprNode
+        return try expr.transform(context: context, tr) as! Expr
     }
 }

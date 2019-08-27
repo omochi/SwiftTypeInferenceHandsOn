@@ -1,6 +1,6 @@
 import SwiftcType
 
-public final class DeclRefExpr : ASTExprNode {
+public final class DeclRefExpr : Expr {
     public unowned let source: SourceFile
     public let sourceRange: SourceRange
     public var name: String

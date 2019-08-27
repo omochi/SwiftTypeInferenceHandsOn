@@ -1,6 +1,6 @@
 import SwiftcType
 
-public final class ClosureExpr : ASTExprNode, DeclContext {
+public final class ClosureExpr : Expr, DeclContext {
     public unowned let source: SourceFile
     public let sourceRange: SourceRange
     public weak var parentContext: DeclContext?

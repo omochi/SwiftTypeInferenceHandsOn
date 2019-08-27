@@ -58,7 +58,7 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
             if let ie = node.initializer {
                 switch try process(ie) {
                 case .continue(let x):
-                    node.initializer = (x as! ASTExprNode)
+                    node.initializer = (x as! Expr)
                 case .terminate:
                     return .terminate
                 }

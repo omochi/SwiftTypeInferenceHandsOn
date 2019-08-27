@@ -5,14 +5,14 @@ public final class VariableDecl : ValueDecl {
     public let sourceRange: SourceRange
     public weak var parentContext: DeclContext?
     public var name: String
-    public var initializer: ASTExprNode?
+    public var initializer: Expr?
     public var typeAnnotation: Type?
     public var type: Type?
     public init(source: SourceFile,
                 sourceRange: SourceRange,
                 parentContext: DeclContext,
                 name: String,
-                initializer: ASTExprNode?,
+                initializer: Expr?,
                 typeAnnotation: Type?)
     {
         self.source = source

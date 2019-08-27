@@ -85,9 +85,9 @@ public final class Parser {
             switch binding.pattern {
             case let ident as IdentifierPatternSyntax:
                 let name = ident.identifier.text
-                let initializer: ASTExprNode? = try binding.initializer.map {
+                let initializer: Expr? = try binding.initializer.map {
                     try parse(expr: $0.value)
-                } as? ASTExprNode
+                } as? Expr
                 let type: Type? = try binding.typeAnnotation.map {
                     try parse(type: $0.type)
                 }

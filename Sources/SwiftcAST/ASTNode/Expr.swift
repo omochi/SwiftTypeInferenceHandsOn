@@ -1,5 +1,5 @@
 import SwiftcType
 
-public protocol ASTExprNode : ASTNode {
+public protocol Expr : ASTNode {
     var type: Type? { get set }
 }

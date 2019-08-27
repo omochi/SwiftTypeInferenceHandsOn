@@ -62,7 +62,7 @@ public final class ASTDumper : ASTVisitor {
         visitDecl(valueDecl)
     }
     
-    public func visitExpr(_ expr: ASTExprNode) {
+    public func visitExpr(_ expr: Expr) {
         let typeStr = expr.type?.description ?? "(nil)"
         pr.print(" type=\"\(typeStr)\"")
     

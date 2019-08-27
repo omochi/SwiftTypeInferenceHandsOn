@@ -1,6 +1,6 @@
 import SwiftcType
 
-public final class IntegerLiteralExpr : ASTExprNode {
+public final class IntegerLiteralExpr : Expr {
     public unowned let source: SourceFile
     public let sourceRange: SourceRange
     public var type: Type?

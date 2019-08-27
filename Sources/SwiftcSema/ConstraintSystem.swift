@@ -48,6 +48,13 @@ public final class ConstraintSystem {
                 return ty
             }
         }
+        
+        public func fixedTypeOrThrow(for node: ASTNode) throws -> Type {
+            guard let ty = fixedType(for: node) else {
+                throw MessageError("untyped node: \(node)")
+            }
+            return ty
+        }
     }
 
     public private(set) var typeVariables: [TypeVariable] = []
@@ -144,7 +151,7 @@ public final class ConstraintSystem {
             return type
         }
         
-        if let ex = node as? ASTExprNode {
+        if let ex = node as? Expr {
             return ex.type
         }
         

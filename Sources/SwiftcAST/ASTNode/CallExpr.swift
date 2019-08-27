@@ -1,6 +1,6 @@
 import SwiftcType
 
-public final class CallExpr : ASTExprNode {
+public final class CallExpr : Expr {
     public unowned let source: SourceFile
     public let sourceRange: SourceRange
     public var callee: ASTNode
