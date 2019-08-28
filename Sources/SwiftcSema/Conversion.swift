@@ -1,5 +1,6 @@
 public enum Conversion : CustomStringConvertible, Hashable {
     case deepEquality
+    // TODO: optional
     
     public var description: String {
         switch self {

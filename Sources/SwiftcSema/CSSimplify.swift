@@ -7,6 +7,7 @@ extension ConstraintSystem {
         switch constraint {
         case .bind(left: let left, right: let right),
              .conversion(left: let left, right: let right):
+            // TODO: consider restriction
             return matchTypes(kind: constraint.kind,
                               left: left, right: right,
                               options: options)
