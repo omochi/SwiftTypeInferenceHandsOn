@@ -107,6 +107,7 @@ extension ConstraintSystem {
         var subOpts = options
         subOpts.generateConstraintsWhenAmbiguous = true
         
+        // TODO: conv
         switch matchTypes(kind: .bind,
                           left: lfn.parameter, right: rfn.parameter,
                           options: subOpts) {
@@ -115,6 +116,7 @@ extension ConstraintSystem {
         case .solved: break
         }
         
+        // TODO: conv?
         switch matchTypes(kind: .bind,
                           left: rfn.result, right: lfn.result,
                           options: subOpts) {

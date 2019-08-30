@@ -38,14 +38,15 @@ public final class TypeChecker {
             
             let callbacks = ExprTypeCheckCallbacks(
                 didGenerateConstraints: { (cts, expr, context) in
+                    let exprTy = cts.astType(for: expr)!
+                    
                     if let ta = vd.typeAnnotation {
                         varTy = ta
                     } else {
-                        varTy = cts.createTypeVariable()
+                        varTy = exprTy
                     }
                     
-                    let exprTy = cts.astType(for: expr)!
-                    
+                    // TODO: conv
                     cts.addConstraint(kind: .bind, left: exprTy, right: varTy)
             },
                 didFoundSolution: nil,

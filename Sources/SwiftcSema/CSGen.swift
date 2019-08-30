@@ -57,6 +57,7 @@ public final class ConstraintGenerator : ASTVisitor {
         
         let bodyTy = cts.astType(for: node.body[0])!
         
+        // TODO: conv
         cts.addConstraint(kind: .bind, left: bodyTy, right: resultTy)
         
         return closureTy
