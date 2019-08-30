@@ -2,6 +2,7 @@ import SwiftcBasic
 import SwiftcType
 
 extension ConstraintSystem {
+    // TODO: kind type
     public func matchTypes(kind: Constraint.Kind,
                            left leftType: Type,
                            right rightType: Type,
@@ -107,7 +108,7 @@ extension ConstraintSystem {
         }
         
         if let leftType = leftType as? FunctionType,
-        let rightType = rightType as? FunctionType
+            let rightType = rightType as? FunctionType
         {
             return matchFunctionTypes(kind: kind,
                                       left: leftType,
@@ -115,19 +116,44 @@ extension ConstraintSystem {
                                       options: options)
         }
         
-        // TODO: optional handling
-        
-        if conversions.isEmpty {
-            return .failure
+        if let leftType = leftType as? OptionalType,
+            let rightType = rightType as? OptionalType
+        {
+            conversions.append(.deepEquality)
         }
+        
+        switch kind {
+        case .conversion:
+            if leftType is OptionalType,
+                rightType is OptionalType
+            {
+                conversions.append(.optionalToOptional)
+            }
+            
+            let leftOptNum = leftType.lookThroughAllOptionals().count
+            let rightOptNum = rightType.lookThroughAllOptionals().count
+            if leftOptNum < rightOptNum {
+                conversions.append(.valueToOptional)
+            }
+        case .bind,
+             .applicableFunction,
+             .bindOverload,
+             .disjunction: break
+        }
+        
         
         func subKind(_ kind: Constraint.Kind, conversion: Conversion) -> Constraint.Kind {
             if conversion == .deepEquality { return .bind }
             else { return kind }
         }
         
+        // 無いなら無理
+        if conversions.isEmpty {
+            return .failure
+        }
+
+        // 1つなら即時投入
         if conversions.count == 1 {
-            // 1つなら即時投入
             let conversion = conversions[0]
             return simplify(conversion: conversion,
                             left: leftType, right: rightType,
@@ -135,9 +161,16 @@ extension ConstraintSystem {
                             options: options)
         }
 
-        // TODO: disjunction
-        fatalError()
+        // 2つ以上ならdisjunction
+        let convCs: [Constraint] = conversions.map { (conv) in
+            Constraint(kind: subKind(kind, conversion: conv),
+                       left: leftType, right: rightType,
+                       conversion: conv)
+        }
         
+        addDisjunctionConstraint(convCs)
+        
+        return .solved
     }
     
     private func matchFunctionTypes(kind: Constraint.Kind,
@@ -184,8 +217,11 @@ extension ConstraintSystem {
     }
     
     internal func matchDeepEqualityTypes(left leftType: Type,
-                                        right rightType: Type) -> SolveResult
+                                         right rightType: Type,
+                                         options: MatchOptions) -> SolveResult
     {
+        let subOptions = decompositionOptions(options)
+        
         if let leftType = leftType as? PrimitiveType,
             let rightType = rightType as? PrimitiveType
         {
@@ -194,6 +230,15 @@ extension ConstraintSystem {
             }
             
             return .solved
+        }
+        
+        if let leftType = leftType as? OptionalType,
+        let rightType = rightType as? OptionalType
+        {
+            return matchTypes(kind: .bind,
+                              left: leftType.wrapped,
+                              right: rightType.wrapped,
+                              options: subOptions)
         }
         
         return .failure

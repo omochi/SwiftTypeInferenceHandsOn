@@ -75,7 +75,7 @@ public final class TypeChecker {
         
         let cts = ConstraintSystem()
         try cts.generateConstraints(expr: expr,
-                                   context: context)
+                                    context: context)
         try callbacks?.didGenerateConstraints?(cts, expr, context)
         
         let solutions = cts.solve()

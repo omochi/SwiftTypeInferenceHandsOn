@@ -294,5 +294,49 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertEqual(Set(actual),
                        Set(expected))
     }
+    
+    func testOptionalEqual() throws {
+        let cts = ConstraintSystem()
+        let sr = cts.matchTypes(kind: .bind,
+                                left: OptionalType(PrimitiveType.int),
+                                right: OptionalType(PrimitiveType.int),
+                                options: ConstraintSystem.MatchOptions())
+        XCTAssertEqual(sr, .solved)
+    }
+    
+    func testOptionalConversion() throws {
+        do {
+            let cts = ConstraintSystem()
+            
+            _ = cts.matchTypes(kind: .conversion,
+                               left: PrimitiveType.int,
+                               right: OptionalType(PrimitiveType.int),
+                               options: ConstraintSystem.MatchOptions())
+            let sols = cts.solve()
+            XCTAssertEqual(sols.count, 1)
+        }
+        
+        do {
+            let cts = ConstraintSystem()
+            
+            _ = cts.matchTypes(kind: .conversion,
+                               left: OptionalType(PrimitiveType.int),
+                               right: OptionalType(PrimitiveType.int),
+                               options: ConstraintSystem.MatchOptions())
+            let sols = cts.solve()
+            XCTAssertEqual(sols.count, 2)
+        }
+        
+        do {
+            let cts = ConstraintSystem()
+            
+            _ = cts.matchTypes(kind: .conversion,
+                               left: OptionalType(PrimitiveType.int),
+                               right: OptionalType(OptionalType(PrimitiveType.int)),
+                               options: ConstraintSystem.MatchOptions())
+            let sols = cts.solve()
+            XCTAssertEqual(sols.count, 3)
+        }
+    }
 
 }

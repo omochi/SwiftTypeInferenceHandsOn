@@ -30,3 +30,15 @@ public struct OptionalType : _EquatableType {
         try visitor.visitOptionalType(self)
     }
 }
+
+extension Type {
+    public func lookThroughAllOptionals() -> [OptionalType] {
+        var ret: [OptionalType] = []
+        var type: Type = self
+        while let optTy = type as? OptionalType {
+            ret.append(optTy)
+            type = optTy.wrapped
+        }
+        return ret
+    }
+}

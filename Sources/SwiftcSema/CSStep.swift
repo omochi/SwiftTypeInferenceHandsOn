@@ -134,7 +134,19 @@ extension ConstraintSystem {
         private func attempt(choice: Constraint) -> Bool {
             pr.goToLineHead()
             pr.println("attempt: \(choice)")
-            _ = cts.simplify(constraint: choice)
+            switch cts.simplify(constraint: choice) {
+            case .solved:
+                break
+            case .ambiguous:
+                cts._addConstraintEntry(ConstraintEntry(choice))
+            case .failure:
+                cts.fail(constraint: ConstraintEntry(choice))
+            }
+            
+            guard cts.simplify() else {
+                return false
+            }
+            
             return ComponentStep(work: work).run()
         }
     }

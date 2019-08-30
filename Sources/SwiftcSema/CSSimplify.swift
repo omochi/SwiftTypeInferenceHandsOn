@@ -5,9 +5,15 @@ extension ConstraintSystem {
     public func simplify(constraint: Constraint) -> SolveResult {
         let options = MatchOptions()
         switch constraint {
-        case .bind(left: let left, right: let right),
-             .conversion(left: let left, right: let right):
-            // TODO: consider restriction
+        case .bind(left: let left, right: let right, conversion: let conversion),
+             .conversion(left: let left, right: let right, conversion: let conversion):
+            if let conversion = conversion {
+                return simplify(conversion: conversion,
+                                left: left, right: right,
+                                kind: constraint.kind,
+                                options: options)
+            }
+
             return matchTypes(kind: constraint.kind,
                               left: left, right: right,
                               options: options)
@@ -48,11 +54,30 @@ extension ConstraintSystem {
         precondition(!(leftType is TypeVariable))
         precondition(!(rightType is TypeVariable))
         
-//        let subOptions = decompositionOptions(options)
+        let subOptions = decompositionOptions(options)
         
         switch conversion {
         case .deepEquality:
-            return matchDeepEqualityTypes(left: leftType, right: rightType)
+            return matchDeepEqualityTypes(left: leftType, right: rightType,
+                                          options: options)
+        case .valueToOptional:
+            if let rightType = rightType as? OptionalType {
+                return matchTypes(kind: kind,
+                                  left: leftType,
+                                  right: rightType.wrapped,
+                                  options: subOptions)
+            }
+            return .failure
+        case .optionalToOptional:
+            if let leftType = leftType as? OptionalType,
+                let rightType = rightType as? OptionalType
+            {
+                return matchTypes(kind: kind,
+                                  left: leftType.wrapped,
+                                  right: rightType.wrapped,
+                                  options: subOptions)
+            }
+            return .failure
         }
     }
     
