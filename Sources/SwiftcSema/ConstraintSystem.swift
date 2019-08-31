@@ -183,7 +183,7 @@ public final class ConstraintSystem {
             switch kind {
             case .bind,
                  .conversion:
-                return matchTypes(kind: kind,
+                return matchTypes(kind: kind.toMatchKind()!,
                                   left: left,
                                   right: right,
                                   options: options)

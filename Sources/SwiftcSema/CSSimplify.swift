@@ -7,14 +7,16 @@ extension ConstraintSystem {
         switch constraint {
         case .bind(left: let left, right: let right, conversion: let conversion),
              .conversion(left: let left, right: let right, conversion: let conversion):
+            let kind = constraint.kind.toMatchKind()!
+            
             if let conversion = conversion {
                 return simplify(conversion: conversion,
                                 left: left, right: right,
-                                kind: constraint.kind,
+                                kind: kind,
                                 options: options)
             }
 
-            return matchTypes(kind: constraint.kind,
+            return matchTypes(kind: kind,
                               left: left, right: right,
                               options: options)
         case .applicableFunction(left: let left, right: let right):
@@ -28,14 +30,15 @@ extension ConstraintSystem {
         }
     }
     
-    public func simplify(conversion: Conversion,
+    public func simplify(kind: Constraint.MatchKind,
                          left leftType: Type,
                          right rightType: Type,
-                         kind: Constraint.Kind,
+                         conversion: Conversion,
                          options: MatchOptions) -> SolveResult {
-        switch _simplify(conversion: conversion,
+        switch _simplify(kind: kind,
                          left: leftType, right: rightType,
-                         kind: kind, options: options) {
+                         conversion: conversion,
+                         options: options) {
         case .solved:
             let rel = TypeConversionRelation(conversion: conversion, left: leftType, right: rightType)
             typeConversionRelations.append(rel)
@@ -45,10 +48,10 @@ extension ConstraintSystem {
         }
     }
     
-    private func _simplify(conversion: Conversion,
+    private func _simplify(kind: Constraint.MatchKind,
                            left leftType: Type,
                            right rightType: Type,
-                           kind: Constraint.Kind,
+                           conversion: Conversion,
                            options: MatchOptions) -> SolveResult
     {
         precondition(!(leftType is TypeVariable))
@@ -116,7 +119,6 @@ extension ConstraintSystem {
         case .solved: break
         }
         
-        // TODO: conv?
         switch matchTypes(kind: .bind,
                           left: rfn.result, right: lfn.result,
                           options: subOpts) {

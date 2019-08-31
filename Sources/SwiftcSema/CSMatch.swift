@@ -2,8 +2,7 @@ import SwiftcBasic
 import SwiftcType
 
 extension ConstraintSystem {
-    // TODO: kind type
-    public func matchTypes(kind: Constraint.Kind,
+    public func matchTypes(kind: Constraint.MatchKind,
                            left leftType: Type,
                            right rightType: Type,
                            options: MatchOptions) -> SolveResult
@@ -13,7 +12,7 @@ extension ConstraintSystem {
         
         func ambiguous() -> SolveResult {
             if options.generateConstraintsWhenAmbiguous {
-                let c = Constraint(kind: kind, left: leftType, right: rightType)
+                let c = Constraint(kind: kind.asKind(), left: leftType, right: rightType)
                 _addConstraintEntry(ConstraintEntry(c))
                 return .solved
             }
@@ -51,15 +50,10 @@ extension ConstraintSystem {
                     fixedType = leftType
                 }
                 
-                return matchTypesBind(kind: kind,
-                                      typeVariable: variable,
+                return matchTypesBind(typeVariable: variable,
                                       fixedType: fixedType)
             case .conversion:
                 return ambiguous()
-            case .applicableFunction,
-                 .bindOverload,
-                 .disjunction:
-                preconditionFailure("invalid kind: \(kind)")
             }
         }
         
@@ -69,8 +63,7 @@ extension ConstraintSystem {
                                options: options)
     }
     
-    private func matchTypesBind(kind: Constraint.Kind,
-                                typeVariable: TypeVariable,
+    private func matchTypesBind(typeVariable: TypeVariable,
                                 fixedType: Type) -> SolveResult
     {
         precondition(typeVariable.isRepresentative(bindings: bindings))
@@ -89,7 +82,7 @@ extension ConstraintSystem {
         return options
     }
     
-    private func matchFixedTypes(kind: Constraint.Kind,
+    private func matchFixedTypes(kind: Constraint.MatchKind,
                                  left leftType: Type,
                                  right rightType: Type,
                                  options: MatchOptions) -> SolveResult
@@ -135,14 +128,11 @@ extension ConstraintSystem {
             if leftOptNum < rightOptNum {
                 conversions.append(.valueToOptional)
             }
-        case .bind,
-             .applicableFunction,
-             .bindOverload,
-             .disjunction: break
+        case .bind: break
         }
         
         
-        func subKind(_ kind: Constraint.Kind, conversion: Conversion) -> Constraint.Kind {
+        func subKind(_ kind: Constraint.MatchKind, conversion: Conversion) -> Constraint.MatchKind {
             if conversion == .deepEquality { return .bind }
             else { return kind }
         }
@@ -173,7 +163,7 @@ extension ConstraintSystem {
         return .solved
     }
     
-    private func matchFunctionTypes(kind: Constraint.Kind,
+    private func matchFunctionTypes(kind: Constraint.MatchKind,
                                     left leftType: FunctionType,
                                     right rightType: FunctionType,
                                     options: MatchOptions) -> SolveResult
@@ -184,15 +174,11 @@ extension ConstraintSystem {
         let leftRet = leftType.result
         let rightRet = rightType.result
         
-        let subKind: Constraint.Kind
+        let subKind: Constraint.MatchKind
         
         switch kind {
         case .bind: subKind = .bind
         case .conversion: subKind = .conversion
-        case .applicableFunction,
-             .bindOverload,
-             .disjunction:
-            preconditionFailure("invalid kind: \(kind)")
         }
         
         let subOptions = decompositionOptions(options)

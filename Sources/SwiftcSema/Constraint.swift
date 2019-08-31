@@ -9,6 +9,28 @@ public enum Constraint : CustomStringConvertible, Hashable {
         case applicableFunction
         case bindOverload
         case disjunction
+        
+        public func toMatchKind() -> MatchKind? {
+            switch self {
+            case .bind: return .bind
+            case .conversion: return .conversion
+            case .applicableFunction,
+                 .bindOverload,
+                 .disjunction: return nil
+            }
+        }
+    }
+    
+    public enum MatchKind {
+        case bind
+        case conversion
+        
+        public func asKind() -> Kind {
+            switch self {
+            case .bind: return .bind
+            case .conversion: return .conversion
+            }
+        }
     }
     
     public struct Disjunction : Hashable {
@@ -56,17 +78,13 @@ public enum Constraint : CustomStringConvertible, Hashable {
         }
     }
     
-    public init(kind: Kind, left: Type, right: Type, conversion: Conversion) {
+    public init(kind: MatchKind, left: Type, right: Type, conversion: Conversion) {
         switch kind {
         case .bind:
             precondition(conversion == .deepEquality)
             self = .bind(left: left, right: right, conversion: conversion)
         case .conversion:
             self = .conversion(left: left, right: right, conversion: conversion)
-        case .applicableFunction,
-             .bindOverload,
-             .disjunction:
-            preconditionFailure("invalid kind: \(kind)")
         }
     }
     
