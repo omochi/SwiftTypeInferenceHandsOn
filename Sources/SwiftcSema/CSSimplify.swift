@@ -10,9 +10,9 @@ extension ConstraintSystem {
             let kind = constraint.kind.toMatchKind()!
             
             if let conversion = conversion {
-                return simplify(conversion: conversion,
+                return simplify(kind: kind,
                                 left: left, right: right,
-                                kind: kind,
+                                conversion: conversion,
                                 options: options)
             }
 
@@ -111,8 +111,9 @@ extension ConstraintSystem {
         subOpts.generateConstraintsWhenAmbiguous = true
         
         // TODO: conv
-        switch matchTypes(kind: .bind,
-                          left: lfn.parameter, right: rfn.parameter,
+        switch matchTypes(kind: .conversion,
+                          left: lfn.parameter,
+                          right: rfn.parameter,
                           options: subOpts) {
         case .failure: return .failure
         case .ambiguous: preconditionFailure("never")
@@ -120,7 +121,8 @@ extension ConstraintSystem {
         }
         
         switch matchTypes(kind: .bind,
-                          left: rfn.result, right: lfn.result,
+                          left: lfn.result,
+                          right: rfn.result,
                           options: subOpts) {
         case .failure: return .failure
         case .ambiguous: preconditionFailure("never")

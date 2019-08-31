@@ -155,12 +155,12 @@ public final class Parser {
             return IntegerLiteralExpr(source: source,
                                       sourceRange: sourceRange)
         case let expr as FunctionCallExprSyntax:
-            let callee = try parse(expr: expr.calledExpression)
+            let callee = try parse(expr: expr.calledExpression) as! Expr
             let synArgList = expr.argumentList.map { $0 }
             guard synArgList.count == 1 else {
                 throw MessageError("arg num must be 1")
             }
-            let arg = try parse(expr: synArgList[0].expression)
+            let arg = try parse(expr: synArgList[0].expression) as! Expr
             return CallExpr(source: source,
                             sourceRange: sourceRange,
                             callee: callee,

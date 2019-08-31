@@ -118,5 +118,18 @@ let a: String = 3
             XCTAssertThrowsError(try tc.typeCheck())
         }
     }
+    
+    func testArgConv() throws {
+        let s = try Parser(source: """
+func f(a: Int?) { }
+f(3)
+"""
+        ).parse()
+        
+        let tc = TypeChecker(source: s)
+        try tc.typeCheck()
+        
+        s.dump()
+    }
 
 }

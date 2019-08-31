@@ -114,6 +114,10 @@ public final class ASTDumper : ASTVisitor {
         visitExpr(node)
     }
     
+    public func visitInjectIntoOptionalExpr(_ node: InjectIntoOptionalExpr) throws -> Void {
+        visitExpr(node)
+    }
+    
 }
 
 extension ASTNode {

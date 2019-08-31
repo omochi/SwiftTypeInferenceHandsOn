@@ -1,16 +1,14 @@
 import SwiftcBasic
+import SwiftcType
 import SwiftcAST
 
 public final class ConstraintSolutionApplicator : ASTVisitor {
     public typealias VisitResult = ASTNode
     
-    private let cts: ConstraintSystem
     private let solution: ConstraintSystem.Solution
     
-    public init(constraintSystem: ConstraintSystem,
-                solution: ConstraintSystem.Solution)
+    public init(solution: ConstraintSystem.Solution)
     {
-        self.cts = constraintSystem
         self.solution = solution
     }
     
@@ -43,8 +41,14 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
         return node
     }
     
-    public func visitCallExpr(_ node: CallExpr) throws -> ASTNode {
-        return try applyFixedType(expr: node)
+    public func visitCallExpr(_ node: CallExpr) throws -> ASTNode {       
+        if let calleeTy = node.callee.type as? FunctionType {
+            let paramTy = calleeTy.parameter
+            node.argument = try coerce(expr: node.argument, to: paramTy)
+            return node
+        }
+        
+        throw MessageError("unconsidered")
     }
     
     public func visitClosureExpr(_ node: ClosureExpr) throws -> ASTNode {
@@ -67,6 +71,19 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
         return try applyFixedType(expr: node)
     }
     
+    public func visitInjectIntoOptionalExpr(_ node: InjectIntoOptionalExpr) throws -> ASTNode {
+        return try applyFixedType(expr: node)
+    }
+    
+    private func coerce(expr: Expr, to toType: Type) throws -> Expr {
+        guard let fromType = expr.type else { throw MessageError("untyped expr") }
+        if fromType == toType {
+            return expr
+        }
+        
+        print("!!!")
+        return expr
+    }
 }
 
 extension ConstraintSystem.Solution {
@@ -74,8 +91,7 @@ extension ConstraintSystem.Solution {
                       context: DeclContext,
                       constraintSystem: ConstraintSystem) throws -> Expr
     {
-        let applier = ConstraintSolutionApplicator(constraintSystem: constraintSystem,
-                                                   solution: self)
+        let applier = ConstraintSolutionApplicator(solution: self)
         switch try expr.walk(context: context,
                              preWalk: applier.preWalk,
                              postWalk: applier.postWalk)

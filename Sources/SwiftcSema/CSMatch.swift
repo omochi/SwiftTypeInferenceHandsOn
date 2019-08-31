@@ -145,9 +145,9 @@ extension ConstraintSystem {
         // 1つなら即時投入
         if conversions.count == 1 {
             let conversion = conversions[0]
-            return simplify(conversion: conversion,
+            return simplify(kind: subKind(kind, conversion: conversion),
                             left: leftType, right: rightType,
-                            kind: subKind(kind, conversion: conversion),
+                            conversion: conversion,
                             options: options)
         }
 
@@ -184,15 +184,18 @@ extension ConstraintSystem {
         let subOptions = decompositionOptions(options)
         
         switch matchTypes(kind: subKind,
-                          left: leftArg, right: rightArg,
+                          left: leftArg,
+                          right: rightArg,
                           options: subOptions) {
         case .failure: return .failure
         case .ambiguous: preconditionFailure()
         case .solved: break
         }
         
+        // contravariance
         switch matchTypes(kind: subKind,
-                          left: rightRet, right: leftRet,
+                          left: rightRet,
+                          right: leftRet,
                           options: subOptions) {
         case .failure: return .failure
         case .ambiguous: preconditionFailure()

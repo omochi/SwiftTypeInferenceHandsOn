@@ -71,14 +71,14 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
     public func visitCallExpr(_ node: CallExpr) throws -> WalkResult<ASTNode> {
         switch try process(node.callee) {
         case .continue(let x):
-            node.callee = x
+            node.callee = x as! Expr
         case .terminate:
             return .terminate
         }
         
         switch try process(node.argument) {
         case .continue(let x):
-            node.argument = x
+            node.argument = x as! Expr
         case .terminate:
             return .terminate
         }
@@ -122,6 +122,15 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
     
     public func visitIntegerLiteralExpr(_ node: IntegerLiteralExpr) throws -> WalkResult<ASTNode> {
         .continue(node)
+    }
+    
+    public func visitInjectIntoOptionalExpr(_ node: InjectIntoOptionalExpr) throws -> WalkResult<ASTNode> {
+        switch try process(node.subExpr) {
+        case .terminate: return .terminate
+        case .continue(let x):
+            node.subExpr = x as! Expr
+        }
+        return .continue(node)
     }
 }
 

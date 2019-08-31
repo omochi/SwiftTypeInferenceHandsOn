@@ -93,6 +93,10 @@ public final class ConstraintGenerator : ASTVisitor {
         return PrimitiveType.int
     }
     
+    public func visitInjectIntoOptionalExpr(_ node: InjectIntoOptionalExpr) throws -> Type {
+        throw MessageError("invalid")
+    }
+    
 }
 
 extension ConstraintSystem {
