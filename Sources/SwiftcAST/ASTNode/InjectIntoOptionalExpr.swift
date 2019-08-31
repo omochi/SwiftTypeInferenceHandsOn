@@ -1,18 +1,20 @@
 import SwiftcType
 
 public final class InjectIntoOptionalExpr : Expr {
-    public unowned let source: SourceFile
-    public let sourceRange: SourceRange
+    public var source: SourceFile { subExpr.source }
+    public var sourceRange: SourceRange { subExpr.sourceRange }
     public var type: Type?
     public var subExpr: Expr
     
-    public init(source: SourceFile,
-                sourceRange: SourceRange,
-                subExpr: Expr)
+    public init(subExpr: Expr,
+                type: Type)
     {
-        self.source = source
-        self.sourceRange = sourceRange
         self.subExpr = subExpr
+        self.type = type
+    }
+    
+    public var descriptionPartsTail: [String] {
+        Exprs.descriptionParts(self)
     }
     
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {

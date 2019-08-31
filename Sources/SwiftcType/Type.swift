@@ -31,3 +31,7 @@ extension _EquatableType {
         return ExplicitDispatch.isEqual(self, other)
     }
 }
+
+public func str(_ x: Type?) -> String {
+    return x?.description ?? "(nil)"
+}

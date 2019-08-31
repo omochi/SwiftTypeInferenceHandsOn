@@ -23,6 +23,10 @@ public final class DeclRefExpr : Expr {
         target = nil
     }
     
+    public var descriptionPartsTail: [String] {
+        Exprs.descriptionParts(self)
+    }
+    
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
         try visitor.visitDeclRefExpr(self)
     }

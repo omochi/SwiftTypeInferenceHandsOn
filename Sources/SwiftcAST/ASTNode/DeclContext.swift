@@ -23,3 +23,13 @@ extension DeclContext {
         return []
     }
 }
+
+public enum DeclContexts {
+    public static func descriptionParts(_ ctx: DeclContext) -> [String] {
+        var parts: [String] = []
+        if let ty = ctx.interfaceType {
+            parts.append("type=\"\(ty)\"")
+        }
+        return parts
+    }
+}

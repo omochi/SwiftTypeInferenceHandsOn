@@ -13,6 +13,7 @@ public protocol ASTVisitor : VisitorProtocol where VisitTarget == ASTNode {
     func visitOverloadedDeclRefExpr(_ node: OverloadedDeclRefExpr) throws -> VisitResult
     func visitIntegerLiteralExpr(_ node: IntegerLiteralExpr) throws -> VisitResult
     func visitInjectIntoOptionalExpr(_ node: InjectIntoOptionalExpr) throws -> VisitResult
+    func visitBindOptionalExpr(_ node: BindOptionalExpr) throws -> VisitResult
 }
 
 extension ASTVisitor {

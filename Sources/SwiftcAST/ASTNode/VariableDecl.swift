@@ -24,6 +24,17 @@ public final class VariableDecl : ValueDecl {
     
     public var interfaceType: Type? { type }
     
+    public var descriptionPartsTail: [String] {
+        var parts: [String] = []
+        
+        let type = self.typeAnnotation ?? self.type
+        parts.append("type=\(str(type))")
+        
+        parts += ValueDecls.descriptionParts(self)
+        
+        return parts
+    }
+    
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
         try visitor.visitVariableDecl(self)
     }

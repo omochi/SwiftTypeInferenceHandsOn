@@ -38,8 +38,8 @@ public final class ConstraintGenerator : ASTVisitor {
     }
     
     public func visitCallExpr(_ node: CallExpr) throws -> Type {
-        let callee = cts.astType(for: node.callee)!
-        let arg = cts.astType(for: node.argument)!
+        let callee = try cts.astTypeOrThrow(for: node.callee)
+        let arg = try cts.astTypeOrThrow(for: node.argument)
         
         let tv = cts.createTypeVariable()
         
@@ -51,11 +51,11 @@ public final class ConstraintGenerator : ASTVisitor {
     }
     
     public func visitClosureExpr(_ node: ClosureExpr) throws -> Type {
-        let paramTy = cts.astType(for: node.parameter)!
+        let paramTy = try cts.astTypeOrThrow(for: node.parameter)
         let resultTy = cts.createTypeVariable()
         let closureTy = FunctionType(parameter: paramTy, result: resultTy)
         
-        let bodyTy = cts.astType(for: node.body[0])!
+        let bodyTy = try cts.astTypeOrThrow(for: node.body[0])
         
         // TODO: conv
         cts.addConstraint(kind: .bind, left: bodyTy, right: resultTy)
@@ -95,6 +95,11 @@ public final class ConstraintGenerator : ASTVisitor {
     
     public func visitInjectIntoOptionalExpr(_ node: InjectIntoOptionalExpr) throws -> Type {
         throw MessageError("invalid")
+    }
+    
+    public func visitBindOptionalExpr(_ node: BindOptionalExpr) throws -> Type {
+        // OptionalObject constraint
+        unimplemented()
     }
     
 }

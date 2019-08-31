@@ -19,6 +19,10 @@ public final class ClosureExpr : Expr, DeclContext {
         self.parameter = parameter
     }
     
+    public var descriptionPartsTail: [String] {
+        Exprs.descriptionParts(self)
+    }
+    
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
         try visitor.visitClosureExpr(self)
     }

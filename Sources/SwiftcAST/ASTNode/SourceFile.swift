@@ -27,6 +27,14 @@ public final class SourceFile : Decl {
         ownedNodes.removeAll()
     }
     
+    public var descriptionPartsTail: [String] {
+        var parts: [String] = []
+        if let name = fileName {
+            parts.append(name)
+        }
+        return parts
+    }
+    
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
         try visitor.visitSourceFile(self)
     }

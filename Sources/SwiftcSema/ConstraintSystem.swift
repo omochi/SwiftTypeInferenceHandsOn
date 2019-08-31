@@ -166,6 +166,13 @@ public final class ConstraintSystem {
         return nil
     }
     
+    public func astTypeOrThrow(for node: ASTNode) throws -> Type {
+        guard let ty = astType(for: node) else {
+            throw MessageError("untyped node: \(node)")
+        }
+        return ty
+    }
+    
     public func setASTType(for node: ASTNode, _ type: Type) {
         let key = node.eraseToAnyASTNode()
         if let _ = astTypes[key] {

@@ -41,7 +41,7 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
         return node
     }
     
-    public func visitCallExpr(_ node: CallExpr) throws -> ASTNode {       
+    public func visitCallExpr(_ node: CallExpr) throws -> ASTNode {
         if let calleeTy = node.callee.type as? FunctionType {
             let paramTy = calleeTy.parameter
             node.argument = try coerce(expr: node.argument, to: paramTy)
@@ -75,14 +75,44 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
         return try applyFixedType(expr: node)
     }
     
+    public func visitBindOptionalExpr(_ node: BindOptionalExpr) throws -> ASTNode {
+        return try applyFixedType(expr: node)
+    }
+    
     private func coerce(expr: Expr, to toType: Type) throws -> Expr {
         guard let fromType = expr.type else { throw MessageError("untyped expr") }
         if fromType == toType {
             return expr
         }
         
+        let convRelOrNone = solution.typeConversionRelations.first { (rel) in
+            rel.left == fromType && rel.right == toType
+        }
+        
+        if let convRel = convRelOrNone {
+            switch convRel.conversion {
+            case .deepEquality:
+                return expr
+            case .valueToOptional:
+                guard let toOptTy = toType as? OptionalType else {
+                    throw MessageError("invalid relation")
+                }
+                var expr = try coerce(expr: expr, to: toOptTy.wrapped)
+                expr = InjectIntoOptionalExpr(subExpr: expr, type: toType)
+                return expr
+            case .optionalToOptional:
+                return try coerceOptionalToOptional(expr: expr, to: toType)
+            }
+        }
+        
+        // TODO
         print("!!!")
         return expr
+    }
+    
+    private func coerceOptionalToOptional(expr: Expr, to toType: Type) throws -> Expr {
+        // TODO
+        fatalError()
     }
 }
 
