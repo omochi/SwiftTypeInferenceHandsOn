@@ -138,6 +138,18 @@ public enum Constraint : CustomStringConvertible, Hashable {
         }
     }
     
+    public var right: Type {
+        switch self {
+        case .bind(left: _, right: let right, conversion: _),
+             .conversion(left: _, right: let right, conversion: _),
+             .applicableFunction(left: _, right: let right):
+            return right
+        case .bindOverload,
+             .disjunction:
+            preconditionFailure("invalid kind: \(self.kind)")
+        }
+    }
+    
     public static func ==(lhs: Constraint, rhs: Constraint) -> Bool {
         switch (lhs, rhs) {
         case (.bind(left: let al, right: let ar, conversion: let ac),

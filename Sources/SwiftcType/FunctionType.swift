@@ -1,10 +1,10 @@
 public struct FunctionType : _EquatableType {
     private struct Eq : Hashable {
-        public var parameter: TypeEquatableAdapter
-        public var result: TypeEquatableAdapter
+        public var parameter: AnyType
+        public var result: AnyType
         public init(_ x: FunctionType) {
-            parameter = x.parameter.wrapInEquatable()
-            result = x.result.wrapInEquatable()
+            parameter = x.parameter.eraseToAnyType()
+            result = x.result.eraseToAnyType()
         }
     }
     

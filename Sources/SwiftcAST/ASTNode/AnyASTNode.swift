@@ -1,5 +1,5 @@
 public struct AnyASTNode : Hashable {
-    private let value: ASTNode
+    public var value: ASTNode
     
     public init(_ value: ASTNode) {
         self.value = value

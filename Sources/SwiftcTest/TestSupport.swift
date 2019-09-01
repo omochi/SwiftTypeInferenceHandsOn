@@ -8,8 +8,8 @@ public func XCTAssertEqual(_ a: Type, _ b: Type,
                            file: StaticString = #file,
                            line: UInt = #line)
 {
-    XCTAssertEqual(a.wrapInEquatable(),
-                   b.wrapInEquatable(),
+    XCTAssertEqual(a.eraseToAnyType(),
+                   b.eraseToAnyType(),
                    file: file, line: line)
 }
 
@@ -17,16 +17,16 @@ public func XCTAssertEqual(_ a: Type?, _ b: Type?,
                            file: StaticString = #file,
                            line: UInt = #line)
 {
-    XCTAssertEqual(a.map { $0.wrapInEquatable() },
-                   b.map { $0.wrapInEquatable() })
+    XCTAssertEqual(a.map { $0.eraseToAnyType() },
+                   b.map { $0.eraseToAnyType() })
 }
 
 public func XCTAssertEqual(_ a: [Type], _ b: [Type],
                            file: StaticString = #file,
                            line: UInt = #line)
 {
-    XCTAssertEqual(a.map { $0.wrapInEquatable() },
-                   b.map { $0.wrapInEquatable() },
+    XCTAssertEqual(a.map { $0.eraseToAnyType() },
+                   b.map { $0.eraseToAnyType() },
                    file: file, line: line)
 }
 

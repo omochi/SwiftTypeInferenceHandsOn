@@ -1,8 +1,8 @@
 public struct OptionalType : _EquatableType {
     public struct Eq : Hashable {
-        public var wrapped: TypeEquatableAdapter
+        public var wrapped: AnyType
         public init(_ x: OptionalType) {
-            wrapped = x.wrapped.wrapInEquatable()
+            wrapped = x.wrapped.eraseToAnyType()
         }
     }
     

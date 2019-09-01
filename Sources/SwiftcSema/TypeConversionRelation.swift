@@ -3,12 +3,12 @@ import SwiftcType
 public struct TypeConversionRelation : CustomStringConvertible, Hashable {
     public struct Eq : Hashable {
         public var conversion: Conversion
-        public var left: TypeEquatableAdapter
-        public var right: TypeEquatableAdapter
+        public var left: AnyType
+        public var right: AnyType
         public init(_ x: TypeConversionRelation) {
             conversion = x.conversion
-            left = x.left.wrapInEquatable()
-            right = x.right.wrapInEquatable()
+            left = x.left.eraseToAnyType()
+            right = x.right.eraseToAnyType()
         }
     }
     
