@@ -26,9 +26,7 @@ public final class FunctionDecl : ValueDecl {
         try visitor.visitFunctionDecl(self)
     }
     
-    public var descriptionPartsTail: [String] {
-        ValueDecls.descriptionParts(self)
-    }
+    public var descriptionPartsTail: [String] { ValueDecls.descriptionParts(self) }
     
     public var interfaceType: Type? {
         FunctionType(parameter: parameterType, result: resultType)

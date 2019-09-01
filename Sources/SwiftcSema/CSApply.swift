@@ -79,14 +79,18 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
         return try applyFixedType(expr: node)
     }
     
-    private func coerce(expr: Expr, to toType: Type) throws -> Expr {
-        guard let fromType = expr.type else { throw MessageError("untyped expr") }
-        if fromType == toType {
+    public func visitOptionalEvaluationExpr(_ node: OptionalEvaluationExpr) throws -> ASTNode {
+        return try applyFixedType(expr: node)
+    }
+    
+    private func coerce(expr: Expr, to toTy: Type) throws -> Expr {
+        let fromTy = try expr.typeOrThrow()
+        if fromTy == toTy {
             return expr
         }
         
         let convRelOrNone = solution.typeConversionRelations.first { (rel) in
-            rel.left == fromType && rel.right == toType
+            rel.left == fromTy && rel.right == toTy
         }
         
         if let convRel = convRelOrNone {
@@ -94,25 +98,62 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
             case .deepEquality:
                 return expr
             case .valueToOptional:
-                guard let toOptTy = toType as? OptionalType else {
+                guard let toOptTy = toTy as? OptionalType else {
                     throw MessageError("invalid relation")
                 }
                 var expr = try coerce(expr: expr, to: toOptTy.wrapped)
-                expr = InjectIntoOptionalExpr(subExpr: expr, type: toType)
+                expr = InjectIntoOptionalExpr(subExpr: expr, type: toTy)
                 return expr
             case .optionalToOptional:
-                return try coerceOptionalToOptional(expr: expr, to: toType)
+                return try coerceOptionalToOptional(expr: expr, to: toTy)
             }
         }
+     
+        switch toTy {
+        case let toTy as OptionalType:
+            if let _ = fromTy as? OptionalType {
+                return try coerceOptionalToOptional(expr: expr, to: toTy)
+            }
+            
+            var expr = try coerce(expr: expr, to: toTy.wrapped)
+            expr = InjectIntoOptionalExpr(subExpr: expr, type: toTy)
+            return expr
+        default:
+            break
+        }
         
-        // TODO
-        print("!!!")
-        return expr
+        throw MessageError("unconsidered")
     }
     
     private func coerceOptionalToOptional(expr: Expr, to toType: Type) throws -> Expr {
-        // TODO
-        fatalError()
+        let fromType = try expr.typeOrThrow()
+        guard let fromTy = fromType as? OptionalType else { throw MessageError("not optional") }
+        guard let toTy = toType as? OptionalType else { throw MessageError("not optional") }
+        
+        do {
+            let fromOpts = fromTy.lookThroughAllOptionals()
+            let fromDepth = fromOpts.count
+            let toOpts = toTy.lookThroughAllOptionals()
+            let toDepth = toOpts.count
+            let depthDiff = toDepth - fromDepth
+            if depthDiff > 0,
+                toOpts[depthDiff] == fromTy
+            {
+                var expr = expr
+                for i in 0..<depthDiff {
+                    let optTy = toOpts[depthDiff - i - 1]
+                    expr = InjectIntoOptionalExpr(subExpr: expr, type: optTy)
+                }
+                return expr
+            }
+        }
+        
+        let bindExpr = BindOptionalExpr(subExpr: expr, type: fromTy.wrapped)
+        
+        var expr = try coerce(expr: bindExpr, to: toTy.wrapped)
+        expr = InjectIntoOptionalExpr(subExpr: expr, type: toTy)
+        expr = OptionalEvaluationExpr(subExpr: expr, type: toTy)
+        return expr
     }
 }
 

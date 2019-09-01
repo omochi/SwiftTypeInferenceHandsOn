@@ -14,6 +14,7 @@ public protocol ASTVisitor : VisitorProtocol where VisitTarget == ASTNode {
     func visitIntegerLiteralExpr(_ node: IntegerLiteralExpr) throws -> VisitResult
     func visitInjectIntoOptionalExpr(_ node: InjectIntoOptionalExpr) throws -> VisitResult
     func visitBindOptionalExpr(_ node: BindOptionalExpr) throws -> VisitResult
+    func visitOptionalEvaluationExpr(_ node: OptionalEvaluationExpr) throws -> VisitResult
 }
 
 extension ASTVisitor {

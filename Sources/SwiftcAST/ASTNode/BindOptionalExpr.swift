@@ -12,9 +12,7 @@ public final class BindOptionalExpr : Expr {
         self.type = type
     }
     
-    public var descriptionPartsTail: [String] {
-        Exprs.descriptionParts(self)
-    }
+    public var descriptionPartsTail: [String] { Exprs.descriptionParts(self) }
     
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
         try visitor.visitBindOptionalExpr(self)

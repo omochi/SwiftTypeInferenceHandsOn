@@ -142,6 +142,16 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
         return .continue(node)
     }
     
+    public func visitOptionalEvaluationExpr(_ node: OptionalEvaluationExpr) throws -> WalkResult<ASTNode> {
+        switch try process(node.subExpr) {
+        case .terminate: return .terminate
+        case .continue(let x):
+            node.subExpr = x as! Expr
+        }
+        return .continue(node)
+    }
+    
+    
 }
 
 extension ASTNode {

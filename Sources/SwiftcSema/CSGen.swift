@@ -102,6 +102,11 @@ public final class ConstraintGenerator : ASTVisitor {
         unimplemented()
     }
     
+    public func visitOptionalEvaluationExpr(_ node: OptionalEvaluationExpr) throws -> Type {
+        // subExpr conv .some(subExpr)
+        unimplemented()
+    }
+    
 }
 
 extension ConstraintSystem {
