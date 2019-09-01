@@ -6,19 +6,26 @@ extension ConstraintSystem {
         var cache: Dictionary<TypeVariable, PotentialBindings> = [:]
         
         for tv in typeVariables {
-            // TODO
-            guard case .fixed(.none) = bindings.binding(for: tv) else {
+            guard tv.isFree(bindings: bindings) else {
                 continue
             }
+            
+            if let bindings = potentialBindings(for: tv) {
+                cache[tv] = bindings
+            }
         }
+        
+        // TODO
+        
+        return nil
     }
     
-    public func potentialBindings(for tv: TypeVariable) -> PotentialBindings {
+    public func potentialBindings(for tv: TypeVariable) -> PotentialBindings? {
         precondition(tv.isRepresentative(bindings: bindings))
         precondition(tv.fixedType(bindings: bindings) == nil)
         
         var result = PotentialBindings(typeVariable: tv)
-        
+
         let constraints = gatherConstraints(involving: tv)
         
         var exactTypes: Set<AnyType> = []
@@ -56,10 +63,13 @@ extension ConstraintSystem {
         
         // hasDML, hasNonDML...
         
+        guard !result.bindings.isEmpty else {
+            return nil
+        }
+        
         return result
     }
     
-    // TOOD: add to sources
     public func potentialBinding(from constraint: Constraint,
                                  for tv: TypeVariable)
         -> PotentialBinding?

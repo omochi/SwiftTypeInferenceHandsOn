@@ -17,9 +17,9 @@ extension Type {
     }
 }
 
-public func ==(a: Type, b: Type) -> Bool {
-    return a.isEqual(b)
-}
+public func ==(a: Type, b: Type) -> Bool { a.isEqual(b) }
+
+public func !=(a: Type, b: Type) -> Bool { !(a == b) }
 
 public protocol _EquatableType : Type, Equatable {}
 

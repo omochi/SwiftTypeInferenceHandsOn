@@ -237,7 +237,7 @@ final class ConstraintSystemTests: XCTestCase {
             t.append(cts.createTypeVariable())
         }
         for ti in t {
-            bindings.setBinding(for: ti, .fixed(nil))
+            bindings.setBinding(for: ti, .free)
         }
         
         var cs: [ConstraintEntry] = []
@@ -266,7 +266,7 @@ final class ConstraintSystemTests: XCTestCase {
         let c3 = add(.bind(left: t[6], right: FunctionType(parameter: t[1], result: t[7])))
         
         // t8 equiv t1
-        bindings.setBinding(for: t[8], .equivalent(t[1]))
+        bindings.setBinding(for: t[8], .transfer(t[1]))
         
         // t8 nested left
         let c4 = add(.bind(left: FunctionType(parameter: t[8], result: t[9]), right: t[10]))
@@ -281,7 +281,7 @@ final class ConstraintSystemTests: XCTestCase {
         _ = add(.bind(left: t[15], right: t[16]))
         
         // t3 quiv t19
-        bindings.setBinding(for: t[19], .equivalent(t[3]))
+        bindings.setBinding(for: t[19], .transfer(t[3]))
         
         // unrelates
         _ = add(.bind(left: t[19], right: t[20]))

@@ -2,11 +2,12 @@ import SwiftcType
 
 public struct TypeVariableBindings {
     /**
-     自分が代表の場合fixed、他と同一の場合equivalent
+     自分が代表の場合free, fixed、代表転送を持つ場合はtransfer
      */
     public enum Binding {
-        case fixed(Type?)
-        case equivalent(TypeVariable)
+        case free
+        case fixed(Type)
+        case transfer(TypeVariable)
     }
     
     public private(set) var map: [TypeVariable: Binding] = [:]
@@ -14,7 +15,7 @@ public struct TypeVariableBindings {
     public init() {}
     
     public func binding(for variable: TypeVariable) -> Binding {
-        map[variable] ?? .fixed(nil)
+        map[variable] ?? .free
     }
     public mutating func setBinding(for variable: TypeVariable, _ binding: Binding) {
         map[variable] = binding
@@ -41,7 +42,7 @@ public struct TypeVariableBindings {
         
         let newEqs = type2.equivalentTypeVariables(bindings: self)
         for newEq in newEqs {
-            map[newEq] = .equivalent(type1)
+            map[newEq] = .transfer(type1)
         }
     }
     
@@ -63,30 +64,32 @@ extension TypeVariable {
     
     public func representative(bindings: TypeVariableBindings) -> TypeVariable {
         switch bindings.binding(for: self) {
-        case .fixed:
+        case .free,
+             .fixed:
             return self
-        case .equivalent(let rep):
+        case .transfer(let rep):
             return rep
         }
     }
     
     public func fixedType(bindings: TypeVariableBindings) -> Type? {
         switch bindings.binding(for: self) {
+        case .free:
+            return nil
         case .fixed(let ft):
             return ft
-        case .equivalent(let rep):
+        case .transfer(let rep):
             return rep.fixedType(bindings: bindings)
         }
     }
     
     public func fixedOrRepresentative(bindings: TypeVariableBindings) -> Type {
         switch bindings.binding(for: self) {
-        case .fixed(let ft):
-            if let ft = ft {
-                return ft
-            }
+        case .free:
             return self
-        case .equivalent(let rep):
+        case .fixed(let ft):
+            return ft
+        case .transfer(let rep):
             return rep.fixedOrRepresentative(bindings: bindings)
         }
     }
@@ -95,9 +98,10 @@ extension TypeVariable {
         var ret = Set<TypeVariable>()
         for (tv, b) in bindings.map {
             switch b {
-            case .fixed:
+            case .free,
+                 .fixed:
                 if tv == self { ret.insert(tv) }
-            case .equivalent(let rep):
+            case .transfer(let rep):
                 if rep == self { ret.insert(tv) }
             }
         }
@@ -106,8 +110,9 @@ extension TypeVariable {
     
     public func isFree(bindings: TypeVariableBindings) -> Bool {
         switch bindings.binding(for: self) {
-        case .fixed(let ft): return ft == nil
-        case .equivalent: return false
+        case .free: return true
+        case .fixed,
+             .transfer: return false
         }
     }
 }

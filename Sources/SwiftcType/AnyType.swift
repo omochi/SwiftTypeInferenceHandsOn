@@ -1,3 +1,5 @@
+// This is type erasure for `Type` type, not means `Swift.Any`.
+
 public struct AnyType : Hashable, CustomStringConvertible {
     public var value: Type
     

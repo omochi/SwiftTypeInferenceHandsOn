@@ -21,7 +21,46 @@ public struct PotentialBindings : CustomStringConvertible {
         return "\(typeVariable) <- \(bindingsStr)"
     }
     
-    public func add(_ potentialBinding: PotentialBinding) {
+    // allowJoinMeet should be attributed in each PB?
+    public mutating func add(_ binding: PotentialBinding) {
+        let bindTy = binding.type
+        // unresolved type, unbound generic type, allowJoinMeet...
+        if binding.kind == .supertype,
+            bindTy.typeVariables.isEmpty
+        {
+            if let index = (bindings.firstIndex { $0.kind == .supertype }) {
+                var lastBinding = bindings[index]
+                if let joinedTy = lastBinding.type.join(bindTy),
+                    !(joinedTy is TopAnyType)
+                {
+                    var does = true
+                    if let optTy = joinedTy as? OptionalType,
+                        optTy.wrapped is TopAnyType
+                    {
+                        does = false
+                    }
+                    
+                    if does {
+                        lastBinding.type = joinedTy
+                        bindings[index] = lastBinding
+                        return
+                    }
+                }
+            }
+        }
         
+        // lvalue
+        
+        guard isViableBinding(binding) else {
+            return
+        }
+        
+        bindings.append(binding)
+    }
+    
+    private func isViableBinding(_ binding: PotentialBinding) -> Bool {
+        // I still have a question
+        // https://github.com/apple/swift/pull/19076
+        return true
     }
 }

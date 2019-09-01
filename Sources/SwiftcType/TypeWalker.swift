@@ -1,6 +1,7 @@
 import SwiftcBasic
 
 public final class TypeWalker : WalkerBase, TypeVisitor {
+
     public typealias VisitTarget = Type
     public typealias VisitResult = WalkResult<Type>
     
@@ -60,6 +61,11 @@ public final class TypeWalker : WalkerBase, TypeVisitor {
     public func visitTypeVariable(_ type: _TypeVariable) throws -> WalkResult<Type> {
         .continue(type)
     }
+    
+    public func visitTopAnyType(_ type: TopAnyType) throws -> WalkResult<Type> {
+        .continue(type)
+    }
+    
 }
 
 extension Type {

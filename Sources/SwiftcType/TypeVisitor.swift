@@ -5,6 +5,7 @@ public protocol TypeVisitor : VisitorProtocol where VisitTarget == Type {
     func visitFunctionType(_ type: FunctionType) throws -> VisitResult
     func visitOptionalType(_ type: OptionalType) throws -> VisitResult
     func visitTypeVariable(_ type: _TypeVariable) throws -> VisitResult
+    func visitTopAnyType(_ type: TopAnyType) throws -> VisitResult
 }
 
 extension TypeVisitor {

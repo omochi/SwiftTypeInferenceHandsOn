@@ -87,7 +87,7 @@ public final class ConstraintSystem {
     public func createTypeVariable() -> TypeVariable {
         let id = typeVariables.count + 1
         let tv = TypeVariable(id: id)
-        bindings.setBinding(for: tv, .fixed(nil))
+        bindings.setBinding(for: tv, .free)
         typeVariables.append(tv)
         return tv
     }
