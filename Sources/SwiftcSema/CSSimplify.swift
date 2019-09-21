@@ -110,7 +110,6 @@ extension ConstraintSystem {
         var subOpts = options
         subOpts.generateConstraintsWhenAmbiguous = true
         
-        // TODO: conv
         switch matchTypes(kind: .conversion,
                           left: lfn.parameter,
                           right: rfn.parameter,

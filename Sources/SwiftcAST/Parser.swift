@@ -177,12 +177,13 @@ public final class Parser {
             throw MessageError("no signature")
         }
         
-        let param = try parse(synSig)
+        let (param, ret) = try parse(synSig)
         
         let closure = ClosureExpr(source: source,
                                   sourceRange: SourceRange(syntax: expr),
                                   parentContext: currentContext,
-                                  parameter: param)
+                                  parameter: param,
+                                  returnType: ret)
         
         try scope(context: closure) {
             closure.body = try parse(expr.statements)
@@ -195,7 +196,7 @@ public final class Parser {
         return closure
     }
     
-    private func parse(_ synSig: ClosureSignatureSyntax) throws -> VariableDecl {
+    private func parse(_ synSig: ClosureSignatureSyntax) throws -> (VariableDecl, Type?) {
         guard let synParamClause = synSig.input as? ParameterClauseSyntax else {
             throw MessageError("param num must be 1")
         }
@@ -209,14 +210,18 @@ public final class Parser {
             throw MessageError("no param name")
         }
         
-        let type: Type? = try synParam.type.map { try parse(type: $0) }
+        let paramType: Type? = try synParam.type.map { try parse(type: $0) }
         
-        return VariableDecl(source: source,
-                            sourceRange: SourceRange(syntax: synParam),
-                            parentContext: currentContext,
-                            name: name,
-                            initializer: nil,
-                            typeAnnotation: type)
+        let result: Type? = try synSig.output
+            .map { try parse(type: $0.returnType) }
+        
+        let param = VariableDecl(source: source,
+                                 sourceRange: SourceRange(syntax: synParam),
+                                 parentContext: currentContext,
+                                 name: name,
+                                 initializer: nil,
+                                 typeAnnotation: paramType)
+        return (param, result)
     }
     
     private func parse(type: TypeSyntax) throws -> Type {

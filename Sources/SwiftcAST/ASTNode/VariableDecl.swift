@@ -28,7 +28,7 @@ public final class VariableDecl : ValueDecl {
         var parts: [String] = []
         
         let type = self.typeAnnotation ?? self.type
-        parts.append("type=\(str(type))")
+        parts.append("type=\"\(str(type))\"")
         
         parts += ValueDecls.descriptionParts(self)
         

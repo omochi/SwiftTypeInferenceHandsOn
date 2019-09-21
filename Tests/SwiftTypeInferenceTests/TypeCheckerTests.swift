@@ -51,7 +51,28 @@ f(3)
         XCTAssertEqual(ca2.type, PrimitiveType.string)
     }
     
-    func testClosureCall() throws {
+    func testClosureArgInfer() throws {
+        let code = """
+{ (x) -> Int in 4 }(3)
+"""
+        let s = try Parser(source: code).parse()
+        
+        let tc = TypeChecker(source: s)
+        try tc.typeCheck()
+
+        let ap = try XCTCast(XCTArrayGet(s.statements, 0), CallExpr.self)
+        XCTAssertEqual(ap.type, PrimitiveType.int)
+        
+        let cl = try XCTCast(ap.callee, ClosureExpr.self)
+        XCTAssertEqual(cl.type, FunctionType(parameter: PrimitiveType.int, result: PrimitiveType.int))
+        
+        XCTAssertEqual(cl.parameter.type, PrimitiveType.int)
+        
+        let ag = try XCTCast(ap.argument, IntegerLiteralExpr.self)
+        XCTAssertEqual(ag.type, PrimitiveType.int)
+    }
+    
+    func testClosureReturnInfer() throws {
         let code = """
 { (x) in x }(3)
 """
@@ -120,6 +141,7 @@ let a: String = 3
     }
     
     func testArgConv() throws {
+        // it does not generate conv typevar inference
         let s = try Parser(source: """
 func f(a: Int?) { }
 f(3)
@@ -129,7 +151,20 @@ f(3)
         let tc = TypeChecker(source: s)
         try tc.typeCheck()
         
-        s.dump()
+        let call = try XCTCast(XCTArrayGet(s.statements, 1), CallExpr.self)
+        _ = try XCTCast(call.argument, InjectIntoOptionalExpr.self)
+    }
+    
+    func testClosureConvBodyReturn() throws {
+        let code = """
+{ (x: Int) -> Int? in 4 }
+"""
+        let s = try Parser(source: code).parse()
+        let tc = TypeChecker(source: s)
+        try tc.typeCheck()
+        
+        let clr = try XCTCast(XCTArrayGet(s.statements, 0), ClosureExpr.self)
+        _ = try XCTCast(XCTArrayGet(clr.body, 0), InjectIntoOptionalExpr.self)
     }
 
 }

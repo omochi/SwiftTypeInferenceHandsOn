@@ -45,14 +45,27 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
         if let calleeTy = node.callee.type as? FunctionType {
             let paramTy = calleeTy.parameter
             node.argument = try coerce(expr: node.argument, to: paramTy)
-            return node
+            return try applyFixedType(expr: node)
         }
         
         throw MessageError("unconsidered")
     }
     
     public func visitClosureExpr(_ node: ClosureExpr) throws -> ASTNode {
-        return try applyFixedType(expr: node)
+        _ = try applyFixedType(expr: node)
+        
+        guard let closureTy = node.type as? FunctionType else {
+            throw MessageError("invalid closure type")
+        }
+        
+        let index = node.body.count - 1
+        guard var body = node.body[index] as? Expr else {
+            throw MessageError("invalid body statement")
+        }
+        body = try coerce(expr: body, to: closureTy.result)
+        node.body[index] = body
+        
+        return node
     }
     
     public func visitUnresolvedDeclRefExpr(_ node: UnresolvedDeclRefExpr) throws -> ASTNode {

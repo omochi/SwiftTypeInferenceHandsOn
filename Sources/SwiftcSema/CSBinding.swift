@@ -2,8 +2,17 @@ import SwiftcType
 
 extension ConstraintSystem {
     public func determineBestBindings() -> PotentialBindings? {
-        var best: PotentialBindings? = nil
+        var bestOrNone: PotentialBindings? = nil
         var cache: Dictionary<TypeVariable, PotentialBindings> = [:]
+        
+        func isBetter(bindings: PotentialBindings) -> Bool {
+            guard let _ = bestOrNone else {
+                return true
+            }
+            
+            // implement compare
+            return false
+        }
         
         for tv in typeVariables {
             guard tv.isFree(bindings: bindings) else {
@@ -14,10 +23,18 @@ extension ConstraintSystem {
                 cache[tv] = bindings
             }
         }
+
+        for tv in typeVariables {
+            guard let bindings = cache[tv] else {
+                continue
+            }
+            
+            if isBetter(bindings: bindings) {
+                bestOrNone = bindings
+            }
+        }
         
-        // TODO
-        
-        return nil
+        return bestOrNone
     }
     
     public func potentialBindings(for tv: TypeVariable) -> PotentialBindings? {

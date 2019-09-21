@@ -63,7 +63,14 @@ extension ConstraintSystem {
                 return false
             }
             
+            let bestBindingsOrNone = cts.determineBestBindings()
             let disjunctionOrNone = cts.selectDisjunction()
+            
+            // consider priority for bindings and disjunctions
+            
+            if let bindings = bestBindingsOrNone {
+                return TypeVariableStep(work: work, bindings: bindings).run()
+            }
             
             if let disjunction = disjunctionOrNone {
                 return DisjunctionStep(work: work, disjunction: disjunction).run()
@@ -83,6 +90,61 @@ extension ConstraintSystem {
 
     private func selectDisjunction() -> ConstraintEntry? {
         return constraints.first { $0.constraint.kind == .disjunction }
+    }
+    
+    // generalize this and DisjunctionStep
+    public struct TypeVariableStep {
+        public let work: SolveWork
+        private let cts: ConstraintSystem
+        private let pr: Printer
+        public let bindings: PotentialBindings
+        public init(work: SolveWork,
+                    bindings: PotentialBindings)
+        {
+            self.work = work
+            self.cts = work.cts
+            self.pr = work.cts.printer
+            self.bindings = bindings
+        }
+        
+        public func run() -> Bool {
+            pr.goToLineHead()
+            pr.println("(typeVariableStep")
+            pr.push()
+            defer {
+                pr.pop()
+                pr.print(")")
+            }
+            
+            var isAnySolved = false
+            
+            for binding in bindings.bindings {
+                let state = cts.storeStepState()
+                defer {
+                    cts.loadStepState(state)
+                }
+                if attempt(binding: binding) {
+                    isAnySolved = true
+                }
+            }
+            
+            return isAnySolved
+        }
+        
+        private func attempt(binding: PotentialBinding) -> Bool {
+            pr.goToLineHead()
+            pr.println("attempt: \(binding)")
+            
+            cts.addConstraint(kind: .bind,
+                              left: bindings.typeVariable,
+                              right: binding.type)
+
+            guard cts.simplify() else {
+                return false
+            }
+            
+            return ComponentStep(work: work).run()
+        }
     }
     
     public struct DisjunctionStep {

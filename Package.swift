@@ -2,7 +2,7 @@
 
 import PackageDescription
 
-let rpath = "/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx"
+let rpath = "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx"
 
 let package = Package(
     name: "SwiftTypeInference",

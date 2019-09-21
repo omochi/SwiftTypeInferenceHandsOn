@@ -52,13 +52,21 @@ public final class ConstraintGenerator : ASTVisitor {
     
     public func visitClosureExpr(_ node: ClosureExpr) throws -> Type {
         let paramTy = try cts.astTypeOrThrow(for: node.parameter)
-        let resultTy = cts.createTypeVariable()
+        
+        func resultTy_() -> Type {
+            if let ret = node.returnType {
+                return ret
+            }
+            return cts.createTypeVariable()
+        }
+        
+        let resultTy = resultTy_()
+
         let closureTy = FunctionType(parameter: paramTy, result: resultTy)
         
-        let bodyTy = try cts.astTypeOrThrow(for: node.body[0])
+        let bodyTy = try cts.astTypeOrThrow(for: node.body.last!)
         
-        // TODO: conv
-        cts.addConstraint(kind: .bind, left: bodyTy, right: resultTy)
+        cts.addConstraint(kind: .conversion, left: bodyTy, right: resultTy)
         
         return closureTy
     }
