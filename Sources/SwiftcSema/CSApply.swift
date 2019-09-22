@@ -44,7 +44,7 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
     public func visitCallExpr(_ node: CallExpr) throws -> ASTNode {
         if let calleeTy = node.callee.type as? FunctionType {
             let paramTy = calleeTy.parameter
-            node.argument = try coerce(expr: node.argument, to: paramTy)
+            node.argument = try solution.coerce(expr: node.argument, to: paramTy)
             return try applyFixedType(expr: node)
         }
         
@@ -62,7 +62,7 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
         guard var body = node.body[index] as? Expr else {
             throw MessageError("invalid body statement")
         }
-        body = try coerce(expr: body, to: closureTy.result)
+        body = try solution.coerce(expr: body, to: closureTy.result)
         node.body[index] = body
         
         return node
@@ -95,14 +95,30 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
     public func visitOptionalEvaluationExpr(_ node: OptionalEvaluationExpr) throws -> ASTNode {
         return try applyFixedType(expr: node)
     }
+}
+
+extension ConstraintSystem.Solution {
+    public func apply(to expr: Expr,
+                      context: DeclContext,
+                      constraintSystem: ConstraintSystem) throws -> Expr
+    {
+        let applier = ConstraintSolutionApplicator(solution: self)
+        switch try expr.walk(context: context,
+                             preWalk: applier.preWalk,
+                             postWalk: applier.postWalk)
+        {
+        case .continue(let node): return node as! Expr
+        case .terminate: preconditionFailure()
+        }
+    }
     
-    private func coerce(expr: Expr, to toTy: Type) throws -> Expr {
+    public func coerce(expr: Expr, to toTy: Type) throws -> Expr {
         let fromTy = try expr.typeOrThrow()
         if fromTy == toTy {
             return expr
         }
         
-        let convRelOrNone = solution.typeConversionRelations.first { (rel) in
+        let convRelOrNone = typeConversionRelations.first { (rel) in
             rel.left == fromTy && rel.right == toTy
         }
         
@@ -167,21 +183,5 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
         expr = InjectIntoOptionalExpr(subExpr: expr, type: toTy)
         expr = OptionalEvaluationExpr(subExpr: expr, type: toTy)
         return expr
-    }
-}
-
-extension ConstraintSystem.Solution {
-    public func apply(to expr: Expr,
-                      context: DeclContext,
-                      constraintSystem: ConstraintSystem) throws -> Expr
-    {
-        let applier = ConstraintSolutionApplicator(solution: self)
-        switch try expr.walk(context: context,
-                             preWalk: applier.preWalk,
-                             postWalk: applier.postWalk)
-        {
-        case .continue(let node): return node as! Expr
-        case .terminate: preconditionFailure()
-        }
     }
 }

@@ -255,7 +255,14 @@ public final class ConstraintSystem {
                                          constraints: [ConstraintEntry],
                                          bindings: TypeVariableBindings) -> [ConstraintEntry]
     {
-        var result = Set<ConstraintEntry>()
+        // for result order stability
+        var resultSet = Set<ConstraintEntry>()
+        var result: [ConstraintEntry] = []
+        func add(_ c: ConstraintEntry) {
+            if resultSet.insert(c).inserted {
+                result.append(c)
+            }
+        }
         
         // cache
         var csVarTable = CacheTable { (cs: ConstraintEntry) in
@@ -275,7 +282,7 @@ public final class ConstraintSystem {
                 let (inserted, _) = visitedAdjacents.insert(tv)
                 guard inserted else { continue }
                 for c in getConstraints(contains: tv) {
-                    result.insert(c)
+                    add(c)
                 }
             }
         }
@@ -283,7 +290,7 @@ public final class ConstraintSystem {
         for tv in typeVariable.equivalentTypeVariables(bindings: bindings) {
             visitedAdjacents.insert(tv)
             for c in getConstraints(contains: tv) {
-                result.insert(c)
+                add(c)
             }
         }
         
@@ -293,7 +300,7 @@ public final class ConstraintSystem {
             }
         }
         
-        return result.map { $0 }
+        return result
     }
     
     public func resolveOverload(boundType: Type,                                

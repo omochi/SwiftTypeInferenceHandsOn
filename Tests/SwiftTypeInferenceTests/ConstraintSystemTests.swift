@@ -304,39 +304,38 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertEqual(sr, .solved)
     }
     
-    func testOptionalConversion() throws {
-        do {
-            let cts = ConstraintSystem()
-            
-            _ = cts.matchTypes(kind: .conversion,
-                               left: PrimitiveType.int,
-                               right: OptionalType(PrimitiveType.int),
-                               options: ConstraintSystem.MatchOptions())
-            let sols = cts.solve()
-            XCTAssertEqual(sols.count, 1)
-        }
+    func testConvIntToOptInt() throws {
         
-        do {
-            let cts = ConstraintSystem()
-            
-            _ = cts.matchTypes(kind: .conversion,
-                               left: OptionalType(PrimitiveType.int),
-                               right: OptionalType(PrimitiveType.int),
-                               options: ConstraintSystem.MatchOptions())
-            let sols = cts.solve()
-            XCTAssertEqual(sols.count, 2)
-        }
+        let cts = ConstraintSystem()
         
-        do {
-            let cts = ConstraintSystem()
-            
-            _ = cts.matchTypes(kind: .conversion,
-                               left: OptionalType(PrimitiveType.int),
-                               right: OptionalType(OptionalType(PrimitiveType.int)),
-                               options: ConstraintSystem.MatchOptions())
-            let sols = cts.solve()
-            XCTAssertEqual(sols.count, 3)
-        }
+        _ = cts.matchTypes(kind: .conversion,
+                           left: PrimitiveType.int,
+                           right: OptionalType(PrimitiveType.int),
+                           options: ConstraintSystem.MatchOptions())
+        let sols = cts.solve()
+        XCTAssertEqual(sols.count, 1)
+    }
+        
+    func testConvOptIntToOptInt() throws {
+        let cts = ConstraintSystem()
+        
+        _ = cts.matchTypes(kind: .conversion,
+                           left: OptionalType(PrimitiveType.int),
+                           right: OptionalType(PrimitiveType.int),
+                           options: ConstraintSystem.MatchOptions())
+        let sols = cts.solve()
+        XCTAssertEqual(sols.count, 2)
+    }
+    
+    func testConvOptIntToOptOptInt() throws {
+        let cts = ConstraintSystem()
+        
+        _ = cts.matchTypes(kind: .conversion,
+                           left: OptionalType(PrimitiveType.int),
+                           right: OptionalType(OptionalType(PrimitiveType.int)),
+                           options: ConstraintSystem.MatchOptions())
+        let sols = cts.solve()
+        XCTAssertEqual(sols.count, 3)
     }
 
 }

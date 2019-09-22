@@ -46,15 +46,15 @@ public final class TypeChecker {
                         varTy = exprTy
                     }
                     
-                    // TODO: conv
-                    cts.addConstraint(kind: .bind, left: exprTy, right: varTy)
+                    cts.addConstraint(kind: .conversion, left: exprTy, right: varTy)
             },
                 didFoundSolution: nil,
                 didApplySolution: { (cts, solution, expr, context) -> Expr in
-                    varTy = solution.simplify(type: varTy)
-                    
+                    let varTy = cts.simplify(type: varTy)
                     vd.type = varTy
                     
+                    let expr = try solution.coerce(expr: expr, to: varTy)
+                    vd.initializer = expr                    
                     return expr
             })
                 

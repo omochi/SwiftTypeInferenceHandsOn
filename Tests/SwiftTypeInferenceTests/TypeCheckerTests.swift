@@ -105,39 +105,37 @@ f(3)
         try tc.typeCheck()
     }
     
-    func testAssignment() throws {
-        do {
-            let code = """
+    func testAssignNoType() throws {
+        let code = """
 let a = 3
 """
-            let s = try Parser(source: code).parse()
-            let tc = TypeChecker(source: s)
-            try tc.typeCheck()
-            
-            let vd = try XCTCast(XCTArrayGet(s.statements, 0), VariableDecl.self)
-            XCTAssertEqual(vd.type, PrimitiveType.int)
-        }
+        let s = try Parser(source: code).parse()
+        let tc = TypeChecker(source: s)
+        try tc.typeCheck()
         
-        do {
-            let code = """
+        let vd = try XCTCast(XCTArrayGet(s.statements, 0), VariableDecl.self)
+        XCTAssertEqual(vd.type, PrimitiveType.int)
+    }
+    
+    func testAssignInt() throws {
+        let code = """
 let a: Int = 3
 """
-            let s = try Parser(source: code).parse()
-            let tc = TypeChecker(source: s)
-            try tc.typeCheck()
-            
-            let vd = try XCTCast(XCTArrayGet(s.statements, 0), VariableDecl.self)
-            XCTAssertEqual(vd.type, PrimitiveType.int)
-        }
+        let s = try Parser(source: code).parse()
+        let tc = TypeChecker(source: s)
+        try tc.typeCheck()
         
-        do {
-            let code = """
+        let vd = try XCTCast(XCTArrayGet(s.statements, 0), VariableDecl.self)
+        XCTAssertEqual(vd.type, PrimitiveType.int)
+    }
+    
+    func testAssignError() throws {
+        let code = """
 let a: String = 3
 """
-            let s = try Parser(source: code).parse()
-            let tc = TypeChecker(source: s)
-            XCTAssertThrowsError(try tc.typeCheck())
-        }
+        let s = try Parser(source: code).parse()
+        let tc = TypeChecker(source: s)
+        XCTAssertThrowsError(try tc.typeCheck())
     }
     
     func testArgConv() throws {
@@ -165,6 +163,41 @@ f(3)
         
         let clr = try XCTCast(XCTArrayGet(s.statements, 0), ClosureExpr.self)
         _ = try XCTCast(XCTArrayGet(clr.body, 0), InjectIntoOptionalExpr.self)
+    }
+    
+    func testAssignConv() throws {
+        let code = """
+let a: Int? = 3
+"""
+        let s = try Parser(source: code).parse()
+        let tc = TypeChecker(source: s)
+        try tc.typeCheck()
+        
+        let vd = try XCTCast(XCTArrayGet(s.statements, 0), VariableDecl.self)
+        _ = try XCTCast(XCTUnwrap(vd.initializer), InjectIntoOptionalExpr.self)
+    }
+    
+    func testArgConvAssignConvInfer() throws {
+        let code = """
+let a: Int? = { (x) in x }(3)
+"""
+        let s = try Parser(source: code).parse()
+        let tc = TypeChecker(source: s)
+        try tc.typeCheck()
+        let vd = try XCTCast(XCTArrayGet(s.statements, 0), VariableDecl.self)
+        
+        // Actually there are multiple solutions
+        // 1. (Int) -> Int
+        // 2. (Int) -> Int?
+        // 3. (Int?) -> Int?
+        // but current implementation does not have stable logic.
+        
+        let iio = try XCTCast(XCTUnwrap(vd.initializer), InjectIntoOptionalExpr.self)
+        let call = try XCTCast(iio.subExpr, CallExpr.self)
+        let clr = try XCTCast(call.callee, ClosureExpr.self)
+        XCTAssertEqual(try clr.typeOrThrow(),
+                       FunctionType(parameter: PrimitiveType.int,
+                                    result: PrimitiveType.int))
     }
 
 }
