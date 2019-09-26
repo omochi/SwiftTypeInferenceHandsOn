@@ -2,6 +2,24 @@ import XCTest
 import SwiftcTest
 
 final class ConstraintSystemTests: XCTestCase {
+    func testMerge1() {
+        let cts = ConstraintSystem()
+        let t1 = cts.createTypeVariable()
+        let t2 = cts.createTypeVariable()
+        cts.mergeEquivalence(type1: t1, type2: t2)
+        XCTAssertEqual(cts.fixedOrRepresentative(for: t1), t1)
+        XCTAssertEqual(cts.fixedOrRepresentative(for: t2), t1)
+    }
+    
+    func testMerge2() {
+        let cts = ConstraintSystem()
+        let t1 = cts.createTypeVariable()
+        let t2 = cts.createTypeVariable()
+        cts.mergeEquivalence(type1: t2, type2: t1)
+        XCTAssertEqual(cts.fixedOrRepresentative(for: t1), t1)
+        XCTAssertEqual(cts.fixedOrRepresentative(for: t2), t1)
+    }
+    
     func testTypeTypeVariables() {
         let cs = ConstraintSystem()
         let t1 = cs.createTypeVariable()
