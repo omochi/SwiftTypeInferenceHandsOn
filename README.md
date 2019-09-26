@@ -1,4 +1,4 @@
-# SwiftTypeInference
+# SwiftTypeInferenceHandsOn
 
 # [注意]ハンズオンの参加者の方
 
