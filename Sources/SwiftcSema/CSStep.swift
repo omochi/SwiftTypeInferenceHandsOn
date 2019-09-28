@@ -119,7 +119,13 @@ extension ConstraintSystem {
             var isAnySolved = false
             
             for binding in bindings.bindings {
-                // <Q11 hint="see DisjunctionStep" />
+                let state = cts.storeStepState()
+                   defer {
+                       cts.loadStepState(state)
+                   }
+                   if attempt(binding: binding) {
+                       isAnySolved = true
+                   }
             }
             
             return isAnySolved
