@@ -65,6 +65,12 @@ extension ConstraintSystem {
                                           options: options)
         case .valueToOptional:
             // <Q09 hint="see optionalToOptional" />
+            if let rightType = rightType as? OptionalType {
+                return matchTypes(kind: kind,
+                                  left: leftType,
+                                  right: rightType.wrapped,
+                                  options: subOptions)
+            }
             return .failure
         case .optionalToOptional:
             if let leftType = leftType as? OptionalType,
