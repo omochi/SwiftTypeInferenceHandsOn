@@ -55,6 +55,12 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
         _ = try applyFixedType(expr: node)
         
         // <Q14 hint="see visitCallExpr" />
+        guard let closureTy = node.type as? FunctionType else { preconditionFailure() }
+        
+        let index = node.body.count - 1
+        guard var body = node.body[index] as? Expr else { preconditionFailure() }
+        body = try solution.coerce(expr: body, to: closureTy.result)
+        node.body[index] = body
         
         return node
     }
