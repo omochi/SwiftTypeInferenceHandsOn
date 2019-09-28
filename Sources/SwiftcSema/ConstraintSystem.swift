@@ -147,6 +147,7 @@ public final class ConstraintSystem {
         
         if doesActivate {
             // <Q04 hint="see mergeEquivalence" />
+            // TODO: 今これ実装しても使っているメソッドがいなかったので、テストの結果は変わらないので後回し。
         }
     }
     
