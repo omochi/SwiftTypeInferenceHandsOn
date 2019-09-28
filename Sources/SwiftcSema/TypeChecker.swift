@@ -57,11 +57,10 @@ public final class TypeChecker {
 
                     // <Q13 hint="see visitCallExpr" />
                     // TypeCheckConstraints.cpp L:2687
-                    if let _ = varTy as? OptionalType {
-                        return try solution.coerce(expr: expr, to: varTy)
-                    }
+                    return try solution.coerce(expr: expr, to: varTy)
                     // end
-                    return expr
+                    
+//                    return expr
             })
                 
             ie = try typeCheckExpr(ie,
