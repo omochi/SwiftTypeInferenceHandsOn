@@ -33,8 +33,13 @@ public struct TypeVariableBindings {
             return
         }
         
-        setBinding(for: type1, .free)
-        setBinding(for: type2, .fixed(type1))
+        if type1 < type2 {
+            setBinding(for: type1, .free)
+            setBinding(for: type2, .fixed(type1))
+        } else {
+            setBinding(for: type2, .free)
+            setBinding(for: type1, .fixed(type2))
+        }
         
         // <Q03 hint="understand data structure" />
     }
