@@ -53,9 +53,18 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
     
     public func visitClosureExpr(_ node: ClosureExpr) throws -> ASTNode {
         _ = try applyFixedType(expr: node)
-        
-        // <Q14 hint="see visitCallExpr" />
-        
+
+        guard let funTy = node.type as? FunctionType else {
+            throw MessageError("not FunctionType")
+        }
+
+        guard let retExpr = node.body.last as? Expr else {
+            throw MessageError("invalid body statement")
+        }
+        let resultTy = funTy.result
+        let returnExprIndex = node.body.count - 1
+
+        node.body[returnExprIndex] = try solution.coerce(expr: retExpr, to: resultTy)
         return node
     }
     
