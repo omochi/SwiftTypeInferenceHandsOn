@@ -33,16 +33,18 @@ public struct TypeVariableBindings {
             return
         }
         
-        // Q3
-        if type1 < type2 {
-            setBinding(for: type1, .free)
-            setBinding(for: type2, .transfer(type1))
-        } else {
-            setBinding(for: type2, .free)
-            setBinding(for: type1, .transfer(type2))
+        var type1 = type1
+        var type2 = type2
+        
+        if type1 > type2 {
+            swap(&type1, &type2)
         }
         
         // <Q03 hint="understand data structure" />
+        let vars = type2.equivalentTypeVariables(bindings: self)
+        for v in vars {
+            setBinding(for: v, .transfer(type1))
+        }
     }
     
     public mutating func assign(variable: TypeVariable,

@@ -66,6 +66,13 @@ final class ConstraintSystemTests: XCTestCase {
         cs.addConstraint(kind: .bind, left: t6, right: t2)
         XCTAssertEqual(cs.simplify(type: t5), t1)
         XCTAssertEqual(cs.simplify(type: t6), t1)
+        
+//        ///
+//        let t7 = cs.createTypeVariable()
+//        cs.addConstraint(kind: .bind, left: t1, right: t6)
+//        XCTAssertEqual(cs.simplify(type: t7), t1)
+//        ///
+        
         XCTAssertEqual(t1.equivalentTypeVariables(bindings: cs.bindings), [t1, t2, t3, t4, t5, t6])
     }
     
