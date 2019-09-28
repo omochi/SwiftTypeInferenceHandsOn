@@ -167,14 +167,16 @@ f(3)
     
     func testAssignConv() throws {
         let code = """
-let a: Int? = 3
+let a: Int?? = 3
 """
         let s = try Parser(source: code).parse()
         let tc = TypeChecker(source: s)
         try tc.typeCheck()
         
         let vd = try XCTCast(XCTArrayGet(s.statements, 0), VariableDecl.self)
-        _ = try XCTCast(XCTUnwrap(vd.initializer), InjectIntoOptionalExpr.self)
+
+        let initializer = try XCTCast(XCTUnwrap(vd.initializer), InjectIntoOptionalExpr.self)
+        _ = try XCTCast(initializer.subExpr, InjectIntoOptionalExpr.self)
     }
     
     func testArgConvAssignConvInfer() throws {
