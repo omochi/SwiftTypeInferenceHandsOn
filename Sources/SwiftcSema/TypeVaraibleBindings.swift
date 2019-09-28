@@ -34,6 +34,19 @@ public struct TypeVariableBindings {
         }
         
         // <Q03 hint="understand data structure" />
+        
+        // todo: type1, type2 の大小関係比較
+        // todo: 必要ならswap
+        
+        var type1 = type1
+        var type2 = type2
+        
+        if (type1 > type2) {
+            swap(&type2, &type1)
+        }
+        
+        // todo: typeidの若い方に持っていく
+        self.setBinding(for: type2, .transfer(type1))
     }
     
     public mutating func assign(variable: TypeVariable,
