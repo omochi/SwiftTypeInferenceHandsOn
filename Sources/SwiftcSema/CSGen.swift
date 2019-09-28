@@ -64,7 +64,7 @@ public final class ConstraintGenerator : ASTVisitor {
         
         let bodyTy = try cts.astTypeOrThrow(for: node.body.last!)
         
-        // <Q06 hint="call addConstraint" />
+        cts.addConstraint(kind: .conversion, left: bodyTy, right: resultTy)
         
         return closureTy
     }
