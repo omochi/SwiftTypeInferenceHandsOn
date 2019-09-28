@@ -42,8 +42,11 @@ public final class ConstraintGenerator : ASTVisitor {
         let arg = try cts.astTypeOrThrow(for: node.argument)
         
         let tv = cts.createTypeVariable()
-        
-        // <Q07 hint="call addConstraint" />
+
+        cts.addConstraint(
+            kind: .applicableFunction,
+            left: FunctionType(parameter: arg, result: tv), right: callee
+        )
         
         return tv
     }

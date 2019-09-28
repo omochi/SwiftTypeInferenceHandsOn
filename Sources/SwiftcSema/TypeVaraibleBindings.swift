@@ -33,9 +33,19 @@ public struct TypeVariableBindings {
             return
         }
 
-        let equalTys = type2.equivalentTypeVariables(bindings: self)
+        var reprTy: TypeVariable
+        var origTy: TypeVariable
+        if type1.id < type2.id {
+            reprTy = type1
+            origTy = type2
+        } else {
+            reprTy = type2
+            origTy = type1
+        }
+
+        let equalTys = origTy.equivalentTypeVariables(bindings: self)
         for eqTy in equalTys {
-            map[eqTy] = .transfer(type1)
+            map[eqTy] = .transfer(reprTy)
         }
     }
     
