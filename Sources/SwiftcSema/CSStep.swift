@@ -70,6 +70,14 @@ extension ConstraintSystem {
             
             // <Q10 hint="invoke substeps" />
             
+            if let bindings = bestBindingsOrNone {
+                return TypeVariableStep(work: work, bindings: bindings).run()
+            }
+            
+            if let disjunction = disjunctionOrNone {
+                return DisjunctionStep(work: work, disjunction: disjunction).run()
+            }
+            
             if cts.hasFreeTypeVariables() {
                 return false
             }
