@@ -33,6 +33,9 @@ public struct TypeVariableBindings {
             return
         }
         
+        setBinding(for: type1, .free)
+        setBinding(for: type2, .fixed(type1))
+        
         // <Q03 hint="understand data structure" />
     }
     

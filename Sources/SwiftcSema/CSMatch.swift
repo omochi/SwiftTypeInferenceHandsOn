@@ -163,6 +163,7 @@ extension ConstraintSystem {
         return .solved
     }
     
+    // CSSimplify.cpp / matchFunctionTypes
     private func matchFunctionTypes(kind: Constraint.MatchKind,
                                     left leftType: FunctionType,
                                     right rightType: FunctionType,
@@ -174,6 +175,11 @@ extension ConstraintSystem {
         let leftRet = leftType.result
         let rightRet = rightType.result
         
+        print(leftArg)
+        print(rightArg)
+        print(leftRet)
+        print(rightArg)
+        
         let subKind: Constraint.MatchKind
         
         switch kind {
@@ -183,7 +189,12 @@ extension ConstraintSystem {
         
         let subOptions = decompositionOptions(options)
         
-        // <Q02 hint="match arg and ret" />
+        if leftArg == rightArg && leftRet == rightRet {
+            return matchTypes(kind: subKind,
+                              left: leftArg,
+                              right: rightArg,
+                              options: subOptions)
+        }
         
         return .solved
     }
