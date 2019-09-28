@@ -119,6 +119,9 @@ extension ConstraintSystem.Solution {
                 return expr
             case .valueToOptional:
                 // <Q12 hint="use `InjectIntoOptionalExpr` and `coerce`" />
+                guard let toOptTy = toTy as? OptionalType else { preconditionFailure() }
+                var expr = try coerce(expr: expr, to: toOptTy.wrapped)
+                expr = InjectIntoOptionalExpr(subExpr: expr, type: toTy)
                 return expr
             case .optionalToOptional:
                 return try coerceOptionalToOptional(expr: expr, to: toTy)
