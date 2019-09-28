@@ -67,7 +67,7 @@ extension ConstraintSystem {
             // <Q09 hint="see optionalToOptional" />
             // TODO 左側の方が optional 多かった場合はどうなるんだ？
             if let rightType = rightType as? OptionalType {
-                return matchTypes(kind: .bind, left: leftType, right: rightType.wrapped, options: subOptions)
+                return matchTypes(kind: kind, left: leftType, right: rightType.wrapped, options: subOptions)
             }
             return .failure
 
