@@ -32,8 +32,11 @@ public struct TypeVariableBindings {
         if type1 == type2 {
             return
         }
-        
-        // <Q03 hint="understand data structure" />
+
+        let equalTys = type2.equivalentTypeVariables(bindings: self)
+        for eqTy in equalTys {
+            map[eqTy] = .transfer(type1)
+        }
     }
     
     public mutating func assign(variable: TypeVariable,
