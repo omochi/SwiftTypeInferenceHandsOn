@@ -141,7 +141,7 @@ extension ConstraintSystem {
         if conversions.isEmpty {
             return .failure
         }
-
+        
         // 1つなら即時投入
         if conversions.count == 1 {
             let conversion = conversions[0]
@@ -150,7 +150,7 @@ extension ConstraintSystem {
                             conversion: conversion,
                             options: options)
         }
-
+        
         // 2つ以上ならdisjunction
         let convCs: [Constraint] = conversions.map { (conv) in
             Constraint(kind: subKind(kind, conversion: conv),
@@ -175,10 +175,12 @@ extension ConstraintSystem {
         let leftRet = leftType.result
         let rightRet = rightType.result
         
-        print(leftArg)
-        print(rightArg)
-        print(leftRet)
-        print(rightArg)
+        print("leftArg \(leftArg)")
+        print("\(type(of: leftArg))")
+        print("rightArg \(rightArg)")
+        print("\(type(of: rightArg))")
+        print("leftRet \(leftRet)")
+        print("rightArg \(rightArg)")
         
         let subKind: Constraint.MatchKind
         
@@ -190,11 +192,16 @@ extension ConstraintSystem {
         let subOptions = decompositionOptions(options)
         
         // Q2
-        if leftArg == rightArg && leftRet == rightRet {
-            return matchTypes(kind: subKind,
-                              left: leftArg,
-                              right: rightArg,
-                              options: subOptions)
+        let argument = matchTypes(kind: subKind,
+                                  left: leftArg,
+                                  right: rightArg,
+                                  options: subOptions)
+        let result = matchTypes(kind: subKind,
+                                left: leftRet,
+                                right: rightRet,
+                                options: subOptions)
+        if argument == .solved && result == .solved {
+            return .solved
         }
         
         return .solved
@@ -207,12 +214,18 @@ extension ConstraintSystem {
         let subOptions = decompositionOptions(options)
         
         // Q1
+//        if leftType is PrimitiveType && rightType is PrimitiveType {
+//            return matchTypes(kind: .bind,
+//                              left: leftType,
+//                              right: rightType,
+//                              options: subOptions)
+//        }
         if leftType == rightType {
             return .solved
         }
         
         if let leftType = leftType as? OptionalType,
-        let rightType = rightType as? OptionalType
+            let rightType = rightType as? OptionalType
         {
             return matchTypes(kind: .bind,
                               left: leftType.wrapped,
