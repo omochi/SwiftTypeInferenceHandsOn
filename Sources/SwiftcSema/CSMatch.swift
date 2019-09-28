@@ -184,8 +184,17 @@ extension ConstraintSystem {
         let subOptions = decompositionOptions(options)
         
         // <Q02 hint="match arg and ret" />
+        switch matchTypes(kind: subKind, left: leftArg, right: rightArg, options: subOptions) {
+        case .solved:
+            return matchTypes(kind: subKind, left: leftRet, right: rightRet, options: subOptions)
+        case .failure:
+            return .failure
+        case .ambiguous:
+            return .ambiguous
+        }
+        // end
         
-        return .solved
+//        return .solved
     }
     
     internal func matchDeepEqualityTypes(left leftType: Type,
@@ -195,6 +204,8 @@ extension ConstraintSystem {
         let subOptions = decompositionOptions(options)
         
         // <Q01 hint="consider primitive type" />
+        if leftType.isEqual(rightType) { return .solved }
+        // end
         
         if let leftType = leftType as? OptionalType,
         let rightType = rightType as? OptionalType

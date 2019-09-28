@@ -34,6 +34,25 @@ public struct TypeVariableBindings {
         }
         
         // <Q03 hint="understand data structure" />
+        // TypeVariableのTransferはIDが若いほうが親になるように接続する
+        if type1 < type2 {
+            setBinding(for: type2, .transfer(type1))
+            
+            // type2にtransferしようとしている制約をすべてtype1向きに書き換える
+            for (tv, b) in map.map({ $0 }) {
+                if case let .transfer(t) = b, t == type2 {
+                    setBinding(for: tv, .transfer(type1))
+                }
+            }
+        } else {
+            setBinding(for: type1, .transfer(type2))
+            for (tv, b) in map.map({ $0 }) {
+                if case let .transfer(t) = b, t == type1 {
+                    setBinding(for: tv, .transfer(type2))
+                }
+            }
+        }
+        // end
     }
     
     public mutating func assign(variable: TypeVariable,

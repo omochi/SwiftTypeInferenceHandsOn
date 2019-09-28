@@ -37,7 +37,7 @@ public func XCTArrayGet<T>(_ array: [T], _ index: Int) throws -> T {
     return array[index]
 }
 
-public func XCTCast<T>(_ x: Any?, _ ty: T.Type) throws -> T {
+public func XCTCast<T, U>(_ x: U, _ ty: T.Type) throws -> T {
     guard let cx = x as? T else {
         throw MessageError("cast failure: \(type(of: x)) to \(T.self)")
     }

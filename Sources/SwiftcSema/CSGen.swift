@@ -44,6 +44,8 @@ public final class ConstraintGenerator : ASTVisitor {
         let tv = cts.createTypeVariable()
         
         // <Q07 hint="call addConstraint" />
+        cts.addConstraint(kind: .conversion, left: FunctionType(parameter: arg, result: tv), right: callee)
+        // end
         
         return tv
     }
@@ -65,6 +67,10 @@ public final class ConstraintGenerator : ASTVisitor {
         let bodyTy = try cts.astTypeOrThrow(for: node.body.last!)
         
         // <Q06 hint="call addConstraint" />
+        cts.addConstraint(kind: .conversion, left: bodyTy, right: resultTy)
+//        cts.addConstraint(kind: .applicableFunction, left: closureTy, right: FunctionType(parameter: paramTy, result: bodyTy))
+        // 本当にこれだけ？ CSGen.cpp L:2409
+        // end
         
         return closureTy
     }
