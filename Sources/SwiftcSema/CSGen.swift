@@ -68,7 +68,7 @@ public final class ConstraintGenerator : ASTVisitor {
         
         // <Q06 hint="call addConstraint" />
         // 本文が一文の時だけreturnとbodyのconv制約を追加する
-        cts.addConstraint(kind: .conversion, left: resultTy, right: bodyTy)
+        cts.addConstraint(kind: .conversion, left: bodyTy, right: resultTy)
         
         return closureTy
     }
