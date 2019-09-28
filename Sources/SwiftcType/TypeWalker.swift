@@ -24,10 +24,6 @@ public final class TypeWalker : WalkerBase, TypeVisitor {
         try _postWalk(target)
     }
     
-    public func visit(_ type: PrimitiveType) throws -> WalkResult<Type> {
-        .continue(type)
-    }
-    
     public func visit(_ type: FunctionType) throws -> WalkResult<Type> {
         var type = type
         
@@ -57,15 +53,10 @@ public final class TypeWalker : WalkerBase, TypeVisitor {
         
         return .continue(type)
     }
-    
-    public func visit(_ type: _TypeVariable) throws -> WalkResult<Type> {
-        .continue(type)
+
+    public func visit<T: Type>(_ type: T) throws -> WalkResult<Type> {
+        return .continue(type)
     }
-    
-    public func visit(_ type: TopAnyType) throws -> WalkResult<Type> {
-        .continue(type)
-    }
-    
 }
 
 extension Type {

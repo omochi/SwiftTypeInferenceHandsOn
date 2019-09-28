@@ -49,10 +49,6 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
         }
     }
     
-    public func visit(_ node: FunctionDecl) throws -> WalkResult<ASTNode> {
-        .continue(node)
-    }
-    
     public func visit(_ node: VariableDecl) throws -> WalkResult<ASTNode> {
         try scope(context: node) {
             if let ie = node.initializer {
@@ -108,22 +104,6 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
         }
     }
     
-    public func visit(_ node: UnresolvedDeclRefExpr) throws -> WalkResult<ASTNode> {
-        .continue(node)
-    }
-    
-    public func visit(_ node: DeclRefExpr) throws -> WalkResult<ASTNode> {
-        .continue(node)
-    }
-    
-    public func visit(_ node: OverloadedDeclRefExpr) throws -> WalkResult<ASTNode> {
-        .continue(node)
-    }
-    
-    public func visit(_ node: IntegerLiteralExpr) throws -> WalkResult<ASTNode> {
-        .continue(node)
-    }
-    
     public func visit(_ node: InjectIntoOptionalExpr) throws -> WalkResult<ASTNode> {
         switch try process(node.subExpr) {
         case .terminate: return .terminate
@@ -151,7 +131,9 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
         return .continue(node)
     }
     
-    
+    public func visit<T: ASTNode>(_ node: T) throws -> WalkResult<ASTNode> {
+        return .continue(node)
+    }
 }
 
 extension ASTNode {
