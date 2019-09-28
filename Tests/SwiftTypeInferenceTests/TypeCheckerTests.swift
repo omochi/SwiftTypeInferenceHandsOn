@@ -179,8 +179,8 @@ let a: Int? = 3
 
     func testAssignOptionalOptionalConv() throws {
         let code = """
-    let a: Int?? = 3
-    """
+let a: Int?? = 3
+"""
         let s = try Parser(source: code).parse()
         let tc = TypeChecker(source: s)
         try tc.typeCheck()
