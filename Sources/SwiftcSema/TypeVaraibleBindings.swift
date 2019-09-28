@@ -46,7 +46,9 @@ public struct TypeVariableBindings {
         }
         
         // todo: typeidの若い方に持っていく
-        self.setBinding(for: type2, .transfer(type1))
+        for eq in type2.equivalentTypeVariables(bindings: self) {
+            map[eq] = .transfer(type1)
+        }
     }
     
     public mutating func assign(variable: TypeVariable,
