@@ -48,7 +48,7 @@ public final class TypeChecker {
 
                     // <Q05 hint="call addConstraint"/>
                     // NOTE: let a: Int = "" は落ちて欲しいがこれは矛盾する制約を追加してあとでチェックすることにする。
-                    cts.addConstraint(kind: .conversion, left: varTy, right: exprTy)
+                    cts.addConstraint(kind: .conversion, left: exprTy, right: varTy)
             },
                 didFoundSolution: nil,
                 didApplySolution: { (cts, solution, expr, context) -> Expr in
