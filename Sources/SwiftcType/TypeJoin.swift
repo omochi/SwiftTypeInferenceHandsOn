@@ -7,13 +7,13 @@ public final class TypeJoiner : TypeVisitor {
         self.left = left
     }
     
-    public func visitPrimitiveType(_ right: PrimitiveType) throws -> Type? {
+    public func visit(_ right: PrimitiveType) throws -> Type? {
         precondition(left != right)
         
         return TopAnyType()
     }
     
-    public func visitFunctionType(_ right: FunctionType) throws -> Type? {
+    public func visit(_ right: FunctionType) throws -> Type? {
         guard let left = left as? FunctionType else {
             return TopAnyType()
         }
@@ -29,7 +29,7 @@ public final class TypeJoiner : TypeVisitor {
         return FunctionType(parameter: left.parameter, result: result)
     }
     
-    public func visitOptionalType(_ right: OptionalType) throws -> Type? {
+    public func visit(_ right: OptionalType) throws -> Type? {
         if let joined = Self.joinOptional(left: left, right: right) {
             return joined
         }
@@ -37,11 +37,11 @@ public final class TypeJoiner : TypeVisitor {
         return nil
     }
     
-    public func visitTypeVariable(_ right: _TypeVariable) throws -> Type? {
+    public func visit(_ right: _TypeVariable) throws -> Type? {
         return nil
     }
     
-    public func visitTopAnyType(_ right: TopAnyType) throws -> Type? {
+    public func visit(_ right: TopAnyType) throws -> Type? {
         if left is FunctionType {
             return nil
         }
@@ -81,10 +81,10 @@ extension Type {
         }
         
         func doIt() -> Type? {
-            return try! TypeJoiner(left: left).visit(right)
+            return try! TypeJoiner(left: left).startVisiting(right)
         }
         func swapIt() -> Type? {
-            return try! TypeJoiner(left: right).visit(left)
+            return try! TypeJoiner(left: right).startVisiting(left)
         }
         
         if left is OptionalType {
@@ -103,6 +103,6 @@ extension Type {
             return doIt()
         }
         
-        return try! TypeJoiner(left: left).visit(right)
+        return try! TypeJoiner(left: left).startVisiting(right)
     }
 }

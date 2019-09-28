@@ -23,7 +23,7 @@ public final class FunctionDecl : ValueDecl {
     }
     
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
-        try visitor.visitFunctionDecl(self)
+        try visitor.visit(self)
     }
     
     public var descriptionPartsTail: [String] { ValueDecls.descriptionParts(self) }

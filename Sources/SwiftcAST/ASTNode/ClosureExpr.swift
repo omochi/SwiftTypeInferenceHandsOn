@@ -32,7 +32,7 @@ public final class ClosureExpr : Expr, DeclContext {
     }
     
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
-        try visitor.visitClosureExpr(self)
+        try visitor.visit(self)
     }
     
     public var interfaceType: Type? { type }

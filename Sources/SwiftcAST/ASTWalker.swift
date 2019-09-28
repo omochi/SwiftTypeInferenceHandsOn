@@ -35,7 +35,7 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
         return try f()
     }
 
-    public func visitSourceFile(_ node: SourceFile) throws -> WalkResult<ASTNode> {
+    public func visit(_ node: SourceFile) throws -> WalkResult<ASTNode> {
         try scope(context: node) {
             for i in 0..<node.statements.count {
                 switch try process(node.statements[i]) {
@@ -49,11 +49,11 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
         }
     }
     
-    public func visitFunctionDecl(_ node: FunctionDecl) throws -> WalkResult<ASTNode> {
+    public func visit(_ node: FunctionDecl) throws -> WalkResult<ASTNode> {
         .continue(node)
     }
     
-    public func visitVariableDecl(_ node: VariableDecl) throws -> WalkResult<ASTNode> {
+    public func visit(_ node: VariableDecl) throws -> WalkResult<ASTNode> {
         try scope(context: node) {
             if let ie = node.initializer {
                 switch try process(ie) {
@@ -68,7 +68,7 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
         }
     }
     
-    public func visitCallExpr(_ node: CallExpr) throws -> WalkResult<ASTNode> {
+    public func visit(_ node: CallExpr) throws -> WalkResult<ASTNode> {
         switch try process(node.callee) {
         case .continue(let x):
             node.callee = x as! Expr
@@ -86,7 +86,7 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
         return .continue(node)
     }
     
-    public func visitClosureExpr(_ node: ClosureExpr) throws -> WalkResult<ASTNode> {
+    public func visit(_ node: ClosureExpr) throws -> WalkResult<ASTNode> {
         try scope(context: node) {
             switch try process(node.parameter) {
             case .continue(let x):
@@ -108,23 +108,23 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
         }
     }
     
-    public func visitUnresolvedDeclRefExpr(_ node: UnresolvedDeclRefExpr) throws -> WalkResult<ASTNode> {
+    public func visit(_ node: UnresolvedDeclRefExpr) throws -> WalkResult<ASTNode> {
         .continue(node)
     }
     
-    public func visitDeclRefExpr(_ node: DeclRefExpr) throws -> WalkResult<ASTNode> {
+    public func visit(_ node: DeclRefExpr) throws -> WalkResult<ASTNode> {
         .continue(node)
     }
     
-    public func visitOverloadedDeclRefExpr(_ node: OverloadedDeclRefExpr) throws -> WalkResult<ASTNode> {
+    public func visit(_ node: OverloadedDeclRefExpr) throws -> WalkResult<ASTNode> {
         .continue(node)
     }
     
-    public func visitIntegerLiteralExpr(_ node: IntegerLiteralExpr) throws -> WalkResult<ASTNode> {
+    public func visit(_ node: IntegerLiteralExpr) throws -> WalkResult<ASTNode> {
         .continue(node)
     }
     
-    public func visitInjectIntoOptionalExpr(_ node: InjectIntoOptionalExpr) throws -> WalkResult<ASTNode> {
+    public func visit(_ node: InjectIntoOptionalExpr) throws -> WalkResult<ASTNode> {
         switch try process(node.subExpr) {
         case .terminate: return .terminate
         case .continue(let x):
@@ -133,7 +133,7 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
         return .continue(node)
     }
     
-    public func visitBindOptionalExpr(_ node: BindOptionalExpr) throws -> WalkResult<ASTNode> {
+    public func visit(_ node: BindOptionalExpr) throws -> WalkResult<ASTNode> {
         switch try process(node.subExpr) {
         case .terminate: return .terminate
         case .continue(let x):
@@ -142,7 +142,7 @@ public final class ASTWalker : WalkerBase, ASTVisitor {
         return .continue(node)
     }
     
-    public func visitOptionalEvaluationExpr(_ node: OptionalEvaluationExpr) throws -> WalkResult<ASTNode> {
+    public func visit(_ node: OptionalEvaluationExpr) throws -> WalkResult<ASTNode> {
         switch try process(node.subExpr) {
         case .terminate: return .terminate
         case .continue(let x):

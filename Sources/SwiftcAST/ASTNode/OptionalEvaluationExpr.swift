@@ -15,7 +15,7 @@ public final class OptionalEvaluationExpr : Expr {
     }
     
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
-        try visitor.visitOptionalEvaluationExpr(self)
+        try visitor.visit(self)
     }
     
     public var descriptionPartsTail: [String] { Exprs.descriptionParts(self) }
