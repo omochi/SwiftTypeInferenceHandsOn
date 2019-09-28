@@ -72,7 +72,7 @@ extension ConstraintSystem {
             
             if let disjunction = disjunctionOrNone {
                 let step = DisjunctionStep(work: work, disjunction: disjunction)
-                step.run()
+                let _ = step.run()
                 return true
             }
             
