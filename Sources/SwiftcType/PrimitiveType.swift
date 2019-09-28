@@ -15,7 +15,7 @@ public struct PrimitiveType : _EquatableType {
     }
     
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : TypeVisitor {
-        try visitor.visitPrimitiveType(self)
+        try visitor.visit(self)
     }
         
     public static var void: PrimitiveType { PrimitiveType(name: "Void") }

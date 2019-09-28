@@ -27,7 +27,7 @@ public struct OptionalType : _EquatableType {
     }
     
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : TypeVisitor {
-        try visitor.visitOptionalType(self)
+        try visitor.visit(self)
     }
 }
 
