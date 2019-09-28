@@ -65,6 +65,8 @@ public final class ConstraintGenerator : ASTVisitor {
         let bodyTy = try cts.astTypeOrThrow(for: node.body.last!)
         
         // <Q06 hint="call addConstraint" />
+        // 本文が一文の時だけreturnとbodyのconv制約を追加する
+        cts.addConstraint(kind: .conversion, left: resultTy, right: bodyTy)
         
         return closureTy
     }
