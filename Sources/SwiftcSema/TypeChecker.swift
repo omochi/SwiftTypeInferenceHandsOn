@@ -20,7 +20,7 @@ public final class TypeChecker {
                                    context: DeclContext) throws -> ASTNode {
         switch stmt {
         case let vd as VariableDecl:
-           return try typeCheckVariableDecl(vd, context: context)
+            return try typeCheckVariableDecl(vd, context: context)
         case let ex as Expr:
             return try typeCheckExpr(ex,
                                      context: context,
@@ -52,11 +52,27 @@ public final class TypeChecker {
                 didApplySolution: { (cts, solution, expr, context) -> Expr in
                     let varTy = cts.simplify(type: varTy)
                     vd.type = varTy
-
+                    
+                    let matched = cts.matchTypes(kind: .bind,
+                                                 left: expr.type!,
+                                                 right: varTy,
+                                                 options: .init())
+                    if matched != .solved {
+                        throw MessageError("unconsidered")
+                    }
+                    
                     // <Q13 hint="see visitCallExpr" />
+                    
+                    //                    if let calleeTy = node.callee.type as? FunctionType {
+                    //                        let paramTy = calleeTy.parameter
+                    //                        node.argument = try solution.coerce(expr: node.argument, to: paramTy)
+                    //                        return try applyFixedType(expr: node)
+                    //                    }
+                    
+                    //                    throw MessageError("unconsidered")
                     return expr
             })
-                
+            
             ie = try typeCheckExpr(ie,
                                    context: vd,
                                    callbacks: callbacks)
