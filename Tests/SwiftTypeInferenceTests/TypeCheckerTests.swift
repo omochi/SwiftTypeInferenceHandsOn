@@ -174,6 +174,7 @@ let a: Int? = 3
         try tc.typeCheck()
         
         let vd = try XCTCast(XCTArrayGet(s.statements, 0), VariableDecl.self)
+        // TODO: coerceを入れる
         _ = try XCTCast(XCTUnwrap(vd.initializer), InjectIntoOptionalExpr.self)
     }
     
