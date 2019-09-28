@@ -36,7 +36,7 @@ public final class VariableDecl : ValueDecl {
     }
     
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
-        try visitor.visitVariableDecl(self)
+        try visitor.visit(self)
     }
 
     public func resolveInSelf(name: String) -> [ValueDecl] {

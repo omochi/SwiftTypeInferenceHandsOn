@@ -18,6 +18,6 @@ public final class UnresolvedDeclRefExpr : Expr {
     public var descriptionPartsTail: [String] { Exprs.descriptionParts(self) }
     
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
-        try visitor.visitUnresolvedDeclRefExpr(self)
+        try visitor.visit(self)
     }
 }

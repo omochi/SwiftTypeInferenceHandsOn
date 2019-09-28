@@ -19,7 +19,7 @@ open class _TypeVariable :
     }
     
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : TypeVisitor {
-        try visitor.visitTypeVariable(self)
+        try visitor.visit(self)
     }
     
     public static func ==(a: _TypeVariable, b: _TypeVariable) -> Bool {
