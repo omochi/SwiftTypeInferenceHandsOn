@@ -33,6 +33,7 @@ public struct TypeVariableBindings {
             return
         }
         
+        // Q3
         if type1 < type2 {
             setBinding(for: type1, .free)
             setBinding(for: type2, .fixed(type1))

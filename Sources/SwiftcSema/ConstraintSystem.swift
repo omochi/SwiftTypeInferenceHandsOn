@@ -146,6 +146,7 @@ public final class ConstraintSystem {
         bindings.assign(variable: typeVariable, type: fixedType)
         
         if doesActivate {
+            activateConstraints(involving: typeVariable)
             // <Q04 hint="see mergeEquivalence" />
         }
     }

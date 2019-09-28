@@ -189,6 +189,7 @@ extension ConstraintSystem {
         
         let subOptions = decompositionOptions(options)
         
+        // Q2
         if leftArg == rightArg && leftRet == rightRet {
             return matchTypes(kind: subKind,
                               left: leftArg,
@@ -205,6 +206,7 @@ extension ConstraintSystem {
     {
         let subOptions = decompositionOptions(options)
         
+        // Q1
         if leftType == rightType {
             return .solved
         }
