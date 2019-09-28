@@ -118,8 +118,7 @@ extension ConstraintSystem.Solution {
             case .deepEquality:
                 return expr
             case .valueToOptional:
-                // <Q12 hint="use `InjectIntoOptionalExpr` and `coerce`" />
-                return expr
+                return InjectIntoOptionalExpr(subExpr: expr, type: toTy)
             case .optionalToOptional:
                 return try coerceOptionalToOptional(expr: expr, to: toTy)
             }
