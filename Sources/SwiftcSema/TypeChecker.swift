@@ -47,6 +47,7 @@ public final class TypeChecker {
                     }
                     
                     // <Q05 hint="call addConstraint"/>
+//                    cts.addConstraint(kind: <#T##Constraint.Kind#>, left: <#T##Type#>, right: <#T##Type#>)
             },
                 didFoundSolution: nil,
                 didApplySolution: { (cts, solution, expr, context) -> Expr in
