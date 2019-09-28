@@ -45,9 +45,8 @@ public final class TypeChecker {
                     } else {
                         varTy = exprTy
                     }
-                    
-                    // <Q05 hint="call addConstraint"/>
-//                    cts.addConstraint(kind: .bind, left: OptionalType(varTy), right: varTy)
+                    let type = cts.createTypeVariable(for: vd)
+                    cts.addConstraint(kind: .bind, left: type, right: varTy)
             },
                 didFoundSolution: nil,
                 didApplySolution: { (cts, solution, expr, context) -> Expr in
