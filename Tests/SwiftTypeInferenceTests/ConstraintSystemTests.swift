@@ -247,7 +247,6 @@ final class ConstraintSystemTests: XCTestCase {
         cts.addConstraint(kind: .bind,
                           left: t2,
                           right: FunctionType(parameter: ti, result: ts))
-        cts.dump()
         XCTAssertTrue(c1.isActive)
         
         XCTAssertTrue(cts.simplify())
@@ -255,6 +254,96 @@ final class ConstraintSystemTests: XCTestCase {
         
         XCTAssertEqual(cts.simplify(type: t1), ts)
         XCTAssertEqual(cts.simplify(type: t2), FunctionType(parameter: ti, result: ts))
+    }
+    
+    // Required: [Q01] [Q08]
+    func testApplicableFunction3() {
+        let cts = ConstraintSystem()
+        
+        let ti = PrimitiveType.int
+        let ts = PrimitiveType.string
+        
+        cts.addConstraint(kind: .applicableFunction,
+                          left: FunctionType(parameter: ti, result: ts),
+                          right: FunctionType(parameter: ts, result: ts))
+        XCTAssertFalse(cts.simplify())
+        XCTAssertNotNil(cts.failedConstraint)
+    }
+    
+    // Required: [Q04] [Q08]
+    func testApplicableFunction4() {
+        let cts = ConstraintSystem()
+        
+        let t1 = cts.createTypeVariable()
+        let ti = PrimitiveType.int
+        let toi = OptionalType(PrimitiveType.int)
+        let ts = PrimitiveType.string
+        
+        cts.addConstraint(kind: .applicableFunction,
+                          left: FunctionType(parameter: ti, result: t1),
+                          right: FunctionType(parameter: toi, result: ts))
+        XCTAssertTrue(cts.simplify())
+        XCTAssertEqual(cts.simplify(type: t1), ts)
+    }
+    
+    func testConvFunctionEqual() {
+        let cts = ConstraintSystem()
+        
+        let int = PrimitiveType.int
+        let str = PrimitiveType.string
+        
+        cts.addConstraint(kind: .conversion,
+                          left: FunctionType(parameter: int,
+                                             result: str),
+                          right: FunctionType(parameter: int,
+                                              result: str))
+        XCTAssertTrue(cts.simplify())
+    }
+    
+    func testConvFunctionResultCovariance() {
+        let cts = ConstraintSystem()
+        
+        let int = PrimitiveType.int
+        let str = PrimitiveType.string
+        let ostr = OptionalType(str)
+        
+        cts.addConstraint(kind: .conversion,
+                          left: FunctionType(parameter: int,
+                                             result: str),
+                          right: FunctionType(parameter: int,
+                                              result: ostr))
+        XCTAssertTrue(cts.simplify())
+    }
+    
+    func testConvFunctionParamContravariance() {
+        let cts = ConstraintSystem()
+        
+        let int = PrimitiveType.int
+        let oint = OptionalType(int)
+        let str = PrimitiveType.string
+        
+        cts.addConstraint(kind: .conversion,
+                          left: FunctionType(parameter: oint,
+                                             result: str),
+                          right: FunctionType(parameter: int,
+                                              result: str))
+        XCTAssertTrue(cts.simplify())
+    }
+    
+    func testConvFunctionParamContravarianceResultCovariance() {
+        let cts = ConstraintSystem()
+        
+        let int = PrimitiveType.int
+        let oint = OptionalType(int)
+        let str = PrimitiveType.string
+        let ostr = OptionalType(str)
+        
+        cts.addConstraint(kind: .conversion,
+                          left: FunctionType(parameter: oint,
+                                             result: str),
+                          right: FunctionType(parameter: int,
+                                              result: ostr))
+        XCTAssertTrue(cts.simplify())
     }
     
     func testGatherConstraints1() {
@@ -372,5 +461,4 @@ final class ConstraintSystemTests: XCTestCase {
         let sols = cts.solve()
         XCTAssertEqual(sols.count, 3)
     }
-
 }
