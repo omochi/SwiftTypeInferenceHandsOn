@@ -2,6 +2,8 @@ import XCTest
 import SwiftcTest
 
 class TypeCheckerTests: XCTestCase {
+    
+    // Required: [Q01] [Q04] [Q06] [Q10] [Q14]
     func testClosureExpr() throws {
         let s = try Parser(source: """
 { (x: Int) in
@@ -22,6 +24,7 @@ class TypeCheckerTests: XCTestCase {
         XCTAssertTrue(dr.target === vd)
     }
     
+    // Required: [Q03] [Q06] [Q10]
     func testClosureExprError() throws {
         let s = try Parser(source: """
 { (x) in
@@ -34,6 +37,7 @@ class TypeCheckerTests: XCTestCase {
         XCTAssertThrowsError(try tc.typeCheck())
     }
     
+    // Required: [Q01] [Q04] [Q07] [Q08] [Q10]
     func testFunctionApplication() throws {
         let s = try Parser(source: """
 func f(a: Int) -> String { }
@@ -51,6 +55,7 @@ f(3)
         XCTAssertEqual(ca2.type, PrimitiveType.string)
     }
     
+    // Required: [Q01] [Q04] [Q06] [Q07] [Q08] [Q10] [Q14]
     func testClosureArgInfer() throws {
         let code = """
 { (x) -> Int in 4 }(3)
@@ -72,6 +77,7 @@ f(3)
         XCTAssertEqual(ag.type, PrimitiveType.int)
     }
     
+    // Required: [Q01] [Q03] [Q04] [Q06] [Q07] [Q08] [Q10] [Q14]
     func testClosureReturnInfer() throws {
         let code = """
 { (x) in x }(3)
@@ -93,6 +99,7 @@ f(3)
         XCTAssertEqual(ag.type, PrimitiveType.int)
     }
     
+    // Required: [Q01] [Q04] [Q07] [Q08] [Q10] [Q11]
     func testOverload() throws {
         let code = """
 func f(_ a: Int) { }
@@ -105,6 +112,7 @@ f(3)
         try tc.typeCheck()
     }
     
+    // Required: [Q01] [Q05] [Q10] [Q13]
     func testAssignNoType() throws {
         let code = """
 let a = 3
@@ -117,6 +125,7 @@ let a = 3
         XCTAssertEqual(vd.type, PrimitiveType.int)
     }
     
+    // Required: [Q01] [Q05] [Q10] [Q13]
     func testAssignInt() throws {
         let code = """
 let a: Int = 3
@@ -129,6 +138,7 @@ let a: Int = 3
         XCTAssertEqual(vd.type, PrimitiveType.int)
     }
     
+    // Required: [Q05]
     func testAssignError() throws {
         let code = """
 let a: String = 3
@@ -138,6 +148,7 @@ let a: String = 3
         XCTAssertThrowsError(try tc.typeCheck())
     }
     
+    // Required: [Q01] [Q04] [Q07] [Q08] [Q09] [Q10] [Q12]
     func testArgConv() throws {
         // it does not generate conv typevar inference
         let s = try Parser(source: """
@@ -153,6 +164,7 @@ f(3)
         _ = try XCTCast(call.argument, InjectIntoOptionalExpr.self)
     }
     
+    // Required: [Q01] [Q06] [Q09] [Q10] [Q12] [Q14]
     func testClosureConvBodyReturn() throws {
         let code = """
 { (x: Int) -> Int? in 4 }
@@ -165,6 +177,7 @@ f(3)
         _ = try XCTCast(XCTArrayGet(clr.body, 0), InjectIntoOptionalExpr.self)
     }
     
+    // Required: [Q01] [Q05] [Q09] [Q10] [Q12] [Q13]
     func testAssignConv() throws {
         let code = """
 let a: Int? = 3
@@ -179,6 +192,7 @@ let a: Int? = 3
         _ = try XCTCast(XCTUnwrap(vd.initializer), InjectIntoOptionalExpr.self)
     }
 
+    // Required: [Q01] [Q05] [Q09] [Q10] [Q12] [Q13]
     func testAssignOptionalOptionalConv() throws {
         let code = """
 let a: Int?? = 3
@@ -193,8 +207,7 @@ let a: Int?? = 3
         _ = try XCTCast(initializer.subExpr, InjectIntoOptionalExpr.self)
     }
 
-    
-    func _testArgConvAssignConvInfer() throws {
+    func testArgConvAssignConvInfer() throws {
         let code = """
 let a: Int? = { (x) in x }(3)
 """
