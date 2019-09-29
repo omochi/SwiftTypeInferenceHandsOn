@@ -151,6 +151,8 @@ extension ConstraintSystem.Solution {
             break
         }
         
+        // [TODO] function type coercion
+        
         throw MessageError("unconsidered")
     }
     
