@@ -183,19 +183,20 @@ extension ConstraintSystem {
         
         let subOptions = decompositionOptions(options)
         
+        // param contravariance
         switch matchTypes(kind: subKind,
-                          left: leftArg,
-                          right: rightArg,
+                          left: rightArg,
+                          right: leftArg,
                           options: subOptions) {
         case .failure: return .failure
         case .ambiguous: preconditionFailure()
         case .solved: break
         }
         
-        // contravariance
+        // result covariance
         switch matchTypes(kind: subKind,
-                          left: rightRet,
-                          right: leftRet,
+                          left: leftRet,
+                          right: rightRet,
                           options: subOptions) {
         case .failure: return .failure
         case .ambiguous: preconditionFailure()
