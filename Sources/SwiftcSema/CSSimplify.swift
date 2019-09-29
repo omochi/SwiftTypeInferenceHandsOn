@@ -122,7 +122,7 @@ extension ConstraintSystem {
                               options: subOpts)
         }
         
-        // <Q08 hint="think about semantics of appfn consts" />
+        // <Q08 hint="think about semantics of appfn congsts" />
         
         return .solved
     }

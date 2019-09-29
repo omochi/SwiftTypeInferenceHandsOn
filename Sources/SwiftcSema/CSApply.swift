@@ -128,9 +128,13 @@ extension ConstraintSystem.Solution {
                 guard let toTy = toTy as? OptionalType else {
                     fatalError()
                 }
-                let toOps = toTy.lookThroughAllOptionals()
-                var newExpr = try coerce(expr: expr, to: toTy)
-                newExpr = InjectIntoOptionalExpr(subExpr: newExpr, type: toTy)
+//                let toOps = toTy.lookThroughAllOptionals()
+//                var newExpr = InjectIntoOptionalExpr(subExpr: expr, type: toTy)
+//                newExpr = try coerce(expr: expr, to: toTy)
+                let bindExpr = BindOptionalExpr(subExpr: expr, type: fromTy)
+                
+                var expr = try coerce(expr: bindExpr, to: toTy.wrapped)
+                expr = InjectIntoOptionalExpr(subExpr: expr, type: toTy)
                 return expr
             case .optionalToOptional:
                 return try coerceOptionalToOptional(expr: expr, to: toTy)

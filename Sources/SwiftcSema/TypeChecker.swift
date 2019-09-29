@@ -45,12 +45,12 @@ public final class TypeChecker {
                     } else {
                         varTy = exprTy
                     }
-                    let type = cts.createTypeVariable(for: vd)
+
                     // <Q05>
 //                    if let or = varTy as? OptionalType {
 //                        cts.addConstraint(kind: .bind, left: type, right: or.wrapped)
 //                    } else {
-                    cts.addConstraint(kind: .conversion, left: type, right: varTy)
+                    cts.addConstraint(kind: .conversion, left: exprTy, right: varTy)
 //                    }
             },
                 didFoundSolution: nil,
