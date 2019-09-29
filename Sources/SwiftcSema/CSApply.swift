@@ -54,8 +54,14 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
     public func visitClosureExpr(_ node: ClosureExpr) throws -> ASTNode {
         _ = try applyFixedType(expr: node)
         
+        guard let resultType = node.returnType else {
+            return try applyFixedType(expr: node)
+        }
+        
         if let closureType = try node.typeOrThrow() as? FunctionType {
-//            node.parameter = try solution.coerce(expr: node, to: closureType.parameter) as! VariableDecl
+//            node.parameter = try solution.coerce(expr: node, to: closureType.parameter)
+            let lastBodyNode = node.body.popLast()! as! Expr
+            node.body.append(try solution.coerce(expr: lastBodyNode, to: resultType))
             return try applyFixedType(expr: node)
 //        node.parameter = try solution.coerce(expr: , to: closureType)
         }
