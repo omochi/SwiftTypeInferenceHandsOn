@@ -16,6 +16,6 @@ public final class InjectIntoOptionalExpr : Expr {
     public var descriptionPartsTail: [String] { Exprs.descriptionParts(self) }
     
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
-        try visitor.visitInjectIntoOptionalExpr(self)
+        try visitor.visit(self)
     }
 }
