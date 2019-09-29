@@ -329,10 +329,12 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertEqual(cts.simplify(type: t1), ts)
         XCTAssertEqual(cts.simplify(type: t2), FunctionType(parameter: ti, result: ts))
     }
-    
+
+    // Required: [Q01] [Q08]
     func testApplicableFunctionFail() {
         let cts = ConstraintSystem()
-        
+        let cs = ConstraintSystem()
+
         let ti = PrimitiveType.int
         let ts = PrimitiveType.string
         
@@ -343,6 +345,7 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertNotNil(cts.failedConstraint)
     }
     
+    // Required: [Q04] [Q08]
     func testApplicableFunctionArgConv() {
         let cts = ConstraintSystem()
         
