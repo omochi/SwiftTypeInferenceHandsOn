@@ -70,6 +70,12 @@ extension ConstraintSystem {
             
             // <Q10 hint="invoke substeps" />
             
+            if let bestBindings = bestBindingsOrNone {
+                let step = TypeVariableStep(work: work, bindings: bestBindings)
+                let _ = step.run()
+                return true
+            }
+            
             if let disjunction = disjunctionOrNone {
                 let step = DisjunctionStep(work: work, disjunction: disjunction)
                 let _ = step.run()
@@ -118,8 +124,15 @@ extension ConstraintSystem {
             
             var isAnySolved = false
             
-            for binding in bindings.bindings {
+            for bindings in bindings.bindings {
                 // <Q11 hint="see DisjunctionStep" />
+                let state = cts.storeStepState()
+                defer {
+                    cts.loadStepState( state)
+                }
+                if attempt(binding: bindings) {
+                    isAnySolved = true
+                }
             }
             
             return isAnySolved

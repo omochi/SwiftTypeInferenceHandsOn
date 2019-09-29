@@ -46,20 +46,34 @@ public final class TypeChecker {
                         varTy = exprTy
                     }
                     let type = cts.createTypeVariable(for: vd)
-                    cts.addConstraint(kind: .bind, left: type, right: varTy)
+                    // <Q05>
+//                    if let or = varTy as? OptionalType {
+//                        cts.addConstraint(kind: .bind, left: type, right: or.wrapped)
+//                    } else {
+                    cts.addConstraint(kind: .conversion, left: type, right: varTy)
+//                    }
             },
                 didFoundSolution: nil,
                 didApplySolution: { (cts, solution, expr, context) -> Expr in
                     let varTy = cts.simplify(type: varTy)
                     vd.type = varTy
                     
-                    let matched = cts.matchTypes(kind: .bind,
-                                                 left: expr.type!,
-                                                 right: varTy,
-                                                 options: .init())
-                    if matched != .solved {
-                        throw MessageError("unconsidered")
-                    }
+//                    if let calleeTy = node.callee.type as? FunctionType {
+//                        let paramTy = calleeTy.parameter
+//                        node.argument = try solution.coerce(expr: node.argument, to: paramTy)
+//                        return try applyFixedType(expr: node)
+//                    }
+                    return try solution.coerce(expr: expr, to: varTy)
+                    
+//                    return try solution.apply(to: expr, context: context, constraintSystem: cts)
+                    
+//                    let matched = cts.matchTypes(kind: .bind,
+//                                                 left: expr.type!,
+//                                                 right: varTy,
+//                                                 options: .init())
+//                    if matched != .solved {
+//                        throw MessageError("unconsidered")
+//                    }
                     
                     // <Q13 hint="see visitCallExpr" />
                     

@@ -169,6 +169,8 @@ f(3)
         let code = """
 let a: Int? = 3
 """
+        
+//        let a: Int? = .some(3)
         let s = try Parser(source: code).parse()
         let tc = TypeChecker(source: s)
         try tc.typeCheck()
