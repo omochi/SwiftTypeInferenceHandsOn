@@ -226,7 +226,7 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertEqual(cts.simplify(type: t2), FunctionType(parameter: ti, result: ts))
     }
     
-    // Required: [Q01] [Q04] [Q08]
+    // Required: [Q01] [Q08]
     func testApplicableFunction3() {
         let cs = ConstraintSystem()
         
@@ -240,7 +240,7 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertNotNil(cs.failedConstraint)
     }
     
-    // Required: [Q01] [Q04] [Q08]
+    // Required: [Q04] [Q08]
     func testApplicableFunction4() {
         let cs = ConstraintSystem()
         
