@@ -355,5 +355,17 @@ final class ConstraintSystemTests: XCTestCase {
         let sols = cts.solve()
         XCTAssertEqual(sols.count, 3)
     }
-
+    
+    func testConvFunctionParamContravariantResultCovariant() {
+        let cts = ConstraintSystem()
+        
+        let intType = PrimitiveType.int
+        
+        cts.addConstraint(kind: .conversion,
+                          left: FunctionType(parameter: OptionalType(intType),
+                                             result: intType),
+                          right: FunctionType(parameter: intType,
+                                              result: OptionalType(intType)))
+        XCTAssertTrue(cts.simplify())
+    }
 }

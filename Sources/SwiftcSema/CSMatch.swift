@@ -184,10 +184,10 @@ extension ConstraintSystem {
         let subOptions = decompositionOptions(options)
         
         // <Q02 hint="match arg and ret" />
-        let argResult = matchTypes(kind: subKind, left: leftArg, right: rightArg, options: subOptions)
+        let argResult = matchTypes(kind: subKind, left: rightArg, right: leftArg, options: subOptions)
 
         // NOTE: なんで .bind かというと、ここの型パラメータはのちにだいたい conv に引っかかると omochi さんが言っていた。
-        let retResult = matchTypes(kind: .bind, left: leftRet, right: rightRet, options: subOptions)
+        let retResult = matchTypes(kind: subKind, left: leftRet, right: rightRet, options: subOptions)
 
         switch (argResult, retResult) {
         case (.solved, .solved):
