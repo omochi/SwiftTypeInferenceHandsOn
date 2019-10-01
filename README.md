@@ -11,3 +11,4 @@ masterには答えが書いてあるので見ないこと。
   ([Rendered](https://speakerdeck.com/omochi/swiftfalsexing-tui-lun-arugorizumu-1))
 - [型推論ハンズオン](Docs/camp.md)
   ([Rendered](https://speakerdeck.com/omochi/xing-tui-lun-hanzuon))
+- [規則集](Docs/rules.md)
