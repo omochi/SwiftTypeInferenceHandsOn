@@ -52,10 +52,7 @@ public final class TypeChecker {
                 didApplySolution: { (cts, solution, expr, context) -> Expr in
                     let varTy = cts.simplify(type: varTy)
                     vd.type = varTy
-                    
-                    let expr = try solution.coerce(expr: expr, to: varTy)
-                    vd.initializer = expr                    
-                    return expr
+                    return try solution.coerce(expr: expr, to: varTy)
             })
                 
             ie = try typeCheckExpr(ie,
