@@ -36,7 +36,7 @@ public final class SourceFile : Decl {
     }
     
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
-        try visitor.visitSourceFile(self)
+        try visitor.visit(self)
     }
     
     public func addStatement(_ st: ASTNode) {

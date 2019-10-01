@@ -32,7 +32,7 @@ public struct FunctionType : _EquatableType {
     }
     
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : TypeVisitor {
-        try visitor.visitFunctionType(self)
+        try visitor.visit(self)
     }
     
 }

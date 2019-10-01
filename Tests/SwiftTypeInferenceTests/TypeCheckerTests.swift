@@ -165,6 +165,27 @@ f(3)
         _ = try XCTCast(XCTArrayGet(clr.body, 0), InjectIntoOptionalExpr.self)
     }
     
+    // [TODO] enable this. need coercion between functions. ses CSApply
+    func _testClosureConvBodyNoReturnSig() throws {
+        let code = """
+func f(_ g: (Int) -> Int?) { }
+f({ (x: Int) in 4 })
+"""
+        let s = try Parser(source: code).parse()
+        let tc = TypeChecker(source: s)
+        try tc.typeCheck()
+        
+        // There are 2 solutions theoretically.
+        // [0] closure: (Int) -> Int
+        // [1] closure: (Int) -> Int?
+        // Current implementation find only [1] solution.
+        // So it test application of VtoO _inside_ of closure
+        
+        let call = try XCTCast(XCTArrayGet(s.statements, 1), CallExpr.self)
+        let clr = try XCTCast(call.argument, ClosureExpr.self)
+        _ = try XCTCast(XCTArrayGet(clr.body, 0), InjectIntoOptionalExpr.self)
+    }
+    
     func testAssignConv() throws {
         let code = """
 let a: Int? = 3
@@ -176,6 +197,21 @@ let a: Int? = 3
         let vd = try XCTCast(XCTArrayGet(s.statements, 0), VariableDecl.self)
         _ = try XCTCast(XCTUnwrap(vd.initializer), InjectIntoOptionalExpr.self)
     }
+
+    func testAssignOptionalOptionalConv() throws {
+        let code = """
+let a: Int?? = 3
+"""
+        let s = try Parser(source: code).parse()
+        let tc = TypeChecker(source: s)
+        try tc.typeCheck()
+
+        let vd = try XCTCast(XCTArrayGet(s.statements, 0), VariableDecl.self)
+
+        let initializer = try XCTCast(XCTUnwrap(vd.initializer), InjectIntoOptionalExpr.self)
+        _ = try XCTCast(initializer.subExpr, InjectIntoOptionalExpr.self)
+    }
+
     
     func testArgConvAssignConvInfer() throws {
         let code = """

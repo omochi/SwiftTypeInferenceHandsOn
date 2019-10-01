@@ -17,7 +17,7 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
     }
     
     public func postWalk(node: ASTNode, context: DeclContext) throws -> WalkResult<ASTNode> {
-        let node = try visit(node)
+        let node = try startVisiting(node)
         return .continue(node)
     }
     
@@ -27,21 +27,21 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
         return expr
     }
     
-    public func visitSourceFile(_ node: SourceFile) throws -> ASTNode {
+    public func visit(_ node: SourceFile) throws -> ASTNode {
         node
     }
     
-    public func visitFunctionDecl(_ node: FunctionDecl) throws -> ASTNode {
+    public func visit(_ node: FunctionDecl) throws -> ASTNode {
         node
     }
     
-    public func visitVariableDecl(_ node: VariableDecl) throws -> ASTNode {
+    public func visit(_ node: VariableDecl) throws -> ASTNode {
         let ty = try solution.fixedTypeOrThrow(for: node)
         node.type = ty
         return node
     }
     
-    public func visitCallExpr(_ node: CallExpr) throws -> ASTNode {
+    public func visit(_ node: CallExpr) throws -> ASTNode {
         if let calleeTy = node.callee.type as? FunctionType {
             let paramTy = calleeTy.parameter
             node.argument = try solution.coerce(expr: node.argument, to: paramTy)
@@ -51,7 +51,7 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
         throw MessageError("unconsidered")
     }
     
-    public func visitClosureExpr(_ node: ClosureExpr) throws -> ASTNode {
+    public func visit(_ node: ClosureExpr) throws -> ASTNode {
         _ = try applyFixedType(expr: node)
         
         guard let closureTy = node.type as? FunctionType else {
@@ -68,31 +68,31 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
         return node
     }
     
-    public func visitUnresolvedDeclRefExpr(_ node: UnresolvedDeclRefExpr) throws -> ASTNode {
+    public func visit(_ node: UnresolvedDeclRefExpr) throws -> ASTNode {
         throw MessageError("invalid node: \(node)")
     }
     
-    public func visitDeclRefExpr(_ node: DeclRefExpr) throws -> ASTNode {
+    public func visit(_ node: DeclRefExpr) throws -> ASTNode {
         return try applyFixedType(expr: node)
     }
     
-    public func visitOverloadedDeclRefExpr(_ node: OverloadedDeclRefExpr) throws -> ASTNode {
+    public func visit(_ node: OverloadedDeclRefExpr) throws -> ASTNode {
         return try applyFixedType(expr: node)
     }
     
-    public func visitIntegerLiteralExpr(_ node: IntegerLiteralExpr) throws -> ASTNode {
+    public func visit(_ node: IntegerLiteralExpr) throws -> ASTNode {
         return try applyFixedType(expr: node)
     }
     
-    public func visitInjectIntoOptionalExpr(_ node: InjectIntoOptionalExpr) throws -> ASTNode {
+    public func visit(_ node: InjectIntoOptionalExpr) throws -> ASTNode {
         return try applyFixedType(expr: node)
     }
     
-    public func visitBindOptionalExpr(_ node: BindOptionalExpr) throws -> ASTNode {
+    public func visit(_ node: BindOptionalExpr) throws -> ASTNode {
         return try applyFixedType(expr: node)
     }
     
-    public func visitOptionalEvaluationExpr(_ node: OptionalEvaluationExpr) throws -> ASTNode {
+    public func visit(_ node: OptionalEvaluationExpr) throws -> ASTNode {
         return try applyFixedType(expr: node)
     }
 }
@@ -152,6 +152,8 @@ extension ConstraintSystem.Solution {
         default:
             break
         }
+        
+        // [TODO] function type coercion
         
         throw MessageError("unconsidered")
     }

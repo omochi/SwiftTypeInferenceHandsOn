@@ -15,7 +15,7 @@ public final class BindOptionalExpr : Expr {
     public var descriptionPartsTail: [String] { Exprs.descriptionParts(self) }
     
     public func accept<V>(visitor: V) throws -> V.VisitResult where V : ASTVisitor {
-        try visitor.visitBindOptionalExpr(self)
+        try visitor.visit(self)
     }
 
 }

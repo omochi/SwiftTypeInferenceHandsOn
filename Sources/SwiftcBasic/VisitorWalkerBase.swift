@@ -31,7 +31,7 @@ extension WalkerBase {
             return .terminate
         }
         
-        switch try visit(target) {
+        switch try startVisiting(target) {
         case .continue(let x):
             target = x
         case .terminate:
