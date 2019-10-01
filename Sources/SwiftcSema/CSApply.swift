@@ -137,8 +137,6 @@ extension ConstraintSystem.Solution {
                 return try coerceOptionalToOptional(expr: expr, to: toTy)
             }
         }
-        
-        // I think the following code is unnecessary
      
         switch toTy {
         case let toTy as OptionalType:
