@@ -2,6 +2,7 @@ import SwiftcBasic
 import SwiftcType
 
 extension ConstraintSystem {
+    // ref: simplifyConstraint at CSSimplify.cpp
     public func simplify(constraint: Constraint) -> SolveResult {
         let options = MatchOptions()
         switch constraint {
@@ -84,6 +85,7 @@ extension ConstraintSystem {
         }
     }
     
+    // ref: simplifyApplicableFnConstraint at CSSimplify.cpp
     public func simplifyApplicableFunctionConstraint(left lfn: FunctionType,
                                                      right: Type,
                                                      options: MatchOptions) -> SolveResult
@@ -134,6 +136,7 @@ extension ConstraintSystem {
     /**
      現在活性化している制約を可能な限り簡約化する事を繰り返す。
      */
+    // ref: simplify at CSSolver.cpp
     public func simplify() -> Bool {
         while true {
             if isFailed {

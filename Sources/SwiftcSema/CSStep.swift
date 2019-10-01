@@ -30,6 +30,7 @@ extension ConstraintSystem {
         self.constraints = s.constraints
     }
     
+    // ref: ComponentStep at CSStep.cpp
     public struct ComponentStep {
         public let work: SolveWork
         private let cts: ConstraintSystem
@@ -58,6 +59,7 @@ extension ConstraintSystem {
             return true
         }
         
+        // ref: take at CSStep.cpp
         private func _run() -> Bool {
             guard cts.simplify() else {
                 return false

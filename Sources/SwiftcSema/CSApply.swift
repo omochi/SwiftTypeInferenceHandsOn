@@ -98,6 +98,7 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
 }
 
 extension ConstraintSystem.Solution {
+    // ref: applySolution at CSApply.cpp
     public func apply(to expr: Expr,
                       context: DeclContext,
                       constraintSystem: ConstraintSystem) throws -> Expr
@@ -112,6 +113,7 @@ extension ConstraintSystem.Solution {
         }
     }
     
+    // ref: coerceToType at CSApply.cpp
     public func coerce(expr: Expr, to toTy: Type) throws -> Expr {
         let fromTy = try expr.typeOrThrow()
         if fromTy == toTy {

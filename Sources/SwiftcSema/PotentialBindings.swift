@@ -22,6 +22,7 @@ public struct PotentialBindings : CustomStringConvertible {
     }
     
     // allowJoinMeet should be attributed in each PB?
+    // ref: addPotentialBinding at CSBindings.cpp
     public mutating func add(_ binding: PotentialBinding) {
         let bindTy = binding.type
         // unresolved type, unbound generic type, allowJoinMeet...
