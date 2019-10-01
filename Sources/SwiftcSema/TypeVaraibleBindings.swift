@@ -4,10 +4,21 @@ public struct TypeVariableBindings {
     /**
      自分が代表の場合free, fixed、代表転送を持つ場合はtransfer
      */
-    public enum Binding {
+    public enum Binding : Equatable {
         case free
         case fixed(Type)
         case transfer(TypeVariable)
+        
+        public static func ==(a: Binding, b: Binding) -> Bool {
+            switch (a, b) {
+            case (.free, .free): return true
+            case (.free, _): return false
+            case (.fixed(let a), .fixed(let b)): return a == b
+            case (.fixed, _): return false
+            case (.transfer(let a), .transfer(let b)): return a == b
+            case (.transfer, _): return false
+            }
+        }
     }
     
     public private(set) var map: [TypeVariable: Binding] = [:]

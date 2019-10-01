@@ -16,6 +16,7 @@ public final class TypeChecker {
         }
     }
     
+    // ref: typeCheckStmt in TypeCheckStmt.cpp
     public func typeCheckStatement(_ stmt: ASTNode,
                                    context: DeclContext) throws -> ASTNode {
         switch stmt {
@@ -31,6 +32,7 @@ public final class TypeChecker {
         return stmt
     }
     
+    // ref: typeCheckBinding at TypeCheckConstraints.cpp
     public func typeCheckVariableDecl(_ vd: VariableDecl,
                                       context: DeclContext) throws -> ASTNode {
         if var ie = vd.initializer {
@@ -67,6 +69,7 @@ public final class TypeChecker {
         return vd
     }
     
+    // ref: typeCheckExpression at TypeCheckConstraints.cpp
     public func typeCheckExpr(_ expr: Expr,
                               context: DeclContext,
                               callbacks: ExprTypeCheckCallbacks?) throws -> Expr {
@@ -93,6 +96,7 @@ public final class TypeChecker {
         return expr
     }
     
+    // ref: preCheckExpression at TypeCheckConstraints.cpp
     private func preCheckExpr(_ expr: Expr,
                               context: DeclContext) throws -> Expr {
         let expr = try resolveDeclRef(expr: expr,

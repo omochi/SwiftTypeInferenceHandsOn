@@ -2,6 +2,81 @@ import XCTest
 import SwiftcTest
 
 final class ConstraintSystemTests: XCTestCase {
+    func testInitFreeRaw() {
+        let cts = ConstraintSystem()
+        let t1 = cts.createTypeVariable()
+        let t2 = cts.createTypeVariable()
+        XCTAssertEqual(cts.bindings.binding(for: t1), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t2), .free)
+    }
+    
+    func testMerge1Raw() {
+        let cts = ConstraintSystem()
+        let t1 = cts.createTypeVariable()
+        let t2 = cts.createTypeVariable()
+        let t3 = cts.createTypeVariable()
+        let t4 = cts.createTypeVariable()
+        
+        cts.mergeEquivalence(type1: t1, type2: t2)
+        XCTAssertEqual(cts.bindings.binding(for: t1), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t2), .transfer(t1))
+
+        cts.mergeEquivalence(type1: t4, type2: t3)
+        XCTAssertEqual(cts.bindings.binding(for: t3), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t4), .transfer(t3))
+        
+        cts.mergeEquivalence(type1: t1, type2: t3)
+        XCTAssertEqual(cts.bindings.binding(for: t1), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t2), .transfer(t1))
+        XCTAssertEqual(cts.bindings.binding(for: t3), .transfer(t1))
+        XCTAssertEqual(cts.bindings.binding(for: t4), .transfer(t1))
+    }
+    
+    func testMerge2Raw() {
+        let cts = ConstraintSystem()
+        let t1 = cts.createTypeVariable()
+        let t2 = cts.createTypeVariable()
+        let t3 = cts.createTypeVariable()
+        let t4 = cts.createTypeVariable()
+        
+        cts.mergeEquivalence(type1: t2, type2: t1)
+        XCTAssertEqual(cts.bindings.binding(for: t1), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t2), .transfer(t1))
+
+        cts.mergeEquivalence(type1: t3, type2: t4)
+        XCTAssertEqual(cts.bindings.binding(for: t3), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t4), .transfer(t3))
+        
+        cts.mergeEquivalence(type1: t3, type2: t1)
+        XCTAssertEqual(cts.bindings.binding(for: t1), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t2), .transfer(t1))
+        XCTAssertEqual(cts.bindings.binding(for: t3), .transfer(t1))
+        XCTAssertEqual(cts.bindings.binding(for: t4), .transfer(t1))
+    }
+    
+    func testMergeAssignRaw() {
+        let cts = ConstraintSystem()
+        let t1 = cts.createTypeVariable()
+        let t2 = cts.createTypeVariable()
+        let t3 = cts.createTypeVariable()
+        let int = PrimitiveType.int
+        
+        cts.mergeEquivalence(type1: t1, type2: t2)
+        XCTAssertEqual(cts.bindings.binding(for: t1), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t2), .transfer(t1))
+        XCTAssertEqual(cts.bindings.binding(for: t3), .free)
+
+        cts.mergeEquivalence(type1: t1, type2: t3)
+        XCTAssertEqual(cts.bindings.binding(for: t1), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t2), .transfer(t1))
+        XCTAssertEqual(cts.bindings.binding(for: t3), .transfer(t1))
+        
+        cts.assignFixedType(for: t1, int)
+        XCTAssertEqual(cts.bindings.binding(for: t1), .fixed(int))
+        XCTAssertEqual(cts.bindings.binding(for: t2), .transfer(t1))
+        XCTAssertEqual(cts.bindings.binding(for: t3), .transfer(t1))
+    }
+    
     // Required: [Q03]
     func testMerge1() {
         let cts = ConstraintSystem()

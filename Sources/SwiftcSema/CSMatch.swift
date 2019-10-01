@@ -2,6 +2,7 @@ import SwiftcBasic
 import SwiftcType
 
 extension ConstraintSystem {
+    // ref: matchTypes at CSSimplify.cpp
     public func matchTypes(kind: Constraint.MatchKind,
                            left leftType: Type,
                            right rightType: Type,
@@ -63,6 +64,7 @@ extension ConstraintSystem {
                                options: options)
     }
     
+    // ref: matchTypes at CSSimplify.cpp
     private func matchTypesBind(typeVariable: TypeVariable,
                                 fixedType: Type) -> SolveResult
     {
@@ -82,6 +84,7 @@ extension ConstraintSystem {
         return options
     }
     
+    // ref: matchTypes at CSSimplify.cpp
     private func matchFixedTypes(kind: Constraint.MatchKind,
                                  left leftType: Type,
                                  right rightType: Type,
@@ -163,6 +166,7 @@ extension ConstraintSystem {
         return .solved
     }
     
+    // ref: matchFunctionTypes at CSSimplify.cpp
     private func matchFunctionTypes(kind: Constraint.MatchKind,
                                     left leftType: FunctionType,
                                     right rightType: FunctionType,
@@ -188,6 +192,7 @@ extension ConstraintSystem {
         return .solved
     }
     
+    // ref: matchDeepEqualityTypes at CSSimplify.cpp
     internal func matchDeepEqualityTypes(left leftType: Type,
                                          right rightType: Type,
                                          options: MatchOptions) -> SolveResult

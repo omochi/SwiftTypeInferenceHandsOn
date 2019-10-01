@@ -116,6 +116,7 @@ public final class ConstraintGenerator : ASTVisitor {
 }
 
 extension ConstraintSystem {
+    // ref: generateConstraints at CSGen.cpp
     public func generateConstraints(expr: Expr,
                                     context: DeclContext) throws {
         let gen = ConstraintGenerator(constraintSystem: self)
