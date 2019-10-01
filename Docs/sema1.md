@@ -1047,7 +1047,7 @@ declref >>
   T2 <bind> T4
 
 declref >>
-  T5 <conv> T3
+  T5 <bind> T3
 
 closure >>
   ??
