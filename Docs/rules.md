@@ -55,7 +55,8 @@ vardecl {
 ## Closure
 
 ```
-body <conv> result
+body.last <conv> result
+    where body.count == 1
 ```
 
 ## DeclRef
