@@ -138,12 +138,14 @@ primitive1 <conv> primitive2 >>
 ```
 type1 <conv> type2
     where type2 is more optional than type1 >>
-    type1 <conv VtoO> type2.wrapped
+    type1 <conv VToO> type2 >>
+        type1 <conv> type2.wrapped
 ```
 
 ```
 type1 <conv> type2
     where type1 and type2 are optional >>
     type1 <conv DEQ> type2
-    type1.wrapped <conv OtoO> type2.wrapped
+    type1 <conv OToO> type2 >>
+        type1.wrapped <conv> type2.wrapped
 ```
