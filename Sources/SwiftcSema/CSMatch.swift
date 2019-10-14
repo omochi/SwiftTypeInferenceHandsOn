@@ -200,6 +200,9 @@ extension ConstraintSystem {
         let subOptions = decompositionOptions(options)
         
         // <Q01 hint="consider primitive type" />
+        if leftType == rightType {
+            return .solved
+        }
         
         if let leftType = leftType as? OptionalType,
         let rightType = rightType as? OptionalType
