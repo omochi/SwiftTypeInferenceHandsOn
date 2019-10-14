@@ -45,6 +45,12 @@ public struct TypeVariableBindings {
         }
         
         // <Q03 hint="understand data structure" />
+        let (src, dest) = type1.id < type2.id ? (type2, type1) : (type1, type2)
+        // 自分または自分がtransfer先のもののSet
+        let srcEquivalents = src.equivalentTypeVariables(bindings: self)
+        for eq in srcEquivalents {
+            map[eq] = .transfer(dest)
+        }
     }
     
     public mutating func assign(variable: TypeVariable,
