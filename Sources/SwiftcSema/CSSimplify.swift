@@ -114,6 +114,20 @@ extension ConstraintSystem {
         subOpts.generateConstraintsWhenAmbiguous = true
         
         // <Q08 hint="think about semantics of appfn consts" />
+        let paramResult = matchTypes(kind: .conversion,
+                                     left: lfn.parameter,
+                                     right: rfn.parameter,
+                                     options: options)
+        if paramResult != .solved {
+            return paramResult
+        }
+        let retResult = matchTypes(kind: .bind,
+                                   left: lfn.result,
+                                   right: rfn.result,
+                                   options: options)
+        if retResult != .solved {
+            return retResult
+        }
         
         return .solved
     }
