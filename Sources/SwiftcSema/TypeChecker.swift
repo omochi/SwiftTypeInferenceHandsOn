@@ -49,6 +49,9 @@ public final class TypeChecker {
                     }
                     
                     // <Q05 hint="call addConstraint"/>
+                    cts.addConstraint(kind: .conversion,
+                                      left: exprTy,
+                                      right: varTy)
             },
                 didFoundSolution: nil,
                 didApplySolution: { (cts, solution, expr, context) -> Expr in
