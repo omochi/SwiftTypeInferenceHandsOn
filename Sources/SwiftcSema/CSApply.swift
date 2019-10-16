@@ -55,6 +55,12 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
         _ = try applyFixedType(expr: node)
         
         // <Q14 hint="see visitCallExpr" />
+        if let resultTy = node.returnType {
+            if let lastBody = node.body.popLast() as? Expr {
+                let expr = try solution.coerce(expr: lastBody, to: resultTy)
+                node.body.append(expr)
+            }
+        }
         
         return node
     }
