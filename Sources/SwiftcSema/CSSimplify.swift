@@ -65,6 +65,7 @@ extension ConstraintSystem {
             return matchDeepEqualityTypes(left: leftType, right: rightType,
                                           options: options)
         case .valueToOptional:
+            // <Q09 hint="see optionalToOptional" />
             if let rightType = rightType as? OptionalType {
                 return matchTypes(kind: kind,
                                   left: leftType,
@@ -112,22 +113,20 @@ extension ConstraintSystem {
         var subOpts = options
         subOpts.generateConstraintsWhenAmbiguous = true
         
-        switch matchTypes(kind: .conversion,
-                          left: lfn.parameter,
-                          right: rfn.parameter,
-                          options: subOpts) {
-        case .failure: return .failure
-        case .ambiguous: preconditionFailure("never")
-        case .solved: break
+        // <Q08 hint="think about semantics of appfn consts" />
+        let paramResult = matchTypes(kind: .conversion,
+                                     left: lfn.parameter,
+                                     right: rfn.parameter,
+                                     options: options)
+        if paramResult != .solved {
+            return paramResult
         }
-        
-        switch matchTypes(kind: .bind,
-                          left: lfn.result,
-                          right: rfn.result,
-                          options: subOpts) {
-        case .failure: return .failure
-        case .ambiguous: preconditionFailure("never")
-        case .solved: break
+        let retResult = matchTypes(kind: .bind,
+                                   left: lfn.result,
+                                   right: rfn.result,
+                                   options: options)
+        if retResult != .solved {
+            return retResult
         }
         
         return .solved

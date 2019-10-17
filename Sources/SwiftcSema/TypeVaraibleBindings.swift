@@ -44,16 +44,12 @@ public struct TypeVariableBindings {
             return
         }
         
-        var type1 = type1
-        var type2 = type2
-        
-        if type1 > type2 {
-            swap(&type1, &type2)
-        }
-        
-        let newEqs = type2.equivalentTypeVariables(bindings: self)
-        for newEq in newEqs {
-            map[newEq] = .transfer(type1)
+        // <Q03 hint="understand data structure" />
+        let (src, dest) = type1.id < type2.id ? (type2, type1) : (type1, type2)
+        // 自分または自分がtransfer先のもののSet
+        let srcEquivalents = src.equivalentTypeVariables(bindings: self)
+        for eq in srcEquivalents {
+            map[eq] = .transfer(dest)
         }
     }
     

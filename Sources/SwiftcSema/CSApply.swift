@@ -54,16 +54,13 @@ public final class ConstraintSolutionApplier : ASTVisitor {
     public func visit(_ node: ClosureExpr) throws -> ASTNode {
         _ = try applyFixedType(expr: node)
         
-        guard let closureTy = node.type as? FunctionType else {
-            throw MessageError("invalid closure type")
+        // <Q14 hint="see visitCallExpr" />
+        if let resultTy = node.returnType {
+            if let lastBody = node.body.popLast() as? Expr {
+                let expr = try solution.coerce(expr: lastBody, to: resultTy)
+                node.body.append(expr)
+            }
         }
-        
-        let index = node.body.count - 1
-        guard var body = node.body[index] as? Expr else {
-            throw MessageError("invalid body statement")
-        }
-        body = try solution.coerce(expr: body, to: closureTy.result)
-        node.body[index] = body
         
         return node
     }
@@ -129,10 +126,9 @@ extension ConstraintSystem.Solution {
             case .deepEquality:
                 return expr
             case .valueToOptional:
-                guard let toOptTy = toTy as? OptionalType else {
-                    throw MessageError("invalid relation")
-                }
-                var expr = try coerce(expr: expr, to: toOptTy.wrapped)
+                // <Q12 hint="use `InjectIntoOptionalExpr` and `coerce`" />
+                let optTy = toTy as! OptionalType
+                var expr = try coerce(expr: expr, to: optTy.wrapped)
                 expr = InjectIntoOptionalExpr(subExpr: expr, type: toTy)
                 return expr
             case .optionalToOptional:
