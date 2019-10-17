@@ -1,6 +1,7 @@
 import SwiftcType
 
 extension ConstraintSystem {
+    // ref: determineBestBindings at CSBindings.cpp
     public func determineBestBindings() -> PotentialBindings? {
         var bestOrNone: PotentialBindings? = nil
         var cache: Dictionary<TypeVariable, PotentialBindings> = [:]
@@ -37,6 +38,7 @@ extension ConstraintSystem {
         return bestOrNone
     }
     
+    // ref: getPotentialBindings at CSBindings.cpp
     public func potentialBindings(for tv: TypeVariable) -> PotentialBindings? {
         precondition(tv.isRepresentative(bindings: bindings))
         precondition(tv.fixedType(bindings: bindings) == nil)
@@ -87,6 +89,7 @@ extension ConstraintSystem {
         return result
     }
     
+    // ref: getPotentialBindingForRelationalConstraint at CSBinding.cpp
     public func potentialBinding(from constraint: Constraint,
                                  for tv: TypeVariable)
         -> PotentialBinding?

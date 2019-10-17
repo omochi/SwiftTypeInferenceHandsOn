@@ -3,6 +3,81 @@ import SwiftcTest
 
 final class ConstraintSystemTests: XCTestCase {
     // Required: [Q03]
+    func testInitFreeRaw() {
+        let cts = ConstraintSystem()
+        let t1 = cts.createTypeVariable()
+        let t2 = cts.createTypeVariable()
+        XCTAssertEqual(cts.bindings.binding(for: t1), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t2), .free)
+    }
+    
+    func testMerge1Raw() {
+        let cts = ConstraintSystem()
+        let t1 = cts.createTypeVariable()
+        let t2 = cts.createTypeVariable()
+        let t3 = cts.createTypeVariable()
+        let t4 = cts.createTypeVariable()
+        
+        cts.mergeEquivalence(type1: t1, type2: t2)
+        XCTAssertEqual(cts.bindings.binding(for: t1), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t2), .transfer(t1))
+
+        cts.mergeEquivalence(type1: t4, type2: t3)
+        XCTAssertEqual(cts.bindings.binding(for: t3), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t4), .transfer(t3))
+        
+        cts.mergeEquivalence(type1: t1, type2: t3)
+        XCTAssertEqual(cts.bindings.binding(for: t1), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t2), .transfer(t1))
+        XCTAssertEqual(cts.bindings.binding(for: t3), .transfer(t1))
+        XCTAssertEqual(cts.bindings.binding(for: t4), .transfer(t1))
+    }
+    
+    func testMerge2Raw() {
+        let cts = ConstraintSystem()
+        let t1 = cts.createTypeVariable()
+        let t2 = cts.createTypeVariable()
+        let t3 = cts.createTypeVariable()
+        let t4 = cts.createTypeVariable()
+        
+        cts.mergeEquivalence(type1: t2, type2: t1)
+        XCTAssertEqual(cts.bindings.binding(for: t1), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t2), .transfer(t1))
+
+        cts.mergeEquivalence(type1: t3, type2: t4)
+        XCTAssertEqual(cts.bindings.binding(for: t3), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t4), .transfer(t3))
+        
+        cts.mergeEquivalence(type1: t3, type2: t1)
+        XCTAssertEqual(cts.bindings.binding(for: t1), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t2), .transfer(t1))
+        XCTAssertEqual(cts.bindings.binding(for: t3), .transfer(t1))
+        XCTAssertEqual(cts.bindings.binding(for: t4), .transfer(t1))
+    }
+    
+    func testMergeAssignRaw() {
+        let cts = ConstraintSystem()
+        let t1 = cts.createTypeVariable()
+        let t2 = cts.createTypeVariable()
+        let t3 = cts.createTypeVariable()
+        let int = PrimitiveType.int
+        
+        cts.mergeEquivalence(type1: t1, type2: t2)
+        XCTAssertEqual(cts.bindings.binding(for: t1), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t2), .transfer(t1))
+        XCTAssertEqual(cts.bindings.binding(for: t3), .free)
+
+        cts.mergeEquivalence(type1: t1, type2: t3)
+        XCTAssertEqual(cts.bindings.binding(for: t1), .free)
+        XCTAssertEqual(cts.bindings.binding(for: t2), .transfer(t1))
+        XCTAssertEqual(cts.bindings.binding(for: t3), .transfer(t1))
+        
+        cts.assignFixedType(for: t1, int)
+        XCTAssertEqual(cts.bindings.binding(for: t1), .fixed(int))
+        XCTAssertEqual(cts.bindings.binding(for: t2), .transfer(t1))
+        XCTAssertEqual(cts.bindings.binding(for: t3), .transfer(t1))
+    }
+    
     func testMerge1() {
         let cts = ConstraintSystem()
         let t1 = cts.createTypeVariable()
@@ -247,7 +322,6 @@ final class ConstraintSystemTests: XCTestCase {
         cts.addConstraint(kind: .bind,
                           left: t2,
                           right: FunctionType(parameter: ti, result: ts))
-        cts.dump()
         XCTAssertTrue(c1.isActive)
         
         XCTAssertTrue(cts.simplify())
@@ -255,6 +329,154 @@ final class ConstraintSystemTests: XCTestCase {
         
         XCTAssertEqual(cts.simplify(type: t1), ts)
         XCTAssertEqual(cts.simplify(type: t2), FunctionType(parameter: ti, result: ts))
+    }
+    
+    func testApplicableFunctionFail() {
+        let cts = ConstraintSystem()
+        
+        let ti = PrimitiveType.int
+        let ts = PrimitiveType.string
+        
+        cts.addConstraint(kind: .applicableFunction,
+                          left: FunctionType(parameter: ti, result: ts),
+                          right: FunctionType(parameter: ts, result: ts))
+        XCTAssertFalse(cts.simplify())
+        XCTAssertNotNil(cts.failedConstraint)
+    }
+    
+    func testApplicableFunctionArgConv() {
+        let cts = ConstraintSystem()
+        
+        let t1 = cts.createTypeVariable()
+        let ti = PrimitiveType.int
+        let toi = OptionalType(PrimitiveType.int)
+        let ts = PrimitiveType.string
+        
+        cts.addConstraint(kind: .applicableFunction,
+                          left: FunctionType(parameter: ti, result: t1),
+                          right: FunctionType(parameter: toi, result: ts))
+        XCTAssertTrue(cts.simplify())
+        XCTAssertEqual(cts.simplify(type: t1), ts)
+    }
+    
+    func testConvFunctionEqual() {
+        let cts = ConstraintSystem()
+        
+        let int = PrimitiveType.int
+        let str = PrimitiveType.string
+        
+        cts.addConstraint(kind: .conversion,
+                          left: FunctionType(parameter: int,
+                                             result: str),
+                          right: FunctionType(parameter: int,
+                                              result: str))
+        XCTAssertTrue(cts.simplify())
+    }
+    
+    func testConvFunctionParamNotEqual() {
+        let cts = ConstraintSystem()
+        
+        let int = PrimitiveType.int
+        let str = PrimitiveType.string
+        let void = PrimitiveType.void
+        
+        cts.addConstraint(kind: .conversion,
+                          left: FunctionType(parameter: int,
+                                             result: void),
+                          right: FunctionType(parameter: str,
+                                              result: void))
+        XCTAssertFalse(cts.simplify())
+    }
+    
+    func testConvFunctionParamCotravarianceInvert() {
+        let cts = ConstraintSystem()
+        
+        let int = PrimitiveType.int
+        let oint = OptionalType(int)
+        let void = PrimitiveType.void
+        
+        cts.addConstraint(kind: .conversion,
+                          left: FunctionType(parameter: int,
+                                             result: void),
+                          right: FunctionType(parameter: oint,
+                                              result: void))
+        XCTAssertFalse(cts.simplify())
+    }
+    
+    func testConvFunctionResultNotEqual() {
+        let cts = ConstraintSystem()
+        
+        let int = PrimitiveType.int
+        let str = PrimitiveType.string
+        let void = PrimitiveType.void
+        
+        cts.addConstraint(kind: .conversion,
+                          left: FunctionType(parameter: int,
+                                             result: void),
+                          right: FunctionType(parameter: int,
+                                              result: str))
+        XCTAssertFalse(cts.simplify())
+    }
+    
+    func testConvFunctionResultCovarianceInvert() {
+        let cts = ConstraintSystem()
+        
+        let int = PrimitiveType.int
+        let str = PrimitiveType.string
+        let ostr = OptionalType(str)
+        
+        cts.addConstraint(kind: .conversion,
+                          left: FunctionType(parameter: int,
+                                             result: ostr),
+                          right: FunctionType(parameter: int,
+                                              result: str))
+        XCTAssertFalse(cts.simplify())
+    }
+    
+    func testConvFunctionResultCovariance() {
+        let cts = ConstraintSystem()
+        
+        let int = PrimitiveType.int
+        let str = PrimitiveType.string
+        let ostr = OptionalType(str)
+        
+        cts.addConstraint(kind: .conversion,
+                          left: FunctionType(parameter: int,
+                                             result: str),
+                          right: FunctionType(parameter: int,
+                                              result: ostr))
+        XCTAssertTrue(cts.simplify())
+    }
+    
+    func testConvFunctionParamContravariance() {
+        let cts = ConstraintSystem()
+        
+        let int = PrimitiveType.int
+        let oint = OptionalType(int)
+        let str = PrimitiveType.string
+        
+        cts.addConstraint(kind: .conversion,
+                          left: FunctionType(parameter: oint,
+                                             result: str),
+                          right: FunctionType(parameter: int,
+                                              result: str))
+        XCTAssertTrue(cts.simplify())
+    }
+    
+    func testConvFunctionParamContravarianceResultCovariance() {
+        let cts = ConstraintSystem()
+        
+        let int = PrimitiveType.int
+        let oint = OptionalType(int)
+        let str = PrimitiveType.string
+        let ostr = OptionalType(str)
+        
+        cts.addConstraint(kind: .conversion,
+                          left: FunctionType(parameter: oint,
+                                             result: str),
+                          right: FunctionType(parameter: int,
+                                              result: ostr))
+        XCTAssertTrue(cts.simplify())
     }
     
     func testGatherConstraints1() {
@@ -372,5 +594,4 @@ final class ConstraintSystemTests: XCTestCase {
         let sols = cts.solve()
         XCTAssertEqual(sols.count, 3)
     }
-
 }

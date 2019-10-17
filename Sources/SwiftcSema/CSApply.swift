@@ -2,7 +2,7 @@ import SwiftcBasic
 import SwiftcType
 import SwiftcAST
 
-public final class ConstraintSolutionApplicator : ASTVisitor {
+public final class ConstraintSolutionApplier : ASTVisitor {
     public typealias VisitResult = ASTNode
     
     private let solution: ConstraintSystem.Solution
@@ -101,11 +101,12 @@ public final class ConstraintSolutionApplicator : ASTVisitor {
 }
 
 extension ConstraintSystem.Solution {
+    // ref: applySolution at CSApply.cpp
     public func apply(to expr: Expr,
                       context: DeclContext,
                       constraintSystem: ConstraintSystem) throws -> Expr
     {
-        let applier = ConstraintSolutionApplicator(solution: self)
+        let applier = ConstraintSolutionApplier(solution: self)
         switch try expr.walk(context: context,
                              preWalk: applier.preWalk,
                              postWalk: applier.postWalk)
@@ -115,6 +116,7 @@ extension ConstraintSystem.Solution {
         }
     }
     
+    // ref: coerceToType at CSApply.cpp
     public func coerce(expr: Expr, to toTy: Type) throws -> Expr {
         let fromTy = try expr.typeOrThrow()
         if fromTy == toTy {
@@ -141,8 +143,6 @@ extension ConstraintSystem.Solution {
                 return try coerceOptionalToOptional(expr: expr, to: toTy)
             }
         }
-        
-        // I think the following code is unnecessary
      
         switch toTy {
         case let toTy as OptionalType:
@@ -156,6 +156,8 @@ extension ConstraintSystem.Solution {
         default:
             break
         }
+        
+        // [TODO] function type coercion
         
         throw MessageError("unconsidered")
     }

@@ -128,6 +128,7 @@ public final class ConstraintSystem {
         typeVariable.fixedOrRepresentative(bindings: bindings)
     }
     
+    // ref: mergeEquivalenceClasses at ConstraintSystem.h
     public func mergeEquivalence(type1: TypeVariable,
                                  type2: TypeVariable,
                                  doesActivate: Bool = true)
@@ -139,6 +140,7 @@ public final class ConstraintSystem {
         }
     }
     
+    // ref: assignFixedType at ConstraintSystem.cpp
     public func assignFixedType(for typeVariable: TypeVariable,
                                 _ fixedType: Type,
                                 doesActivate: Bool = true)
@@ -182,6 +184,7 @@ public final class ConstraintSystem {
         astTypes[key] = type
     }
     
+    // ref: addConstraint in CSSimplify.cpp
     public func addConstraint(kind: Constraint.Kind,
                               left: Type, right: Type)
     {
@@ -239,6 +242,7 @@ public final class ConstraintSystem {
         }
     }
     
+    // ref: addTypeVariableConstraintsToWorkList in ConstraintSystem.cpp
     public func activateConstraints(involving typeVariable: TypeVariable) {
         let cs = gatherConstraints(involving: typeVariable)
         for c in cs {
@@ -252,6 +256,7 @@ public final class ConstraintSystem {
                                            bindings: bindings)
     }
     
+    // ref: gatherConstraints at ConstraintGraph.cpp
     public static func getherConstraints(involving typeVariable: TypeVariable,
                                          constraints: [ConstraintEntry],
                                          bindings: TypeVariableBindings) -> [ConstraintEntry]
@@ -304,6 +309,7 @@ public final class ConstraintSystem {
         return result
     }
     
+    // ref: resolveOverload at ConstraintSystem.cpp
     public func resolveOverload(boundType: Type,                                
                                 choice: OverloadChoice,
                                 location: ASTNode)
