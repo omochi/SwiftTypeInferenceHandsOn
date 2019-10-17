@@ -51,9 +51,10 @@ public struct TypeVariableBindings {
             swap(&type1, &type2)
         }
         
-        let newEqs = type2.equivalentTypeVariables(bindings: self)
-        for newEq in newEqs {
-            map[newEq] = .transfer(type1)
+        // <Q03 hint="understand data structure" />
+        let vars = type2.equivalentTypeVariables(bindings: self)
+        for v in vars {
+            setBinding(for: v, .transfer(type1))
         }
     }
     

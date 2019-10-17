@@ -41,11 +41,12 @@ public final class ConstraintGenerator : ASTVisitor {
         let callee = try cts.astTypeOrThrow(for: node.callee)
         let arg = try cts.astTypeOrThrow(for: node.argument)
         
-        let tv = cts.createTypeVariable()
+        let tv = cts.createTypeVariable() // $T2
+        let ft = FunctionType(parameter: arg, result: tv)
         
-        cts.addConstraint(kind: .applicableFunction,
-            left: FunctionType(parameter: arg, result: tv),
-            right: callee)
+        cts.addConstraint(kind: .applicableFunction, left: ft, right: callee)
+        
+        // <Q07 hint="call addConstraint" />
         
         return tv
     }
@@ -60,12 +61,16 @@ public final class ConstraintGenerator : ASTVisitor {
             return cts.createTypeVariable()
         }
         
-        let resultTy = resultTy_()
+        let resultTy = resultTy_() // $T2
 
-        let closureTy = FunctionType(parameter: paramTy, result: resultTy)
+        let closureTy = FunctionType(parameter: paramTy, result: resultTy) // parameter: Int, result: $T2
         
-        let bodyTy = try cts.astTypeOrThrow(for: node.body.last!)
+        let bodyTy = try cts.astTypeOrThrow(for: node.body.last!) // $T1
         
+        // <Q06 hint="call addConstraint" />
+//        cts.addConstraint(kind: .bind, left: closureTy.result, right: bodyTy)
+//        cts.addConstraint(kind: .bind, left: resultTy, right: closureTy.result)
+//        cts.addConstraint(kind: .bind, left: paramTy, right: closureTy.parameter)
         cts.addConstraint(kind: .conversion, left: bodyTy, right: resultTy)
         
         return closureTy

@@ -16,7 +16,7 @@ extension ConstraintSystem {
                                 conversion: conversion,
                                 options: options)
             }
-
+            
             return matchTypes(kind: kind,
                               left: left, right: right,
                               options: options)
@@ -65,6 +65,7 @@ extension ConstraintSystem {
             return matchDeepEqualityTypes(left: leftType, right: rightType,
                                           options: options)
         case .valueToOptional:
+            // <Q09 hint="see optionalToOptional" />
             if let rightType = rightType as? OptionalType {
                 return matchTypes(kind: kind,
                                   left: leftType,
@@ -108,29 +109,24 @@ extension ConstraintSystem {
         guard let rfn = right as? FunctionType else {
             return .failure
         }
+        // lfn (Int) -> $T1
+        // rfn  (Int) -> String
         
         var subOpts = options
         subOpts.generateConstraintsWhenAmbiguous = true
         
-        switch matchTypes(kind: .conversion,
-                          left: lfn.parameter,
-                          right: rfn.parameter,
-                          options: subOpts) {
-        case .failure: return .failure
-        case .ambiguous: preconditionFailure("never")
-        case .solved: break
+        let matchArg = matchTypes(kind: .conversion, left: lfn.parameter, right: rfn.parameter, options: subOpts)
+        let matchResult = matchTypes(kind: .bind, left: lfn.result, right: rfn.result, options: subOpts)
+        if matchArg == .solved && matchResult == .solved {
+            return matchTypes(kind: .bind,
+                              left: rfn,
+                              right: right,
+                              options: subOpts)
         }
         
-        switch matchTypes(kind: .bind,
-                          left: lfn.result,
-                          right: rfn.result,
-                          options: subOpts) {
-        case .failure: return .failure
-        case .ambiguous: preconditionFailure("never")
-        case .solved: break
-        }
+        // <Q08 hint="think about semantics of appfn congsts" />
         
-        return .solved
+        return .failure
     }
     
     /**

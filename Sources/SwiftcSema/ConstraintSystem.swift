@@ -149,6 +149,7 @@ public final class ConstraintSystem {
         
         if doesActivate {
             activateConstraints(involving: typeVariable)
+            // <Q04 hint="see mergeEquivalence" />
         }
     }
     

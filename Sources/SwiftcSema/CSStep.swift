@@ -70,12 +70,18 @@ extension ConstraintSystem {
             
             // consider priority for bindings and disjunctions
             
-            if let bindings = bestBindingsOrNone {
-                return TypeVariableStep(work: work, bindings: bindings).run()
+            // <Q10 hint="invoke substeps" />
+            
+            if let bestBindings = bestBindingsOrNone {
+                let step = TypeVariableStep(work: work, bindings: bestBindings)
+                let _ = step.run()
+                return true
             }
             
             if let disjunction = disjunctionOrNone {
-                return DisjunctionStep(work: work, disjunction: disjunction).run()
+                let step = DisjunctionStep(work: work, disjunction: disjunction)
+                let _ = step.run()
+                return true
             }
             
             if cts.hasFreeTypeVariables() {
@@ -120,12 +126,13 @@ extension ConstraintSystem {
             
             var isAnySolved = false
             
-            for binding in bindings.bindings {
+            for bindings in bindings.bindings {
+                // <Q11 hint="see DisjunctionStep" />
                 let state = cts.storeStepState()
                 defer {
-                    cts.loadStepState(state)
+                    cts.loadStepState( state)
                 }
-                if attempt(binding: binding) {
+                if attempt(binding: bindings) {
                     isAnySolved = true
                 }
             }
