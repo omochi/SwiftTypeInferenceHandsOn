@@ -115,7 +115,7 @@ extension ConstraintSystem {
         var subOpts = options
         subOpts.generateConstraintsWhenAmbiguous = true
         
-        let matchArg = matchTypes(kind: .bind, left: lfn.parameter, right: rfn.parameter, options: subOpts)
+        let matchArg = matchTypes(kind: .conversion, left: lfn.parameter, right: rfn.parameter, options: subOpts)
         let matchResult = matchTypes(kind: .bind, left: lfn.result, right: rfn.result, options: subOpts)
         if matchArg == .solved && matchResult == .solved {
             return matchTypes(kind: .bind,
@@ -126,7 +126,7 @@ extension ConstraintSystem {
         
         // <Q08 hint="think about semantics of appfn congsts" />
         
-        return .solved
+        return .failure
     }
     
     /**

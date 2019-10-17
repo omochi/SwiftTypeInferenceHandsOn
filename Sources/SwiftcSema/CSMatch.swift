@@ -196,8 +196,8 @@ extension ConstraintSystem {
 
         // Q2
         let argument = matchTypes(kind: subKind,
-                                  left: leftArg,
-                                  right: rightArg,
+                                  left: rightArg,
+                                  right: leftArg,
                                   options: subOptions)
         let result = matchTypes(kind: subKind,
                                 left: leftRet,
@@ -206,8 +206,8 @@ extension ConstraintSystem {
         if argument == .solved && result == .solved {
             return .solved
         }
-        
-        return .solved
+
+        return .failure
     }
     
     // ref: matchDeepEqualityTypes at CSSimplify.cpp
