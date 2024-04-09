@@ -1,3 +1,5 @@
+import SwiftcBasic
+
 public protocol ASTNode : AnyObject, CustomStringConvertible {
     // break retain cycle
     func dispose()

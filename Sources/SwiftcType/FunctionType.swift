@@ -1,3 +1,5 @@
+import SwiftcBasic
+
 public struct FunctionType : _EquatableType {
     private struct Eq : Hashable {
         public var parameter: AnyType
