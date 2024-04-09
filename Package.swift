@@ -1,4 +1,4 @@
-// swift-tools-version:5.1
+// swift-tools-version:5.10
 
 import PackageDescription
 
@@ -7,8 +7,7 @@ let rpath = "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.
 let package = Package(
     name: "SwiftTypeInference",
     dependencies: [
-        .package(url: "https://github.com/apple/swift-syntax.git",
-                 .revision("swift-DEVELOPMENT-SNAPSHOT-2019-07-10-m")),
+        .package(url: "https://github.com/apple/swift-syntax.git", exact: "510.0.1"),
     ],
     targets: [
         .target(
@@ -21,7 +20,11 @@ let package = Package(
         ),
         .target(
             name: "SwiftcAST",
-            dependencies: ["SwiftSyntax", "SwiftcBasic", "SwiftcType"]
+            dependencies: [
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                "SwiftcBasic",
+                "SwiftcType"
+            ]
         ),
         .target(
             name: "SwiftcSema",
@@ -35,7 +38,7 @@ let package = Package(
             name: "SwiftCompiler",
             dependencies: ["SwiftcAST", "SwiftcSema"]
         ),
-        .target(
+        .executableTarget(
             name: "swsc",
             dependencies: ["SwiftcAST", "SwiftcSema"],
             linkerSettings: [
