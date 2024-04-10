@@ -107,8 +107,8 @@ public final class Parser {
     }
     
     private func parse(_ synFunc: FunctionDeclSyntax) throws -> FunctionDecl {
-        let name = synFunc.identifier.text
-        
+        let name = synFunc.name.text
+
         let sig = try parse(synFunc.signature)
         
         let funcDecl = FunctionDecl(source: source,
@@ -124,7 +124,7 @@ public final class Parser {
     }
     
     private func parse(_ synSig: FunctionSignatureSyntax) throws -> (Type, Type) {
-        let synParamList = synSig.input.parameterList.map { $0 }
+        let synParamList = synSig.parameterClause.parameters.map { $0 }
         guard synParamList.count == 1 else {
             throw MessageError("param num must be 1")
         }
@@ -135,8 +135,8 @@ public final class Parser {
         
         let param: Type = try parse(type: synType)
         
-        let result: Type = try synSig.output
-            .map { try parse(type: $0.returnType) }
+        let result: Type = try synSig.returnClause
+            .map { try parse(type: $0.type) }
             ?? PrimitiveType.void
         
         return (param, result)
@@ -146,7 +146,7 @@ public final class Parser {
         let sourceRange = SourceRange(syntax: expr)
         switch expr {
         case let expr as IdentifierExprSyntax:
-            let name = expr.identifier.text
+            let name = expr.baseName.text
             return UnresolvedDeclRefExpr(source: source,
                                          sourceRange: sourceRange,
                                          name: name)
@@ -156,7 +156,7 @@ public final class Parser {
                                       sourceRange: sourceRange)
         case let expr as FunctionCallExprSyntax:
             let callee = try parse(expr: expr.calledExpression) as! Expr
-            let synArgList = expr.argumentList.map { $0 }
+            let synArgList = expr.arguments.map { $0 }
             guard synArgList.count == 1 else {
                 throw MessageError("arg num must be 1")
             }
@@ -201,7 +201,7 @@ public final class Parser {
             throw MessageError("param num must be 1")
         }
         
-        let synParamList = synParamClause.parameterList.map { $0 }
+        let synParamList = synParamClause.parameters.map { $0 }
         guard synParamList.count == 1 else {
             throw MessageError("param num must be 1")
         }
@@ -212,9 +212,9 @@ public final class Parser {
         
         let paramType: Type? = try synParam.type.map { try parse(type: $0) }
         
-        let result: Type? = try synSig.output
-            .map { try parse(type: $0.returnType) }
-        
+        let result: Type? = try synSig.returnClause
+            .map { try parse(type: $0.type) }
+
         let param = VariableDecl(source: source,
                                  sourceRange: SourceRange(syntax: synParam),
                                  parentContext: currentContext,
@@ -233,7 +233,7 @@ public final class Parser {
             let wrapped = try parse(type: type.wrappedType)
             return OptionalType(wrapped)
         case let type as FunctionTypeSyntax:
-            let synParamList = type.arguments.map { $0 }
+            let synParamList = type.parameters.map { $0 }
             guard synParamList.count == 1 else {
                 throw MessageError("param num must be 1")
             }
