@@ -60,17 +60,19 @@ public final class Parser {
         
         for syn in synStmts {
             switch syn.item {
-            case let syn as VariableDeclSyntax:
-                for decl in try parse(syn) {
+            case let .decl(syn):
+                if let syn = syn.as(VariableDeclSyntax.self) {
+                    for decl in try parse(syn) {
+                        stmts.append(decl)
+                    }
+                } else if let syn = syn.as(FunctionDeclSyntax.self) {
+                    let decl = try parse(syn)
                     stmts.append(decl)
                 }
-            case let syn as FunctionDeclSyntax:
-                let decl = try parse(syn)
-                stmts.append(decl)
-            case let syn as ExprSyntax:
+            case let .expr(syn):
                 let expr = try parse(expr: syn)
                 stmts.append(expr)
-            default:
+            case .stmt:
                 break
             }
         }
@@ -82,25 +84,24 @@ public final class Parser {
         var decls: [VariableDecl] = []
         
         for binding in varDecl.bindings {
-            switch binding.pattern {
-            case let ident as IdentifierPatternSyntax:
-                let name = ident.identifier.text
-                let initializer: Expr? = try binding.initializer.map {
-                    try parse(expr: $0.value)
-                } as? Expr
-                let type: Type? = try binding.typeAnnotation.map {
-                    try parse(type: $0.type)
-                }
-                let decl = VariableDecl(source: source,
-                                        sourceRange: SourceRange(syntax: binding),
-                                        parentContext: currentContext,
-                                        name: name,
-                                        initializer: initializer,
-                                        typeAnnotation: type)
-                decls.append(decl)
-            default:
-                break
+            guard let ident = binding.pattern.as(IdentifierPatternSyntax.self) else {
+                continue
             }
+
+            let name = ident.identifier.text
+            let initializer: Expr? = try binding.initializer.map {
+                try parse(expr: $0.value)
+            } as? Expr
+            let type: Type? = try binding.typeAnnotation.map {
+                try parse(type: $0.type)
+            }
+            let decl = VariableDecl(source: source,
+                                    sourceRange: SourceRange(syntax: binding),
+                                    parentContext: currentContext,
+                                    name: name,
+                                    initializer: initializer,
+                                    typeAnnotation: type)
+            decls.append(decl)
         }
         
         return decls
@@ -141,18 +142,17 @@ public final class Parser {
     }
     
     private func parse(expr: ExprSyntax) throws -> ASTNode {
-        let sourceRange = SourceRange(syntax: expr)
-        switch expr {
-        case let expr as IdentifierExprSyntax:
+        let sourceRange = SourceRange(syntax: Syntax(expr))
+        if let expr = expr.as(DeclReferenceExprSyntax.self) {
             let name = expr.baseName.text
             return UnresolvedDeclRefExpr(source: source,
                                          sourceRange: sourceRange,
                                          name: name)
-        case let expr as IntegerLiteralExprSyntax:
+        } else if let expr = expr.as(IntegerLiteralExprSyntax.self) {
             _ = expr
             return IntegerLiteralExpr(source: source,
                                       sourceRange: sourceRange)
-        case let expr as FunctionCallExprSyntax:
+        } else if let expr = expr.as(FunctionCallExprSyntax.self) {
             let callee = try parse(expr: expr.calledExpression) as! Expr
             let synArgList = expr.arguments.map { $0 }
             guard synArgList.count == 1 else {
@@ -163,10 +163,10 @@ public final class Parser {
                             sourceRange: sourceRange,
                             callee: callee,
                             argument: arg)
-        case let expr as ClosureExprSyntax:
+        } else if let expr = expr.as(ClosureExprSyntax.self) {
             return try parse(expr)
-        default:
-            throw unsupportedSyntaxError(expr)
+        } else {
+            throw unsupportedSyntaxError(Syntax(expr))
         }
     }
     
@@ -195,7 +195,7 @@ public final class Parser {
     }
     
     private func parse(_ synSig: ClosureSignatureSyntax) throws -> (VariableDecl, Type?) {
-        guard let synParamClause = synSig.input as? ParameterClauseSyntax else {
+        guard let synParamClause = synSig.parameterClause?.as(FunctionParameterClauseSyntax.self) else {
             throw MessageError("param num must be 1")
         }
         
@@ -221,14 +221,13 @@ public final class Parser {
     }
     
     private func parse(type: TypeSyntax) throws -> Type {
-        switch type {
-        case let type as SimpleTypeIdentifierSyntax:
+        if let type = type.as(IdentifierTypeSyntax.self) {
             let name = type.name.text
             return PrimitiveType(name: name)
-        case let type as OptionalTypeSyntax:
+        } else if let type = type.as(OptionalTypeSyntax.self) {
             let wrapped = try parse(type: type.wrappedType)
             return OptionalType(wrapped)
-        case let type as FunctionTypeSyntax:
+        } else if let type = type.as(FunctionTypeSyntax.self) {
             let synParamList = type.parameters.map { $0 }
             guard synParamList.count == 1 else {
                 throw MessageError("param num must be 1")
@@ -236,8 +235,8 @@ public final class Parser {
             let param = try parse(type: synParamList[0].type)
             let result = try parse(type: type.returnType)
             return FunctionType(parameter: param, result: result)
-        default:
-            throw unsupportedSyntaxError(type)
+        } else {
+            throw unsupportedSyntaxError(Syntax(type))
         }
     }
     
