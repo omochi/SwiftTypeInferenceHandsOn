@@ -96,7 +96,7 @@ public final class Parser {
                 try parse(type: $0.type)
             }
             let decl = VariableDecl(source: source,
-                                    sourceRange: SourceRange(syntax: binding),
+                                    sourceRange: SourceRange(syntax: Syntax(binding)),
                                     parentContext: currentContext,
                                     name: name,
                                     initializer: initializer,
@@ -113,7 +113,7 @@ public final class Parser {
         let sig = try parse(synFunc.signature)
         
         let funcDecl = FunctionDecl(source: source,
-                                    sourceRange: SourceRange(syntax: synFunc),
+                                    sourceRange: SourceRange(syntax: Syntax(synFunc)),
                                     parentContext: currentContext,
                                     name: name,
                                     parameterType: sig.0,
@@ -178,7 +178,7 @@ public final class Parser {
         let (param, ret) = try parse(synSig)
         
         let closure = ClosureExpr(source: source,
-                                  sourceRange: SourceRange(syntax: expr),
+                                  sourceRange: SourceRange(syntax: Syntax(expr)),
                                   parentContext: currentContext,
                                   parameter: param,
                                   returnType: ret)
@@ -206,13 +206,13 @@ public final class Parser {
         let synParam = synParamList[0]
         let name = synParam.firstName.text
         
-        let paramType: Type? = try synParam.type.map { try parse(type: $0) }
-        
+        let paramType: Type? = try parse(type: synParam.type)
+
         let result: Type? = try synSig.returnClause
             .map { try parse(type: $0.type) }
 
         let param = VariableDecl(source: source,
-                                 sourceRange: SourceRange(syntax: synParam),
+                                 sourceRange: SourceRange(syntax: Syntax(synParam)),
                                  parentContext: currentContext,
                                  name: name,
                                  initializer: nil,
@@ -233,7 +233,7 @@ public final class Parser {
                 throw MessageError("param num must be 1")
             }
             let param = try parse(type: synParamList[0].type)
-            let result = try parse(type: type.returnType)
+            let result = try parse(type: type.returnClause.type)
             return FunctionType(parameter: param, result: result)
         } else {
             throw unsupportedSyntaxError(Syntax(type))
