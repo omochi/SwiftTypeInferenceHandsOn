@@ -1,4 +1,5 @@
 import Foundation
+import SwiftParser
 import SwiftSyntax
 import SwiftcBasic
 import SwiftcType
@@ -31,7 +32,7 @@ public final class Parser {
     }
     
     public func parse() throws -> SourceFile {
-        let syn = try SyntaxParser.parse(source: sourceString)
+        let syn = SwiftParser.Parser.parse(source: sourceString)
 
         var data = sourceString.data(using: .utf8)!
         let size = data.count

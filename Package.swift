@@ -22,6 +22,7 @@ let package = Package(
             name: "SwiftcAST",
             dependencies: [
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
                 "SwiftcBasic",
                 "SwiftcType"
             ]
