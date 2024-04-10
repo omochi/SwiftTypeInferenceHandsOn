@@ -129,9 +129,7 @@ public final class Parser {
             throw MessageError("param num must be 1")
         }
         let synParam = synParamList[0]
-        guard let synType = synParam.type else {
-            throw MessageError("no param type")
-        }
+        let synType = synParam.type
         
         let param: Type = try parse(type: synType)
         
@@ -206,9 +204,7 @@ public final class Parser {
             throw MessageError("param num must be 1")
         }
         let synParam = synParamList[0]
-        guard let name = synParam.firstName?.text else {
-            throw MessageError("no param name")
-        }
+        let name = synParam.firstName.text
         
         let paramType: Type? = try synParam.type.map { try parse(type: $0) }
         
