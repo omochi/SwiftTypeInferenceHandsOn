@@ -12,3 +12,11 @@ masterには答えが書いてあるので見ないこと。
 - [型推論ハンズオン](Docs/camp.md)
   ([Rendered](https://speakerdeck.com/omochi/xing-tui-lun-hanzuon))
 - [規則集](Docs/rules.md)
+
+# 回答集
+
+- [@kateinoigakukun](https://github.com/kateinoigakukun) in https://github.com/omochi/SwiftTypeInferenceHandsOn/pull/1
+- [@Iceman](https://github.com/sidepelican) in https://github.com/omochi/SwiftTypeInferenceHandsOn/pull/4
+- [@giginet](https://github.com/giginet) in https://github.com/omochi/SwiftTypeInferenceHandsOn/pull/6
+- [@elmetal](https://github.com/elmetal) in https://github.com/omochi/SwiftTypeInferenceHandsOn/pull/11
+- [@hironytic](https://github.com/hironytic) in https://github.com/omochi/SwiftTypeInferenceHandsOn/pull/18
