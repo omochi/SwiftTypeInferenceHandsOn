@@ -1,3 +1,5 @@
+import SwiftcBasic
+
 public struct PrimitiveType : _EquatableType {
     public var name: String
     
