@@ -196,7 +196,7 @@ public final class Parser {
     }
     
     private func parse(_ synSig: ClosureSignatureSyntax) throws -> (VariableDecl, Type?) {
-        guard let synParamClause = synSig.parameterClause?.as(FunctionParameterClauseSyntax.self) else {
+        guard let synParamClause = synSig.parameterClause?.as(ClosureParameterClauseSyntax.self) else {
             throw MessageError("param num must be 1")
         }
         
@@ -207,7 +207,7 @@ public final class Parser {
         let synParam = synParamList[0]
         let name = synParam.firstName.text
         
-        let paramType: Type? = try parse(type: synParam.type)
+        let paramType: Type? = try synParam.type.map { try parse(type: $0) }
 
         let result: Type? = try synSig.returnClause
             .map { try parse(type: $0.type) }
