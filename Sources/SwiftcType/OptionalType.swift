@@ -1,3 +1,5 @@
+import SwiftcBasic
+
 public struct OptionalType : _EquatableType {
     public struct Eq : Hashable {
         public var wrapped: AnyType

@@ -76,7 +76,7 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertEqual(cts.bindings.binding(for: t2), .transfer(t1))
         XCTAssertEqual(cts.bindings.binding(for: t3), .transfer(t1))
     }
-    
+
     // Required: [Q03]
     func testMerge1() {
         let cts = ConstraintSystem()
@@ -329,11 +329,11 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertEqual(cts.simplify(type: t1), ts)
         XCTAssertEqual(cts.simplify(type: t2), FunctionType(parameter: ti, result: ts))
     }
-    
+
     // Required: [Q01] [Q08]
     func testApplicableFunctionFail() {
         let cts = ConstraintSystem()
-        
+
         let ti = PrimitiveType.int
         let ts = PrimitiveType.string
         
@@ -343,11 +343,11 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertFalse(cts.simplify())
         XCTAssertNotNil(cts.failedConstraint)
     }
-    
+
     // Required: [Q04] [Q08]
     func testApplicableFunctionArgConv() {
         let cts = ConstraintSystem()
-        
+
         let t1 = cts.createTypeVariable()
         let ti = PrimitiveType.int
         let toi = OptionalType(PrimitiveType.int)

@@ -2,7 +2,7 @@ import SwiftcBasic
 import SwiftcType
 import SwiftcAST
 
-public final class ConstraintSolutionApplicator : ASTVisitor {
+public final class ConstraintSolutionApplier : ASTVisitor {
     public typealias VisitResult = ASTNode
     
     private let solution: ConstraintSystem.Solution
@@ -94,7 +94,7 @@ extension ConstraintSystem.Solution {
                       context: DeclContext,
                       constraintSystem: ConstraintSystem) throws -> Expr
     {
-        let applier = ConstraintSolutionApplicator(solution: self)
+        let applier = ConstraintSolutionApplier(solution: self)
         switch try expr.walk(context: context,
                              preWalk: applier.preWalk,
                              postWalk: applier.postWalk)

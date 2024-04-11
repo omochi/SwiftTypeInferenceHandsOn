@@ -197,7 +197,7 @@ f({ (x: Int) in 4 })
         let clr = try XCTCast(call.argument, ClosureExpr.self)
         _ = try XCTCast(XCTArrayGet(clr.body, 0), InjectIntoOptionalExpr.self)
     }
-    
+
     // Required: [Q01] [Q05] [Q09] [Q10] [Q12] [Q13]
     func testAssignConv() throws {
         let code = """

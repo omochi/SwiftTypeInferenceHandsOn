@@ -186,7 +186,7 @@ extension ConstraintSystem {
         }
         
         let subOptions = decompositionOptions(options)
-        
+
         // <Q02 hint="match arg and ret" />
         
         return .solved
