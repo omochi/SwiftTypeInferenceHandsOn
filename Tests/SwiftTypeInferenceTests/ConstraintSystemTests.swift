@@ -583,8 +583,8 @@ final class ConstraintSystemTests: XCTestCase {
         let sols = cts.solve()
         XCTAssertEqual(sols.count, 2)
     }
-    
-    // Required: [Q01] [Q10]
+
+    // Required: [Q01] [Q09] [Q10] [Q11]
     func testConvOptIntToOptOptInt() throws {
         let cts = ConstraintSystem()
         

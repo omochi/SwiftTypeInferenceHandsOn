@@ -176,7 +176,7 @@ f(3)
         let clr = try XCTCast(XCTArrayGet(s.statements, 0), ClosureExpr.self)
         _ = try XCTCast(XCTArrayGet(clr.body, 0), InjectIntoOptionalExpr.self)
     }
-    
+
     // [TODO] enable this. need coercion between functions. ses CSApply
     func _testClosureConvBodyNoReturnSig() throws {
         let code = """
