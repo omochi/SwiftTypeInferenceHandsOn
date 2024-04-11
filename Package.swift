@@ -6,6 +6,10 @@ let rpath = "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.
 
 let package = Package(
     name: "SwiftTypeInference",
+    platforms: [
+        .macOS(.v10_15),
+        .iOS(.v13),
+    ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-syntax.git", exact: "510.0.1"),
     ],
