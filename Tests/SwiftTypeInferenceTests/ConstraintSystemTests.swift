@@ -2,6 +2,7 @@ import XCTest
 import SwiftcTest
 
 final class ConstraintSystemTests: XCTestCase {
+<<<<<<< HEAD
     func testInitFreeRaw() {
         let cts = ConstraintSystem()
         let t1 = cts.createTypeVariable()
@@ -76,7 +77,7 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertEqual(cts.bindings.binding(for: t2), .transfer(t1))
         XCTAssertEqual(cts.bindings.binding(for: t3), .transfer(t1))
     }
-    
+
     // Required: [Q03]
     func testMerge1() {
         let cts = ConstraintSystem()
@@ -573,7 +574,7 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertEqual(sols.count, 1)
     }
         
-    // Required: [Q01] [Q10]
+    // Required: [Q01] [Q10] [Q11]
     func testConvOptIntToOptInt() throws {
         let cts = ConstraintSystem()
         
@@ -584,8 +585,8 @@ final class ConstraintSystemTests: XCTestCase {
         let sols = cts.solve()
         XCTAssertEqual(sols.count, 2)
     }
-    
-    // Required: [Q01] [Q10]
+
+    // Required: [Q01] [Q09] [Q10] [Q11]
     func testConvOptIntToOptOptInt() throws {
         let cts = ConstraintSystem()
         
