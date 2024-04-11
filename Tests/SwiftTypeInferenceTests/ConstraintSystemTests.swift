@@ -331,7 +331,7 @@ final class ConstraintSystemTests: XCTestCase {
     }
 
     // Required: [Q01] [Q08]
-    func testApplicableFunction3() {
+    func testApplicableFunctionFail() {
         let cts = ConstraintSystem()
 
         let ti = PrimitiveType.int
@@ -345,7 +345,7 @@ final class ConstraintSystemTests: XCTestCase {
     }
 
     // Required: [Q04] [Q08]
-    func testApplicableFunction4() {
+    func testApplicableFunctionArgConv() {
         let cts = ConstraintSystem()
 
         let t1 = cts.createTypeVariable()
