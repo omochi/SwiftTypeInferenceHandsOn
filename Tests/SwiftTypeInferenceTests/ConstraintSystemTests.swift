@@ -2,7 +2,6 @@ import XCTest
 import SwiftcTest
 
 final class ConstraintSystemTests: XCTestCase {
-<<<<<<< HEAD
     func testInitFreeRaw() {
         let cts = ConstraintSystem()
         let t1 = cts.createTypeVariable()
@@ -330,10 +329,11 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertEqual(cts.simplify(type: t1), ts)
         XCTAssertEqual(cts.simplify(type: t2), FunctionType(parameter: ti, result: ts))
     }
-    
-    func testApplicableFunctionFail() {
+
+    // Required: [Q01] [Q08]
+    func testApplicableFunction3() {
         let cts = ConstraintSystem()
-        
+
         let ti = PrimitiveType.int
         let ts = PrimitiveType.string
         
@@ -343,10 +343,11 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertFalse(cts.simplify())
         XCTAssertNotNil(cts.failedConstraint)
     }
-    
-    func testApplicableFunctionArgConv() {
+
+    // Required: [Q04] [Q08]
+    func testApplicableFunction4() {
         let cts = ConstraintSystem()
-        
+
         let t1 = cts.createTypeVariable()
         let ti = PrimitiveType.int
         let toi = OptionalType(PrimitiveType.int)
