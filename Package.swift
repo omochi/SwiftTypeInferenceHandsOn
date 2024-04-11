@@ -1,8 +1,6 @@
-// swift-tools-version:5.10
+// swift-tools-version: 5.10
 
 import PackageDescription
-
-let rpath = "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx"
 
 let package = Package(
     name: "SwiftTypeInference",
@@ -45,17 +43,11 @@ let package = Package(
         ),
         .executableTarget(
             name: "swsc",
-            dependencies: ["SwiftcAST", "SwiftcSema"],
-            linkerSettings: [
-                .unsafeFlags(["-rpath", rpath])
-            ]
+            dependencies: ["SwiftcAST", "SwiftcSema"]
         ),
         .testTarget(
             name: "SwiftTypeInferenceTests",
-            dependencies: ["SwiftcTest", "SwiftcAST", "SwiftcSema"],
-            linkerSettings: [
-                .unsafeFlags(["-rpath", rpath])
-            ]
+            dependencies: ["SwiftcTest", "SwiftcAST", "SwiftcSema"]
         )
     ]
 )
