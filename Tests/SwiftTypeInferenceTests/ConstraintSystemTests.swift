@@ -347,7 +347,6 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertNotNil(cts.failedConstraint)
     }
 
-    
     // Required: [Q04] [Q08]
     func testApplicableFunctionArgConv() {
         let cts = ConstraintSystem()
