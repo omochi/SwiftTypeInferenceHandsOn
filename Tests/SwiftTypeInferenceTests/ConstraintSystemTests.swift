@@ -9,7 +9,8 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertEqual(cts.bindings.binding(for: t1), .free)
         XCTAssertEqual(cts.bindings.binding(for: t2), .free)
     }
-    
+
+    // Required: [Q03]
     func testMerge1Raw() {
         let cts = ConstraintSystem()
         let t1 = cts.createTypeVariable()
@@ -31,7 +32,8 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertEqual(cts.bindings.binding(for: t3), .transfer(t1))
         XCTAssertEqual(cts.bindings.binding(for: t4), .transfer(t1))
     }
-    
+
+    // Required: [Q03]
     func testMerge2Raw() {
         let cts = ConstraintSystem()
         let t1 = cts.createTypeVariable()
@@ -53,7 +55,8 @@ final class ConstraintSystemTests: XCTestCase {
         XCTAssertEqual(cts.bindings.binding(for: t3), .transfer(t1))
         XCTAssertEqual(cts.bindings.binding(for: t4), .transfer(t1))
     }
-    
+
+    // Required: [Q03]
     func testMergeAssignRaw() {
         let cts = ConstraintSystem()
         let t1 = cts.createTypeVariable()
